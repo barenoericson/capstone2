@@ -27,6 +27,10 @@
             <span class="nav-icon">📅</span>
             <span class="nav-label">Viewings</span>
           </router-link>
+          <router-link to="/agent/calendar" class="nav-item">
+            <span class="nav-icon">📆</span>
+            <span class="nav-label">My Calendar</span>
+          </router-link>
           <router-link to="/agent/documents" class="nav-item">
             <span class="nav-icon">📄</span>
             <span class="nav-label">Documents</span>
@@ -43,10 +47,10 @@
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
           </router-link>
-          <a href="#" class="nav-item">
+          <router-link to="/settings" class="nav-item">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Settings</span>
-          </a>
+          </router-link>
         </div>
       </nav>
 
@@ -287,8 +291,8 @@ export default {
 
 <style scoped>
 :root {
-  --gold: #e6ae0d;
-  --gold-dark: #d4a000;
+  --gold: #FFD700;
+  --gold-dark: #DAB600;
   --black: #100c08;
   --smoke: #f5f5f5;
   --light-gray: #e0e0e0;

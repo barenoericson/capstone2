@@ -26,6 +26,9 @@ class Viewing extends Model
         'buyer_notes',
         'reminder_sent',
         'reminder_sent_at',
+        'google_calendar_event_id',
+        'approved_at',
+        'approved_by_user_id',
     ];
 
     /**
@@ -36,6 +39,7 @@ class Viewing extends Model
         'viewing_time' => 'datetime:H:i:s',
         'reminder_sent' => 'boolean',
         'reminder_sent_at' => 'datetime',
+        'approved_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -47,6 +51,7 @@ class Viewing extends Model
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
     const STATUS_COMPLETED = 'completed';
+    const STATUS_NEGOTIATING = 'negotiating';
 
     /**
      * Time slot enumeration
@@ -81,6 +86,19 @@ class Viewing extends Model
     public function buyer()
     {
         return $this->belongsTo(User::class, 'buyer_id');
+    }
+
+    public function negotiations()
+    {
+        return $this->hasMany(ViewingNegotiation::class);
+    }
+
+    public function latestProposal()
+    {
+        return $this->negotiations()
+            ->where('status', ViewingNegotiation::STATUS_PENDING)
+            ->latest()
+            ->first();
     }
 
     /**
@@ -159,6 +177,7 @@ class Viewing extends Model
             self::STATUS_APPROVED => 'Approved',
             self::STATUS_REJECTED => 'Rejected',
             self::STATUS_COMPLETED => 'Completed',
+            self::STATUS_NEGOTIATING => 'Negotiating',
             default => 'Unknown',
         };
     }
@@ -210,6 +229,11 @@ class Viewing extends Model
     public function isCompleted()
     {
         return $this->status === self::STATUS_COMPLETED;
+    }
+
+    public function isNegotiating()
+    {
+        return $this->status === self::STATUS_NEGOTIATING;
     }
 
     /**

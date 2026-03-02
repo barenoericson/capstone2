@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Agent;
+use App\Models\AgentApplication;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
+use App\Models\PropertyFlag;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
@@ -258,24 +261,25 @@ class AdminController extends Controller
      */
 
     /**
-     * Get pending agents for verification
+     * Get pending agent applications for verification
      */
     public function pendingAgents(Request $request)
     {
         try {
-            $agents = Agent::where('verification_status', Agent::VERIFICATION_PENDING)
+            $applications = AgentApplication::pending()
                 ->with('user')
+                ->orderBy('applied_at', 'desc')
                 ->paginate($request->get('per_page', 15));
 
             return response()->json([
                 'success' => true,
-                'data' => $agents,
+                'data' => $applications,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch pending agents',
+                'message' => 'Failed to fetch pending applications',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -304,39 +308,68 @@ class AdminController extends Controller
     }
 
     /**
-     * Verify agent
+     * Approve agent application (creates Agent record + updates user role)
      */
     public function verifyAgent(Request $request, $id)
     {
         try {
-            $agent = Agent::findOrFail($id);
+            $application = AgentApplication::with('user')->findOrFail($id);
 
-            if ($agent->isVerified()) {
+            if ($application->status === 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Agent is already verified',
+                    'message' => 'Application is already approved',
                 ], 400);
             }
 
-            $agent->verify(auth()->id());
+            // Approve the application
+            $application->approve();
+
+            // Create Agent record if not exists
+            $existingAgent = Agent::where('user_id', $application->user_id)->first();
+            if (!$existingAgent) {
+                Agent::create([
+                    'user_id'                    => $application->user_id,
+                    'real_estate_license_number'  => $application->license_number,
+                    'prc_id_number'              => $application->prc_id,
+                    'accreditation'              => $application->accreditation,
+                    'company_name'               => $application->company_name,
+                    'company_address'            => $application->company_address,
+                    'bio'                        => $application->bio,
+                    'verification_status'        => 'verified',
+                    'verified_at'                => now(),
+                    'verified_by_admin_id'       => auth()->id(),
+                    'license_expiry_date'        => $application->license_expiry_date,
+                ]);
+            }
+
+            AuditLog::create([
+                'user_id'     => auth()->id(),
+                'action'      => 'agent_application_approved',
+                'action_type' => 'verify',
+                'model_type'  => 'AgentApplication',
+                'model_id'    => $application->id,
+                'description' => "Agent application by {$application->user->name} approved by admin",
+                'ip_address'  => $request->ip(),
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Agent verified successfully',
-                'data' => $agent,
+                'message' => 'Agent application approved successfully',
+                'data' => $application,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to verify agent',
+                'message' => 'Failed to approve application',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Reject agent verification
+     * Reject agent application
      */
     public function rejectAgent(Request $request, $id)
     {
@@ -345,21 +378,31 @@ class AdminController extends Controller
                 'rejection_reason' => 'required|string|max:500',
             ]);
 
-            $agent = Agent::findOrFail($id);
+            $application = AgentApplication::with('user')->findOrFail($id);
 
-            if ($agent->isRejected()) {
+            if ($application->status === 'rejected') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Agent verification is already rejected',
+                    'message' => 'Application is already rejected',
                 ], 400);
             }
 
-            $agent->reject(auth()->id(), $validated['rejection_reason']);
+            $application->reject($validated['rejection_reason']);
+
+            AuditLog::create([
+                'user_id'     => auth()->id(),
+                'action'      => 'agent_application_rejected',
+                'action_type' => 'reject',
+                'model_type'  => 'AgentApplication',
+                'model_id'    => $application->id,
+                'description' => "Agent application by {$application->user->name} rejected by admin",
+                'ip_address'  => $request->ip(),
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Agent verification rejected',
-                'data' => $agent,
+                'message' => 'Agent application rejected',
+                'data' => $application,
             ], 200);
 
         } catch (ValidationException $e) {
@@ -371,7 +414,7 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to reject agent',
+                'message' => 'Failed to reject application',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -759,6 +802,8 @@ class AdminController extends Controller
             $totalPendingAgents = Agent::where('verification_status', Agent::VERIFICATION_PENDING)->count();
             $totalPendingPhotos = PropertyPhoto::where('approval_status', PropertyPhoto::STATUS_PENDING)->count();
 
+            $flaggedProperties = PropertyFlag::where('status', PropertyFlag::STATUS_PENDING)->count();
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -769,6 +814,7 @@ class AdminController extends Controller
                     'total_properties' => $totalProperties,
                     'active_properties' => $activeProperties,
                     'pending_photos' => $totalPendingPhotos,
+                    'flagged_properties' => $flaggedProperties,
                     'users_by_role' => [
                         'buyers' => User::where('role', 'buyer')->count(),
                         'agents' => User::where('role', 'agent')->count(),
@@ -850,6 +896,274 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch recent activity',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================================
+     * CREATE ADMIN
+     * ============================================================================
+     */
+
+    /**
+     * Create a new admin user account
+     */
+    public function createAdmin(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8|confirmed',
+                'phone' => 'nullable|string|max:20',
+            ]);
+
+            $admin = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'phone' => $validated['phone'] ?? null,
+                'role' => 'admin',
+                'status' => 'active',
+            ]);
+
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'admin_created',
+                'action_type' => 'create',
+                'model_type' => 'User',
+                'model_id' => $admin->id,
+                'description' => "New admin account created: {$admin->name} ({$admin->email})",
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Admin account created successfully',
+                'data' => $admin,
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create admin',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================================
+     * FLAGGED PROPERTIES
+     * ============================================================================
+     */
+
+    /**
+     * Get flagged properties
+     */
+    public function getFlaggedProperties(Request $request)
+    {
+        try {
+            $query = PropertyFlag::with(['property.agent.user', 'property.photos', 'reviewer'])
+                ->orderBy('flagged_at', 'desc');
+
+            if ($request->has('status') && $request->status) {
+                $query->where('status', $request->status);
+            }
+
+            $flags = $query->paginate($request->get('per_page', 15));
+
+            return response()->json(['success' => true, 'data' => $flags], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch flagged properties',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Review a flagged property (approve = clear flag, dismiss = take action)
+     */
+    public function reviewFlaggedProperty(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'action' => 'required|in:approve,dismiss',
+                'admin_notes' => 'nullable|string|max:1000',
+                'suspend_agent' => 'nullable|boolean',
+                'delete_property' => 'nullable|boolean',
+            ]);
+
+            $flag = PropertyFlag::with('property.agent.user')->findOrFail($id);
+
+            $flag->update([
+                'status' => $validated['action'] === 'approve'
+                    ? PropertyFlag::STATUS_APPROVED
+                    : PropertyFlag::STATUS_DISMISSED,
+                'reviewed_at' => now(),
+                'reviewed_by' => auth()->id(),
+                'admin_notes' => $validated['admin_notes'] ?? null,
+            ]);
+
+            // Optional: suspend agent
+            if ($validated['action'] === 'dismiss' && !empty($validated['suspend_agent'])) {
+                $agentUser = $flag->property->agent->user ?? null;
+                if ($agentUser) {
+                    $agentUser->suspend();
+                    AuditLog::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'user_suspended_via_flag',
+                        'action_type' => 'update',
+                        'model_type' => 'User',
+                        'model_id' => $agentUser->id,
+                        'description' => "Agent {$agentUser->name} suspended due to flagged property",
+                        'ip_address' => $request->ip(),
+                    ]);
+                }
+            }
+
+            // Optional: delete property
+            if ($validated['action'] === 'dismiss' && !empty($validated['delete_property'])) {
+                $property = $flag->property;
+                if ($property) {
+                    AuditLog::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'property_deleted_via_flag',
+                        'action_type' => 'delete',
+                        'model_type' => 'Property',
+                        'model_id' => $property->id,
+                        'description' => "Property '{$property->title}' deleted due to AI flag",
+                        'ip_address' => $request->ip(),
+                    ]);
+                    $property->delete();
+                }
+            }
+
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'flag_reviewed',
+                'action_type' => $validated['action'] === 'approve' ? 'approve' : 'reject',
+                'model_type' => 'PropertyFlag',
+                'model_id' => $flag->id,
+                'description' => "Property flag #{$flag->id} " . ($validated['action'] === 'approve' ? 'cleared' : 'actioned'),
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Flag reviewed successfully',
+                'data' => $flag,
+            ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to review flag',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================================
+     * ANALYTICS
+     * ============================================================================
+     */
+
+    /**
+     * Get analytics data with trends
+     */
+    public function analyticsData(Request $request)
+    {
+        try {
+            $period = (int) $request->get('period', 30);
+            if (!in_array($period, [7, 30, 90])) {
+                $period = 30;
+            }
+
+            // User registration trend
+            $userTrend = User::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+                ->where('created_at', '>=', now()->subDays($period))
+                ->groupByRaw('DATE(created_at)')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
+
+            // Property listing trend
+            $propertyTrend = Property::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+                ->where('created_at', '>=', now()->subDays($period))
+                ->groupByRaw('DATE(created_at)')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
+
+            // Top 5 cities by property count
+            $topCities = Property::selectRaw('city, COUNT(*) as count')
+                ->whereNotNull('city')
+                ->where('city', '!=', '')
+                ->groupBy('city')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->get();
+
+            // Top 5 agents by listing count
+            $topAgents = Agent::with('user')
+                ->withCount('properties')
+                ->orderByDesc('properties_count')
+                ->limit(5)
+                ->get()
+                ->map(fn($a) => [
+                    'name' => $a->user->name ?? 'Unknown',
+                    'properties_count' => $a->properties_count,
+                    'average_rating' => $a->average_rating ?? null,
+                ]);
+
+            // Build date-labeled arrays
+            $dates = collect(range(0, $period - 1))
+                ->map(fn($i) => now()->subDays($period - 1 - $i)->toDateString());
+
+            $userTrendArray = $dates->map(fn($d) => [
+                'date' => $d,
+                'count' => (int) ($userTrend[$d]->count ?? 0),
+            ])->values();
+
+            $propertyTrendArray = $dates->map(fn($d) => [
+                'date' => $d,
+                'count' => (int) ($propertyTrend[$d]->count ?? 0),
+            ])->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'period' => $period,
+                    'user_trend' => $userTrendArray,
+                    'property_trend' => $propertyTrendArray,
+                    'top_cities' => $topCities,
+                    'top_agents' => $topAgents,
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch analytics',
                 'error' => $e->getMessage(),
             ], 500);
         }

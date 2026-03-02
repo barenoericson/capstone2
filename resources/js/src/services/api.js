@@ -326,11 +326,14 @@ export const documentsAPI = {
     return apiClient.get('/buyer/documents');
   },
 
-  // Sign document
-  sign: (documentId, signatureData) => {
-    return apiClient.post(`/buyer/documents/${documentId}/sign`, {
-      signature: signatureData,
-    });
+  // Sign document (buyer)
+  sign: (documentId, data) => {
+    return apiClient.post(`/buyer/documents/${documentId}/sign`, data);
+  },
+
+  // Sign document (agent)
+  agentSign: (documentId, data) => {
+    return apiClient.post(`/agent/documents/${documentId}/sign`, data);
   },
 
   // Download document
@@ -350,75 +353,53 @@ export const documentsAPI = {
 // ADMIN ENDPOINTS
 // ============================================
 export const adminAPI = {
-  // Get dashboard overview
-  getDashboardOverview: () => {
-    return apiClient.get('/admin/dashboard/overview');
-  },
+  // Dashboard
+  getDashboardOverview: () => apiClient.get('/admin/dashboard/overview'),
+  getDashboardStats: (params = {}) => apiClient.get('/admin/dashboard/stats', { params }),
+  getRecentActivity: (params = {}) => apiClient.get('/admin/dashboard/recent-activity', { params }),
 
-  // Get all users
-  getUsers: (filters = {}) => {
-    return apiClient.get('/admin/users', { params: filters });
-  },
+  // User Management
+  getUsers: (filters = {}) => apiClient.get('/admin/users', { params: filters }),
+  getUserDetail: (userId) => apiClient.get(`/admin/users/${userId}`),
+  updateUser: (userId, data) => apiClient.put(`/admin/users/${userId}`, data),
+  deleteUser: (userId) => apiClient.delete(`/admin/users/${userId}`),
+  suspendUser: (userId) => apiClient.post(`/admin/users/${userId}/suspend`),
+  activateUser: (userId) => apiClient.post(`/admin/users/${userId}/activate`),
 
-  // Get pending agents
-  getPendingAgents: () => {
-    return apiClient.get('/admin/agents/pending');
-  },
+  // Agent Management
+  getAgents: (filters = {}) => apiClient.get('/admin/agents', { params: filters }),
+  getPendingAgents: () => apiClient.get('/admin/agents/pending'),
+  getVerifiedAgents: () => apiClient.get('/admin/agents/verified'),
+  getRejectedAgents: () => apiClient.get('/admin/agents/rejected'),
+  getAgentDetail: (agentId) => apiClient.get(`/admin/agents/${agentId}`),
+  verifyAgent: (appId) => apiClient.post(`/admin/agents/${appId}/verify`),
+  rejectAgent: (appId, rejectionReason) => apiClient.post(`/admin/agents/${appId}/reject`, { rejection_reason: rejectionReason }),
 
-  // Verify agent
-  verifyAgent: (agentId) => {
-    return apiClient.post(`/admin/agents/${agentId}/verify`);
-  },
+  // Property Management
+  getProperties: (filters = {}) => apiClient.get('/admin/properties', { params: filters }),
+  getPropertyDetail: (propertyId) => apiClient.get(`/admin/properties/${propertyId}`),
+  deleteProperty: (propertyId) => apiClient.delete(`/admin/properties/${propertyId}`),
+  featureProperty: (propertyId) => apiClient.post(`/admin/properties/${propertyId}/feature`),
+  unfeatureProperty: (propertyId) => apiClient.post(`/admin/properties/${propertyId}/unfeature`),
 
-  // Reject agent
-  rejectAgent: (agentId, reason) => {
-    return apiClient.post(`/admin/agents/${agentId}/reject`, { reason });
-  },
+  // Photo Moderation
+  getPendingPhotos: () => apiClient.get('/admin/photos/pending'),
+  approvePhoto: (photoId) => apiClient.post(`/admin/photos/${photoId}/approve`),
+  rejectPhoto: (photoId) => apiClient.post(`/admin/photos/${photoId}/reject`),
 
-  // Get all properties
-  getProperties: (filters = {}) => {
-    return apiClient.get('/admin/properties', { params: filters });
-  },
+  // Audit Logs
+  getAuditLogs: (filters = {}) => apiClient.get('/admin/audit-logs', { params: filters }),
+  getAuditLogDetail: (logId) => apiClient.get(`/admin/audit-logs/${logId}`),
 
-  // Delete property
-  deleteProperty: (propertyId) => {
-    return apiClient.delete(`/admin/properties/${propertyId}`);
-  },
+  // Create Admin
+  createAdmin: (data) => apiClient.post('/admin/users/create-admin', data),
 
-  // Get pending photos
-  getPendingPhotos: () => {
-    return apiClient.get('/admin/photos/pending');
-  },
+  // Flagged Properties
+  getFlaggedProperties: (filters = {}) => apiClient.get('/admin/flagged-properties', { params: filters }),
+  reviewFlaggedProperty: (flagId, data) => apiClient.post(`/admin/flagged-properties/${flagId}/review`, data),
 
-  // Approve photo
-  approvePhoto: (photoId) => {
-    return apiClient.post(`/admin/photos/${photoId}/approve`);
-  },
-
-  // Reject photo
-  rejectPhoto: (photoId, reason) => {
-    return apiClient.post(`/admin/photos/${photoId}/reject`, { reason });
-  },
-
-  // Get audit logs
-  getAuditLogs: (filters = {}) => {
-    return apiClient.get('/admin/audit-logs', { params: filters });
-  },
-
-  // Get notifications
-  getNotifications: () => {
-    return apiClient.get('/admin/notifications');
-  },
-
-  // Suspend user
-  suspendUser: (userId, reason) => {
-    return apiClient.post(`/admin/users/${userId}/suspend`, { reason });
-  },
-
-  // Reactivate user
-  reactivateUser: (userId) => {
-    return apiClient.post(`/admin/users/${userId}/reactivate`);
-  },
+  // Analytics
+  getAnalyticsData: (params = {}) => apiClient.get('/admin/dashboard/analytics', { params }),
 };
 
 // ============================================

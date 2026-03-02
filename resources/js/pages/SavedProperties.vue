@@ -276,8 +276,8 @@ export default {
 
 <style scoped>
 :root {
-  --gold: #e6ae0d;
-  --gold-dark: #d4a000;
+  --gold: #FFD700;
+  --gold-dark: #DAB600;
   --black: #100c08;
   --smoke: #f5f5f5;
   --light-gray: #e0e0e0;

@@ -423,17 +423,12 @@
       </div>
     </transition>
 
-    <!-- RealtyLinkPH Buddy Chat -->
-    <ChatBubble />
   </div>
 </template>
 
 <script>
-import ChatBubble from '../components/ChatBubble.vue';
-
 export default {
   name: 'Dashboard',
-  components: { ChatBubble },
   data() {
     return {
       // User Data
@@ -675,6 +670,8 @@ export default {
       this.showNotifBell = !this.showNotifBell;
       if (this.showNotifBell) {
         this.loadNotifications();
+        // Mark all notifications as read when the panel is opened
+        this.markAllNotificationsRead();
       }
     },
 
@@ -824,7 +821,7 @@ export default {
   mounted() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      this.$router.push('/login');
+      this.$router.push('/');
       return;
     }
     this.loadUserData();
@@ -869,8 +866,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --charcoal-smoke: #2a2420;
   --light-gray: #e0e0e0;
   --border-gray: #ddd;
@@ -1204,7 +1201,7 @@ export default {
   outline: none;
   border-color: var(--palace-gold);
   background: white;
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 /* Page Wrapper */
@@ -1230,7 +1227,7 @@ export default {
   color: var(--smoky-black);
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(230, 174, 13, 0.2);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -1510,7 +1507,7 @@ export default {
   font-weight: 800;
   font-size: 14px;
   font-family: var(--font-display);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .featured-badge {
@@ -2249,7 +2246,7 @@ export default {
   padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
   font-weight: 700; font-size: 13px; color: #100c08;
 }
-.notif-view-all { font-size: 12px; color: #e6ae0d; text-decoration: none; font-weight: 600; }
+.notif-view-all { font-size: 12px; color: #FFD700; text-decoration: none; font-weight: 600; }
 .notif-empty { padding: 20px 16px; text-align: center; color: #999; font-size: 13px; }
 .notif-item {
   display: flex; align-items: center; gap: 10px;
@@ -2258,7 +2255,7 @@ export default {
 .notif-item:hover { background: #faf9f5; }
 .notif-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   color: #100c08; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px;
 }
@@ -2269,28 +2266,28 @@ export default {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .notif-unread {
-  background: #e6ae0d; color: #100c08;
+  background: #FFD700; color: #100c08;
   border-radius: 999px; padding: 1px 7px;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 .notif-mark-all {
   background: none; border: none; cursor: pointer;
-  font-size: 11px; color: #e6ae0d; font-weight: 600;
+  font-size: 11px; color: #FFD700; font-weight: 600;
   transition: color .2s;
 }
-.notif-mark-all:hover { color: #d4a000; }
+.notif-mark-all:hover { color: #DAB600; }
 .notif-unread-bg { background: #fffdf5; }
 .notif-icon-avatar { font-size: 18px; background: #f5f5f5; }
 .notif-time { font-size: 11px; color: #aaa; margin: 2px 0 0; }
 .notif-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: #e6ae0d; flex-shrink: 0;
+  background: #FFD700; flex-shrink: 0;
 }
 .notif-header-sub { border-top: 1px solid #f0f0f0; margin-top: 4px; }
 .notif-dropdown { max-height: 420px; overflow-y: auto; }
 .no-messages { padding: 16px; text-align: center; color: #999; font-size: 13px; }
 .unread-dot {
-  background: #e6ae0d; color: #100c08;
+  background: #FFD700; color: #100c08;
   border-radius: 999px; padding: 1px 7px;
   font-size: 11px; font-weight: 700; flex-shrink: 0; align-self: center;
 }

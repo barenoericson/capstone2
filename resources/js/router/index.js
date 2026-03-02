@@ -28,6 +28,12 @@ const routes = [
         name: 'ResetPassword',
         meta: { transition: 'fade' },
     },
+    {
+        path: '/verify-email',
+        component: () => import('../pages/VerifyEmail.vue'),
+        name: 'VerifyEmail',
+        meta: { transition: 'fade' },
+    },
 
     // ============================================
     // BUYER ROUTES
@@ -89,14 +95,13 @@ const routes = [
         },
     },
 
-    // ✅ Settings page
+    // ✅ Settings page (accessible to both buyers and agents)
     {
         path: '/settings',
         component: () => import('../pages/Settings.vue'),
         name: 'Settings',
         meta: {
             requiresAuth: true,
-            role: 'buyer',
             transition: 'fade',
         },
     },
@@ -208,6 +213,17 @@ const routes = [
         },
     },
 
+    {
+        path: '/agent/calendar',
+        component: () => import('../pages/Agent/AgentCalendar.vue'),
+        name: 'AgentCalendar',
+        meta: {
+            requiresAuth: true,
+            role: 'agent',
+            transition: 'fade',
+        },
+    },
+
     // ✅ Documents (agent)
     {
         path: '/agent/documents',
@@ -269,6 +285,33 @@ const routes = [
         path: '/agent/conversations',
         redirect: '/conversations',
     },
+
+    // ============================================
+    // ADMIN ROUTES
+    // ============================================
+    {
+        path: '/admin/dashboard',
+        component: () => import('../pages/AdminDashboard.vue'),
+        name: 'AdminDashboard',
+        meta: {
+            requiresAuth: true,
+            role: 'admin',
+            transition: 'fade',
+        },
+    },
+
+    // ============================================
+    // DOCUMENT EDITOR (buyer & agent)
+    // ============================================
+    {
+        path: '/documents/:id/edit',
+        component: () => import('../pages/DocumentEditor.vue'),
+        name: 'DocumentEditor',
+        meta: {
+            requiresAuth: true,
+            transition: 'fade',
+        },
+    },
 ];
 
 const router = createRouter({
@@ -296,7 +339,9 @@ router.beforeEach((to, from, next) => {
     if (to.meta.role && user.role !== to.meta.role) {
         console.log(`❌ Role mismatch. Required: ${to.meta.role}, Got: ${user.role}`);
         // Redirect to appropriate dashboard based on role
-        if (user.role === 'agent') {
+        if (user.role === 'admin') {
+            next('/admin/dashboard');
+        } else if (user.role === 'agent') {
             next('/agent/dashboard');
         } else {
             next('/dashboard');

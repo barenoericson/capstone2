@@ -1,205 +1,130 @@
 <template>
   <div class="landing-page">
+    <!-- ═══════════════════════════════════════ -->
+    <!-- NAVBAR                                  -->
+    <!-- ═══════════════════════════════════════ -->
     <nav class="navbar" :class="{ scrolled: isScrolled }">
       <div class="container navbar-content">
         <router-link to="/" class="brand-logo">
-          RealtyLink<span class="text-mustard">PH</span>
+          RealtyLink<span class="brand-gold">PH</span>
         </router-link>
-
-        <div class="nav-links hidden-mobile">
-          <a href="#about">About Us</a>
-          <a href="#properties">Properties</a>
-          <a href="#blogs">Blogs</a>
-        </div>
-
         <div class="nav-actions">
-          <button @click="showLoginModal = true" class="btn btn-black btn-pill">
-            Login
-          </button>
+          <button @click="showLoginModal = true" class="btn-nav-login">Login</button>
+          <button @click="showRegisterModal = true" class="btn-nav-register">Get Started</button>
         </div>
       </div>
     </nav>
 
+    <!-- ═══════════════════════════════════════ -->
+    <!-- HERO SECTION                            -->
+    <!-- ═══════════════════════════════════════ -->
     <section class="hero-section">
-      <div class="container hero-grid">
-        <!-- LEFT CONTENT -->
-        <div class="hero-text-content">
-          <h1 class="hero-heading">
-            Gateway to <br />
-            <span class="text-highlight">RealtyLinkPH</span>
-          </h1>
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
+        <h1 class="hero-title">
+          Find Your Dream Home<br />in the <span class="text-gold">Philippines</span>
+        </h1>
+        <p class="hero-subtitle">
+          Browse verified properties from trusted agents. Schedule viewings, send offers, and sign documents — all in one place.
+        </p>
 
-          <p class="hero-subtext">
-            Discover a curated collection of dream homes at your fingertips,
-            simplified and personalized for your lifestyle.
-          </p>
-
-          <div class="hero-buttons">
-            <button @click="showRegisterModal = true" class="btn btn-black btn-lg">
-              Discover Now
-            </button>
-          </div>
-        </div>
-
-        <!-- RIGHT IMAGE -->
-        <div class="hero-image-wrapper">
-          <div class="image-blobs"></div>
-          <img
-            src="/images/logo/landingpagepicture.jpg"
-            alt="Modern House"
-            class="hero-house-img"
-          />
-        </div>
-      </div>
-
-      <!-- SEARCH BAR -->
-      <div class="search-overlap-container">
-        <div class="search-bar">
-          <div class="search-group">
-            <div class="label-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span>Location</span>
-            </div>
+        <!-- Search Bar -->
+        <div class="hero-search-bar">
+          <div class="search-field">
+            <label>Location</label>
             <input
               type="text"
-              placeholder="IT Park, Cebu City"
-              class="search-input"
+              v-model="searchLocation"
+              placeholder="e.g., Cebu City, Makati"
             />
           </div>
-
-          <div class="divider"></div>
-
-          <div class="search-group">
-            <div class="label-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-2a2 2 0 0 1 4 0v2"></path>
-              </svg>
-              <span>Property Type</span>
-            </div>
-            <select class="search-select">
-              <option>Condominuim</option>
-              <option>Houses</option>
-              <option>Penthouse</option>
-              <option>Commercial Lot</option>
+          <div class="search-divider"></div>
+          <div class="search-field">
+            <label>Property Type</label>
+            <select v-model="searchType">
+              <option value="">All Types</option>
+              <option value="house">House</option>
+              <option value="condo">Condo</option>
+              <option value="apartment">Apartment</option>
+              <option value="commercial">Commercial</option>
             </select>
           </div>
-
-          <div class="divider"></div>
-
-          <div class="search-group">
-            <div class="label-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <span>Price Range</span>
-            </div>
-            <select class="search-select">
-              <option> ₱1,000,000 -  ₱10,000,000 / mo</option>
-              <option> ₱20,000,000 -  ₱40,000,000/ mo</option>
-              <option> ₱50,000,000+ / mo</option>
+          <div class="search-divider"></div>
+          <div class="search-field">
+            <label>Price Range</label>
+            <select v-model="searchPrice">
+              <option value="">Any Price</option>
+              <option value="0-5000000">Under 5M</option>
+              <option value="5000000-10000000">5M - 10M</option>
+              <option value="10000000-25000000">10M - 25M</option>
+              <option value="25000000-50000000">25M - 50M</option>
+              <option value="50000000+">50M+</option>
             </select>
           </div>
-
-          <button class="search-btn-circle">
+          <button @click="handleSearch" class="search-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+            Search
           </button>
         </div>
-      </div>
-    </section>
 
-    <!-- ═══════════════════════════════════════ -->
-    <!-- ABOUT SECTION                          -->
-    <!-- ═══════════════════════════════════════ -->
-    <section id="about" class="about-section">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-label">About Us</span>
-          <h2 class="section-title">Connecting Buyers &amp; Agents<br /><span class="text-mustard">Across the Philippines</span></h2>
-          <p class="section-desc">RealtyLinkPH is a modern real estate platform built to simplify property discovery, agent communication, viewing scheduling, and document signing — all in one place.</p>
-        </div>
-
-        <!-- Mission & Vision -->
-        <div class="mv-grid">
-          <div class="mv-card">
-            <div class="mv-icon">🎯</div>
-            <h3 class="mv-title">Our Mission</h3>
-            <p class="mv-text">To empower every Filipino with transparent, accessible, and trustworthy real estate services — from property discovery to final document signing.</p>
+        <!-- Stats -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">500+</span>
+            <span class="stat-label">Properties</span>
           </div>
-          <div class="mv-card">
-            <div class="mv-icon">🔭</div>
-            <h3 class="mv-title">Our Vision</h3>
-            <p class="mv-text">To become the leading digital real estate ecosystem in the Philippines, where every property transaction is seamless, secure, and stress-free.</p>
+          <div class="stat-dot"></div>
+          <div class="stat-item">
+            <span class="stat-number">100+</span>
+            <span class="stat-label">Verified Agents</span>
           </div>
-          <div class="mv-card">
-            <div class="mv-icon">💡</div>
-            <h3 class="mv-title">Our Values</h3>
-            <p class="mv-text">Integrity, transparency, and innovation guide everything we do — ensuring every buyer and agent experience is built on trust.</p>
-          </div>
-        </div>
-
-        <!-- Team -->
-        <div class="team-header-row">
-          <h3 class="team-heading">Meet the Team</h3>
-          <p class="team-subheading">The passionate people behind RealtyLinkPH</p>
-        </div>
-        <div class="team-grid">
-          <div v-for="member in teamMembers" :key="member.name" class="team-card">
-            <div class="team-avatar" :style="{ background: member.color }">
-              {{ member.initials }}
-            </div>
-            <h4 class="team-name">{{ member.name }}</h4>
-            <p class="team-role">{{ member.role }}</p>
+          <div class="stat-dot"></div>
+          <div class="stat-item">
+            <span class="stat-number">1,000+</span>
+            <span class="stat-label">Happy Buyers</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════ -->
-    <!-- PROPERTIES SECTION                     -->
+    <!-- FEATURED PROPERTIES                     -->
     <!-- ═══════════════════════════════════════ -->
-    <section id="properties" class="pub-properties-section">
+    <section class="properties-section">
       <div class="container">
         <div class="section-header">
-          <span class="section-label">Browse Listings</span>
-          <h2 class="section-title">Explore Our <span class="text-mustard">Latest Properties</span></h2>
-          <p class="section-desc">Discover quality homes, condos, and commercial spaces from verified agents across the Philippines. Login to save favorites and schedule viewings.</p>
+          <span class="section-tag">Featured Listings</span>
+          <h2 class="section-title">Explore Our Latest Properties</h2>
+          <p class="section-desc">Discover quality homes, condos, and commercial spaces from verified agents across the Philippines.</p>
         </div>
 
         <!-- Loading -->
         <div v-if="propertiesLoading" class="prop-loading">
-          <div class="prop-loading-spinner"></div>
+          <div class="prop-spinner"></div>
           <p>Loading properties...</p>
         </div>
 
         <!-- Grid -->
-        <div v-else-if="landingProperties.length" class="pub-prop-grid">
-          <div v-for="property in landingProperties" :key="property.id" class="pub-prop-card">
-            <div class="pub-prop-image-wrap">
-              <img v-if="getCoverPhoto(property)" :src="getCoverPhoto(property)" :alt="property.title" class="pub-prop-img" />
-              <div v-else class="pub-prop-placeholder">🏠</div>
-              <div class="pub-prop-overlay">
-                <button @click="showLoginModal = true" class="btn-view-prop">👁️ View Details</button>
-              </div>
-              <div class="pub-price-tag">₱{{ formatPrice(property.price) }}</div>
-              <div v-if="property.featured" class="pub-featured-badge">⭐ Featured</div>
+        <div v-else-if="landingProperties.length" class="properties-grid">
+          <div v-for="property in landingProperties" :key="property.id" class="property-card" @click="showLoginModal = true">
+            <div class="card-image-wrap">
+              <img v-if="getCoverPhoto(property)" :src="getCoverPhoto(property)" :alt="property.title" class="card-image" />
+              <div v-else class="card-placeholder">🏠</div>
+              <div class="card-price">₱{{ formatPrice(property.price) }}</div>
+              <div v-if="property.featured" class="card-featured">Featured</div>
             </div>
-            <div class="pub-prop-body">
-              <span class="pub-prop-type-badge">{{ formatPropertyType(property.property_type) }}</span>
-              <h4 class="pub-prop-title">{{ property.title }}</h4>
-              <p class="pub-prop-location">📍 {{ property.city }}, {{ property.province }}</p>
-              <div class="pub-prop-specs">
-                <span v-if="property.bedrooms">🛏️ {{ property.bedrooms }} bed</span>
-                <span v-if="property.bathrooms">🚿 {{ property.bathrooms }} bath</span>
-                <span v-if="property.area_sqm">📐 {{ property.area_sqm }} sqm</span>
+            <div class="card-body">
+              <span class="card-type">{{ formatPropertyType(property.property_type) }}</span>
+              <h3 class="card-title">{{ property.title }}</h3>
+              <p class="card-location">📍 {{ property.city }}, {{ property.province }}</p>
+              <div class="card-specs">
+                <span v-if="property.bedrooms">🛏️ {{ property.bedrooms }}</span>
+                <span v-if="property.bathrooms">🚿 {{ property.bathrooms }}</span>
+                <span v-if="property.floor_area">📐 {{ property.floor_area }} sqm</span>
               </div>
-              <button @click="showLoginModal = true" class="btn-prop-cta">Login to View →</button>
             </div>
           </div>
         </div>
@@ -207,50 +132,82 @@
         <!-- Empty -->
         <div v-else class="prop-empty">No properties available at the moment.</div>
 
-        <!-- See all CTA -->
-        <div v-if="landingProperties.length" class="prop-cta-row">
-          <button @click="showLoginModal = true" class="btn-see-all">Create Account to See All Properties →</button>
+        <!-- CTA -->
+        <div v-if="landingProperties.length" class="section-cta">
+          <button @click="showRegisterModal = true" class="btn-outline">See All Properties →</button>
         </div>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════ -->
-    <!-- BLOGS SECTION                          -->
+    <!-- HOW IT WORKS                            -->
     <!-- ═══════════════════════════════════════ -->
-    <section id="blogs" class="blogs-section">
+    <section class="how-section">
       <div class="container">
         <div class="section-header">
-          <span class="section-label">Insights &amp; Updates</span>
-          <h2 class="section-title">Real Estate <span class="text-mustard">Blog</span></h2>
-          <p class="section-desc">Stay informed with the latest real estate tips, market insights, and property guides for Filipino buyers and investors.</p>
+          <span class="section-tag">How It Works</span>
+          <h2 class="section-title">Your Journey to Homeownership</h2>
         </div>
 
-        <div class="blogs-grid">
-          <div v-for="blog in blogPosts" :key="blog.id" class="blog-card">
-            <div class="blog-image-wrap" :style="{ background: blog.gradient }">
-              <span class="blog-category-badge">{{ blog.category }}</span>
-            </div>
-            <div class="blog-body">
-              <p class="blog-date">{{ blog.date }}</p>
-              <h3 class="blog-title">{{ blog.title }}</h3>
-              <p class="blog-excerpt">{{ blog.excerpt }}</p>
-              <button @click="showLoginModal = true" class="blog-read-more">Read More →</button>
-            </div>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-icon">🔍</div>
+            <div class="step-number">01</div>
+            <h3>Search Properties</h3>
+            <p>Browse thousands of verified listings with powerful filters for location, type, and price range.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">💬</div>
+            <div class="step-number">02</div>
+            <h3>Connect with Agents</h3>
+            <p>Message verified real estate agents directly, view their profiles, and get expert guidance.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">📝</div>
+            <div class="step-number">03</div>
+            <h3>Schedule & Sign</h3>
+            <p>Book property viewings with calendar sync, and sign documents digitally — all in one platform.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- LOGIN MODAL -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- CTA BANNER                              -->
+    <!-- ═══════════════════════════════════════ -->
+    <section class="cta-section">
+      <div class="container cta-content">
+        <h2>Ready to Find Your Dream Home?</h2>
+        <p>Create a free account to save properties, schedule viewings, and connect with agents.</p>
+        <button @click="showRegisterModal = true" class="btn-cta">Get Started Free</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- FOOTER                                  -->
+    <!-- ═══════════════════════════════════════ -->
+    <footer class="landing-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          RealtyLink<span>PH</span>
+        </div>
+        <div class="footer-links">
+          <a href="#">Terms of Service</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Contact Us</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 RealtyLinkPH. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- LOGIN MODAL                             -->
+    <!-- ═══════════════════════════════════════ -->
     <transition name="modal-fade">
       <div v-if="showLoginModal" class="modal-overlay" @click="closeLoginModal">
         <div class="modal-content" @click.stop>
-          <!-- CLOSE BUTTON -->
-          <button class="close-btn" @click="closeLoginModal" title="Close">
-            ✕
-          </button>
+          <button class="close-btn" @click="closeLoginModal" title="Close">✕</button>
 
-          <!-- BRAND LOGO -->
           <div class="brand-section">
             <div class="brand-mark">
               <span class="brand-realty">RealtyLink</span><span class="brand-ph">PH</span>
@@ -258,17 +215,13 @@
             <p class="brand-tagline">When Real Estate Meets Innovation</p>
           </div>
 
-          <!-- ═══════════════════════════════════════ -->
-          <!-- LOGIN VIEW                            -->
-          <!-- ═══════════════════════════════════════ -->
+          <!-- LOGIN VIEW -->
           <template v-if="loginView === 'login'">
-            <!-- HEADER -->
             <div class="form-header">
               <h1 class="login-title">Login your account</h1>
               <p class="login-subtitle">Sign in to continue to RealtyLinkPH</p>
             </div>
 
-            <!-- ALERT -->
             <transition name="slide-down">
               <div v-if="loginAlert.show" :class="['alert', `alert-${loginAlert.type}`]">
                 <span class="alert-icon">{{ loginAlert.type === 'error' ? '❌' : '✅' }}</span>
@@ -276,79 +229,44 @@
               </div>
             </transition>
 
-            <!-- FORM -->
             <form @submit.prevent="handleLogin" class="login-form-content">
-              <!-- EMAIL -->
               <div class="form-group">
                 <label for="login-email">Email Address</label>
                 <div class="input-wrapper">
                   <span class="input-icon">📧</span>
-                  <input
-                    id="login-email"
-                    v-model="loginForm.email"
-                    type="email"
-                    placeholder="juan@example.com"
-                    @blur="validateLoginField('email')"
-                    class="form-input"
-                  />
+                  <input id="login-email" v-model="loginForm.email" type="email" placeholder="juan@example.com" @blur="validateLoginField('email')" class="form-input" />
                 </div>
                 <transition name="slide-down">
                   <span v-if="loginErrors.email" class="form-error">{{ loginErrors.email }}</span>
                 </transition>
               </div>
 
-              <!-- PASSWORD -->
               <div class="form-group">
                 <label for="login-password">Password</label>
                 <div class="input-wrapper">
                   <span class="input-icon">🔐</span>
-                  <input
-                    id="login-password"
-                    v-model="loginForm.password"
-                    :type="showLoginPassword ? 'text' : 'password'"
-                    placeholder="Enter your password"
-                    @blur="validateLoginField('password')"
-                    class="form-input"
-                  />
-                  <button
-                    type="button"
-                    class="eye-btn"
-                    @click="showLoginPassword = !showLoginPassword"
-                    :title="showLoginPassword ? 'Hide password' : 'Show password'"
-                  >
-                    {{ showLoginPassword ? '👁️‍🗨️' : '👁️' }}
-                  </button>
+                  <input id="login-password" v-model="loginForm.password" :type="showLoginPassword ? 'text' : 'password'" placeholder="Enter your password" @blur="validateLoginField('password')" class="form-input" />
+                  <button type="button" class="eye-btn" @click="showLoginPassword = !showLoginPassword">{{ showLoginPassword ? '👁️‍🗨️' : '👁️' }}</button>
                 </div>
                 <transition name="slide-down">
                   <span v-if="loginErrors.password" class="form-error">{{ loginErrors.password }}</span>
                 </transition>
               </div>
 
-              <!-- REMEMBER / FORGOT -->
               <div class="form-row">
-                <label class="remember">
-                  <input type="checkbox" v-model="loginForm.remember" />
-                  <span>Remember me</span>
-                </label>
-                <a href="#" class="forgot" @click.prevent="loginView = 'forgot'">
-                  Forgot password?
-                </a>
+                <label class="remember"><input type="checkbox" v-model="loginForm.remember" /><span>Remember me</span></label>
+                <a href="#" class="forgot" @click.prevent="loginView = 'forgot'">Forgot password?</a>
               </div>
 
-              <!-- LOGIN BUTTON -->
               <button type="submit" class="btn-submit btn-login" :disabled="loginLoading">
                 <span v-if="!loginLoading" class="btn-text">Sign In</span>
                 <span v-else class="btn-loading"><span class="spinner"></span>Signing in...</span>
               </button>
             </form>
 
-            <!-- DIVIDER -->
             <div class="form-divider"><span>Don't have an account?</span></div>
-
-            <!-- SIGNUP -->
             <button @click="switchToRegister" class="btn-submit btn-signup">Create New Account</button>
 
-            <!-- FOOTER LINKS -->
             <div class="form-footer">
               <a href="#" class="footer-link">Terms & Conditions</a>
               <span class="separator">•</span>
@@ -356,9 +274,7 @@
             </div>
           </template>
 
-          <!-- ═══════════════════════════════════════ -->
-          <!-- FORGOT PASSWORD VIEW                   -->
-          <!-- ═══════════════════════════════════════ -->
+          <!-- FORGOT PASSWORD VIEW -->
           <template v-else-if="loginView === 'forgot'">
             <div class="form-header">
               <h1 class="login-title">Forgot Password</h1>
@@ -377,13 +293,7 @@
                 <label for="forgot-email">Email Address</label>
                 <div class="input-wrapper">
                   <span class="input-icon">📧</span>
-                  <input
-                    id="forgot-email"
-                    v-model="forgotForm.email"
-                    type="email"
-                    placeholder="juan@example.com"
-                    class="form-input"
-                  />
+                  <input id="forgot-email" v-model="forgotForm.email" type="email" placeholder="juan@example.com" class="form-input" />
                 </div>
                 <transition name="slide-down">
                   <span v-if="forgotErrors.email" class="form-error">{{ forgotErrors.email }}</span>
@@ -397,45 +307,31 @@
             </form>
 
             <div class="form-divider"><span>Remembered your password?</span></div>
-            <button @click="loginView = 'login'" class="btn-submit btn-signup">
-              Back to Login
-            </button>
+            <button @click="loginView = 'login'" class="btn-submit btn-signup">Back to Login</button>
           </template>
 
-          <!-- ═══════════════════════════════════════ -->
-          <!-- FORGOT PASSWORD SENT VIEW              -->
-          <!-- ═══════════════════════════════════════ -->
+          <!-- FORGOT PASSWORD SENT VIEW -->
           <template v-else-if="loginView === 'forgot-sent'">
             <div class="forgot-sent-view">
               <div class="sent-icon">✉️</div>
               <h2 class="sent-title">Check your email</h2>
-              <p class="sent-subtitle">
-                We sent a password reset link to<br />
-                <strong>{{ forgotForm.email }}</strong>
-              </p>
-              <p class="sent-note">
-                Didn't receive it? Check your spam folder or
-                <a href="#" @click.prevent="loginView = 'forgot'" class="resend-link">try again</a>.
-              </p>
-              <button @click="loginView = 'login'" class="btn-submit btn-login" style="margin-top:24px">
-                Back to Login
-              </button>
+              <p class="sent-subtitle">We sent a password reset link to<br /><strong>{{ forgotForm.email }}</strong></p>
+              <p class="sent-note">Didn't receive it? Check your spam folder or <a href="#" @click.prevent="loginView = 'forgot'" class="resend-link">try again</a>.</p>
+              <button @click="loginView = 'login'" class="btn-submit btn-login" style="margin-top:24px">Back to Login</button>
             </div>
           </template>
         </div>
       </div>
     </transition>
 
-    <!-- REGISTER MODAL -->
+    <!-- ═══════════════════════════════════════ -->
+    <!-- REGISTER MODAL                          -->
+    <!-- ═══════════════════════════════════════ -->
     <transition name="modal-fade">
       <div v-if="showRegisterModal" class="modal-overlay" @click="closeRegisterModal">
         <div class="modal-content register-modal-content" @click.stop>
-          <!-- CLOSE BUTTON -->
-          <button class="close-btn" @click="closeRegisterModal" title="Close">
-            ✕
-          </button>
+          <button class="close-btn" @click="closeRegisterModal" title="Close">✕</button>
 
-          <!-- BRAND LOGO -->
           <div class="brand-section">
             <div class="brand-mark">
               <span class="brand-realty">RealtyLink</span><span class="brand-ph">PH</span>
@@ -443,15 +339,11 @@
             <p class="brand-tagline">Join our real estate community</p>
           </div>
 
-          <!-- HEADER -->
           <div class="form-header">
             <h1 class="register-title">Create your account</h1>
-            <p class="register-subtitle">
-              Start your real estate journey today
-            </p>
+            <p class="register-subtitle">Start your real estate journey today</p>
           </div>
 
-          <!-- ALERT -->
           <transition name="slide-down">
             <div v-if="registerAlert.show" :class="['alert', `alert-${registerAlert.type}`]">
               <span class="alert-icon">{{ registerAlert.type === 'error' ? '❌' : '✅' }}</span>
@@ -459,154 +351,60 @@
             </div>
           </transition>
 
-          <!-- FORM -->
           <form @submit.prevent="handleRegister" class="register-form-content">
-            <!-- NAME -->
             <div class="form-group">
               <label for="register-name">Full Name</label>
               <div class="input-wrapper">
                 <span class="input-icon">👤</span>
-                <input
-                  id="register-name"
-                  v-model="registerForm.name"
-                  type="text"
-                  placeholder="Juan Dela Cruz"
-                  @blur="validateRegisterField('name')"
-                  class="form-input"
-                />
+                <input id="register-name" v-model="registerForm.name" type="text" placeholder="Juan Dela Cruz" @blur="validateRegisterField('name')" class="form-input" />
               </div>
-              <transition name="slide-down">
-                <span v-if="registerErrors.name" class="form-error">
-                  {{ registerErrors.name }}
-                </span>
-              </transition>
+              <transition name="slide-down"><span v-if="registerErrors.name" class="form-error">{{ registerErrors.name }}</span></transition>
             </div>
 
-            <!-- EMAIL -->
             <div class="form-group">
               <label for="register-email">Email Address</label>
               <div class="input-wrapper">
                 <span class="input-icon">📧</span>
-                <input
-                  id="register-email"
-                  v-model="registerForm.email"
-                  type="email"
-                  placeholder="juan@example.com"
-                  @blur="validateRegisterField('email')"
-                  class="form-input"
-                />
+                <input id="register-email" v-model="registerForm.email" type="email" placeholder="juan@example.com" @blur="validateRegisterField('email')" class="form-input" />
               </div>
-              <transition name="slide-down">
-                <span v-if="registerErrors.email" class="form-error">
-                  {{ registerErrors.email }}
-                </span>
-              </transition>
+              <transition name="slide-down"><span v-if="registerErrors.email" class="form-error">{{ registerErrors.email }}</span></transition>
             </div>
 
-            <!-- PASSWORD -->
             <div class="form-group">
               <label for="register-password">Password</label>
               <div class="input-wrapper">
                 <span class="input-icon">🔐</span>
-                <input
-                  id="register-password"
-                  v-model="registerForm.password"
-                  :type="showRegisterPassword ? 'text' : 'password'"
-                  placeholder="Minimum 8 characters"
-                  @blur="validateRegisterField('password')"
-                  class="form-input"
-                />
-                <button
-                  type="button"
-                  class="eye-btn"
-                  @click="showRegisterPassword = !showRegisterPassword"
-                  :title="showRegisterPassword ? 'Hide password' : 'Show password'"
-                >
-                  {{ showRegisterPassword ? '👁️‍🗨️' : '👁️' }}
-                </button>
+                <input id="register-password" v-model="registerForm.password" :type="showRegisterPassword ? 'text' : 'password'" placeholder="Minimum 8 characters" @blur="validateRegisterField('password')" class="form-input" />
+                <button type="button" class="eye-btn" @click="showRegisterPassword = !showRegisterPassword">{{ showRegisterPassword ? '👁️‍🗨️' : '👁️' }}</button>
               </div>
-              <transition name="slide-down">
-                <span v-if="registerErrors.password" class="form-error">
-                  {{ registerErrors.password }}
-                </span>
-              </transition>
+              <transition name="slide-down"><span v-if="registerErrors.password" class="form-error">{{ registerErrors.password }}</span></transition>
             </div>
 
-            <!-- CONFIRM PASSWORD -->
             <div class="form-group">
               <label for="register-confirm">Confirm Password</label>
               <div class="input-wrapper">
                 <span class="input-icon">🔐</span>
-                <input
-                  id="register-confirm"
-                  v-model="registerForm.confirm_password"
-                  :type="showRegisterConfirm ? 'text' : 'password'"
-                  placeholder="Re-enter password"
-                  @blur="validateRegisterField('confirm_password')"
-                  class="form-input"
-                />
-                <button
-                  type="button"
-                  class="eye-btn"
-                  @click="showRegisterConfirm = !showRegisterConfirm"
-                  :title="showRegisterConfirm ? 'Hide password' : 'Show password'"
-                >
-                  {{ showRegisterConfirm ? '👁️‍🗨️' : '👁️' }}
-                </button>
+                <input id="register-confirm" v-model="registerForm.confirm_password" :type="showRegisterConfirm ? 'text' : 'password'" placeholder="Re-enter password" @blur="validateRegisterField('confirm_password')" class="form-input" />
+                <button type="button" class="eye-btn" @click="showRegisterConfirm = !showRegisterConfirm">{{ showRegisterConfirm ? '👁️‍🗨️' : '👁️' }}</button>
               </div>
-              <transition name="slide-down">
-                <span v-if="registerErrors.confirm_password" class="form-error">
-                  {{ registerErrors.confirm_password }}
-                </span>
-              </transition>
+              <transition name="slide-down"><span v-if="registerErrors.confirm_password" class="form-error">{{ registerErrors.confirm_password }}</span></transition>
             </div>
 
-            <!-- TERMS CHECKBOX -->
             <div class="checkbox-group">
-              <input 
-                id="register-terms"
-                type="checkbox" 
-                v-model="registerForm.terms"
-                @blur="validateRegisterField('terms')"
-              />
-              <label for="register-terms" class="checkbox-label">
-                I agree to the
-                <a href="#" class="link">Terms & Conditions</a>
-                and
-                <a href="#" class="link">Privacy Policy</a>
-              </label>
+              <input id="register-terms" type="checkbox" v-model="registerForm.terms" @blur="validateRegisterField('terms')" />
+              <label for="register-terms" class="checkbox-label">I agree to the <a href="#" class="link">Terms & Conditions</a> and <a href="#" class="link">Privacy Policy</a></label>
             </div>
-            <transition name="slide-down">
-              <span v-if="registerErrors.terms" class="form-error">
-                {{ registerErrors.terms }}
-              </span>
-            </transition>
+            <transition name="slide-down"><span v-if="registerErrors.terms" class="form-error">{{ registerErrors.terms }}</span></transition>
 
-            <!-- REGISTER BUTTON -->
-            <button 
-              type="submit"
-              class="btn-submit btn-register" 
-              :disabled="registerLoading"
-            >
+            <button type="submit" class="btn-submit btn-register" :disabled="registerLoading">
               <span v-if="!registerLoading" class="btn-text">Create Account</span>
-              <span v-else class="btn-loading">
-                <span class="spinner"></span>
-                Creating account...
-              </span>
+              <span v-else class="btn-loading"><span class="spinner"></span>Creating account...</span>
             </button>
           </form>
 
-          <!-- DIVIDER -->
-          <div class="form-divider">
-            <span>Already have an account?</span>
-          </div>
+          <div class="form-divider"><span>Already have an account?</span></div>
+          <button @click="switchToLogin" class="btn-submit btn-signin">Sign In Instead</button>
 
-          <!-- LOGIN LINK -->
-          <button @click="switchToLogin" class="btn-submit btn-signin">
-            Sign In Instead
-          </button>
-
-          <!-- FOOTER LINKS -->
           <div class="form-footer">
             <a href="#" class="footer-link">Need help?</a>
             <span class="separator">•</span>
@@ -631,6 +429,20 @@ export default {
     // Landing state
     const isScrolled = ref(false)
 
+    // Search state
+    const searchLocation = ref('')
+    const searchType = ref('')
+    const searchPrice = ref('')
+
+    const handleSearch = () => {
+      sessionStorage.setItem('landing_search', JSON.stringify({
+        location: searchLocation.value,
+        type: searchType.value,
+        price: searchPrice.value
+      }))
+      showLoginModal.value = true
+    }
+
     // Modal states
     const showLoginModal = ref(false)
     const showRegisterModal = ref(false)
@@ -641,20 +453,9 @@ export default {
     // Login state
     const loginLoading = ref(false)
     const showLoginPassword = ref(false)
-    const loginForm = reactive({
-      email: '',
-      password: '',
-      remember: false
-    })
-    const loginErrors = reactive({
-      email: '',
-      password: ''
-    })
-    const loginAlert = reactive({
-      show: false,
-      type: 'success',
-      message: ''
-    })
+    const loginForm = reactive({ email: '', password: '', remember: false })
+    const loginErrors = reactive({ email: '', password: '' })
+    const loginAlert = reactive({ show: false, type: 'success', message: '' })
 
     // Forgot password state
     const forgotLoading = ref(false)
@@ -666,65 +467,11 @@ export default {
     const registerLoading = ref(false)
     const showRegisterPassword = ref(false)
     const showRegisterConfirm = ref(false)
-    const registerForm = reactive({
-      name: '',
-      email: '',
-      password: '',
-      confirm_password: '',
-      terms: false
-    })
-    const registerErrors = reactive({
-      name: '',
-      email: '',
-      password: '',
-      confirm_password: '',
-      terms: ''
-    })
-    const registerAlert = reactive({
-      show: false,
-      type: 'success',
-      message: ''
-    })
+    const registerForm = reactive({ name: '', email: '', password: '', confirm_password: '', terms: false })
+    const registerErrors = reactive({ name: '', email: '', password: '', confirm_password: '', terms: '' })
+    const registerAlert = reactive({ show: false, type: 'success', message: '' })
 
-    // ─── Team Members ────────────────────────────────
-    const teamMembers = [
-      { name: 'Rozel Batomalaque',   role: 'Project Manager',          initials: 'RB', color: '#e6ae0d' },
-      { name: 'Ericson Bareno',      role: 'Full Stack Web Developer',  initials: 'EB', color: '#1a1a2e' },
-      { name: 'Napoleon Batoon Jr.', role: 'Documentor',               initials: 'NB', color: '#27ae60' },
-      { name: 'Jenelyn Diaz',        role: 'Documentor',               initials: 'JD', color: '#8e44ad' },
-      { name: 'Jeremy Apas',         role: 'Documentor',               initials: 'JA', color: '#e67e22' },
-      { name: 'Axcell Sedon',        role: 'System Analyst',           initials: 'AS', color: '#2980b9' },
-    ]
-
-    // ─── Blog Posts ───────────────────────────────────
-    const blogPosts = [
-      {
-        id: 1,
-        title: 'Understanding Philippine Real Estate Laws for First-Time Buyers',
-        excerpt: 'Navigating property ownership in the Philippines can be complex. Learn about the key legal requirements, taxes, and documentation every first-time buyer should know before signing.',
-        category: 'Legal Guide',
-        date: 'February 10, 2026',
-        gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-      },
-      {
-        id: 2,
-        title: 'Top 5 Emerging Locations to Invest in Cebu in 2026',
-        excerpt: 'Cebu continues to be a top real estate investment destination. We explore the up-and-coming barangays offering the best price-to-growth ratio for savvy investors this year.',
-        category: 'Investment',
-        date: 'February 3, 2026',
-        gradient: 'linear-gradient(135deg, #e6ae0d 0%, #c99b2d 100%)',
-      },
-      {
-        id: 3,
-        title: 'Condo vs. House & Lot: Which is Right for You?',
-        excerpt: 'Both property types have their pros and cons. From lifestyle flexibility to long-term investment value, this guide helps you make the right choice for your budget and goals.',
-        category: 'Buyer Tips',
-        date: 'January 27, 2026',
-        gradient: 'linear-gradient(135deg, #27ae60 0%, #1e8449 100%)',
-      },
-    ]
-
-    // ─── Landing Properties ───────────────────────────
+    // Landing Properties
     const landingProperties = ref([])
     const propertiesLoading = ref(false)
 
@@ -769,7 +516,6 @@ export default {
     // Login methods
     const validateLoginField = (field) => {
       loginErrors[field] = ''
-
       if (field === 'email' && !loginForm.email) loginErrors.email = 'Email is required'
       if (field === 'password' && !loginForm.password) loginErrors.password = 'Password is required'
     }
@@ -777,43 +523,30 @@ export default {
     const handleLogin = async () => {
       validateLoginField('email')
       validateLoginField('password')
-
-      if (loginErrors.email || loginErrors.password) {
-        return
-      }
+      if (loginErrors.email || loginErrors.password) return
 
       loginLoading.value = true
-
       try {
         const res = await authAPI.login(loginForm)
-
-        // Store token
         localStorage.setItem('auth_token', res.data.token)
-
-        // Store user
         localStorage.setItem('user', JSON.stringify(res.data.user))
+        if (window.reconnectEcho) window.reconnectEcho()
 
-        // Reconnect Echo with the fresh token so WebSocket auth works
-        if (window.reconnectEcho) window.reconnectEcho();
-
-        // Show success alert
         loginAlert.show = true
         loginAlert.type = 'success'
         loginAlert.message = 'Login successful! Redirecting...'
 
-        // Redirect after 1 second
         setTimeout(() => {
-          router.push('/dashboard')
+          const userData = res.data.user
+          if (userData.role === 'admin') router.push('/admin/dashboard')
+          else if (userData.role === 'agent') router.push('/agent/dashboard')
+          else router.push('/dashboard')
         }, 1000)
       } catch (e) {
         loginAlert.show = true
         loginAlert.type = 'error'
         loginAlert.message = 'Invalid credentials. Please try again.'
-
-        // Hide alert after 3 seconds
-        setTimeout(() => {
-          loginAlert.show = false
-        }, 3000)
+        setTimeout(() => { loginAlert.show = false }, 3000)
       } finally {
         loginLoading.value = false
       }
@@ -821,10 +554,7 @@ export default {
 
     const handleForgot = async () => {
       forgotErrors.email = ''
-      if (!forgotForm.email) {
-        forgotErrors.email = 'Email is required'
-        return
-      }
+      if (!forgotForm.email) { forgotErrors.email = 'Email is required'; return }
 
       forgotLoading.value = true
       try {
@@ -835,7 +565,6 @@ export default {
           body: JSON.stringify({ email: forgotForm.email }),
         })
         const data = await res.json()
-
         if (res.ok) {
           loginView.value = 'forgot-sent'
         } else {
@@ -854,40 +583,20 @@ export default {
       }
     }
 
-    const closeLoginModal = () => {
-      showLoginModal.value = false
-      loginView.value = 'login'
-    }
+    const closeLoginModal = () => { showLoginModal.value = false; loginView.value = 'login' }
 
     // Register methods
     const validateRegisterField = (field) => {
       registerErrors[field] = ''
-
-      if (field === 'name' && !registerForm.name) {
-        registerErrors.name = 'Full name is required'
-      }
-      
-      if (field === 'email' && !registerForm.email) {
-        registerErrors.email = 'Email address is required'
-      }
-      
-      if (field === 'password' && registerForm.password.length < 8) {
-        registerErrors.password = 'Password must be at least 8 characters'
-      }
-      
-      if (field === 'confirm_password' && registerForm.password !== registerForm.confirm_password) {
-        registerErrors.confirm_password = 'Passwords do not match'
-      }
-      
-      if (field === 'terms' && !registerForm.terms) {
-        registerErrors.terms = 'You must accept the terms and privacy policy'
-      }
+      if (field === 'name' && !registerForm.name) registerErrors.name = 'Full name is required'
+      if (field === 'email' && !registerForm.email) registerErrors.email = 'Email address is required'
+      if (field === 'password' && registerForm.password.length < 8) registerErrors.password = 'Password must be at least 8 characters'
+      if (field === 'confirm_password' && registerForm.password !== registerForm.confirm_password) registerErrors.confirm_password = 'Passwords do not match'
+      if (field === 'terms' && !registerForm.terms) registerErrors.terms = 'You must accept the terms and privacy policy'
     }
 
     const handleRegister = async () => {
-      // Validate all fields
       Object.keys(registerForm).forEach(validateRegisterField)
-      
       if (Object.values(registerErrors).some(Boolean)) {
         registerAlert.show = true
         registerAlert.type = 'error'
@@ -904,15 +613,12 @@ export default {
           password: registerForm.password,
           password_confirmation: registerForm.confirm_password
         })
-
         registerAlert.message = 'Account created successfully! Redirecting to login...'
         registerAlert.type = 'success'
         registerAlert.show = true
-
         setTimeout(() => {
           showRegisterModal.value = false
           showLoginModal.value = true
-          // Reset register form
           registerForm.name = ''
           registerForm.email = ''
           registerForm.password = ''
@@ -923,81 +629,26 @@ export default {
         registerAlert.message = e.response?.data?.message || 'Registration failed. Please try again.'
         registerAlert.type = 'error'
         registerAlert.show = true
-
         setTimeout(() => { registerAlert.show = false }, 3000)
       } finally {
         registerLoading.value = false
       }
     }
 
-    const closeRegisterModal = () => {
-      showRegisterModal.value = false
-    }
-
-    // Switch between modals
-    const switchToRegister = () => {
-      showLoginModal.value = false
-      showRegisterModal.value = true
-    }
-
-    const switchToLogin = () => {
-      showRegisterModal.value = false
-      showLoginModal.value = true
-    }
+    const closeRegisterModal = () => { showRegisterModal.value = false }
+    const switchToRegister = () => { showLoginModal.value = false; showRegisterModal.value = true }
+    const switchToLogin = () => { showRegisterModal.value = false; showLoginModal.value = true }
 
     return {
-      // Landing
       isScrolled,
-
-      // Login
-      showLoginModal,
-      loginView,
-      loginForm,
-      loginErrors,
-      loginAlert,
-      loginLoading,
-      showLoginPassword,
-      validateLoginField,
-      handleLogin,
-      closeLoginModal,
-
-      // Forgot password
-      forgotForm,
-      forgotErrors,
-      forgotAlert,
-      forgotLoading,
-      handleForgot,
-
-      // Register
-      showRegisterModal,
-      registerForm,
-      registerErrors,
-      registerAlert,
-      registerLoading,
-      showRegisterPassword,
-      showRegisterConfirm,
-      validateRegisterField,
-      handleRegister,
-      closeRegisterModal,
-
-      // Modal switching
-      switchToRegister,
-      switchToLogin,
-
-      // About / Team
-      teamMembers,
-
-      // Properties
-      landingProperties,
-      propertiesLoading,
-      getCoverPhoto,
-      formatPrice,
-      formatPropertyType,
-
-      // Blogs
-      blogPosts,
-
-      // Lifecycle
+      searchLocation, searchType, searchPrice, handleSearch,
+      showLoginModal, loginView, loginForm, loginErrors, loginAlert, loginLoading, showLoginPassword,
+      validateLoginField, handleLogin, closeLoginModal,
+      forgotForm, forgotErrors, forgotAlert, forgotLoading, handleForgot,
+      showRegisterModal, registerForm, registerErrors, registerAlert, registerLoading,
+      showRegisterPassword, showRegisterConfirm, validateRegisterField, handleRegister, closeRegisterModal,
+      switchToRegister, switchToLogin,
+      landingProperties, propertiesLoading, getCoverPhoto, formatPrice, formatPropertyType,
       onMounted
     }
   },
@@ -1008,466 +659,759 @@ export default {
 </script>
 
 <style scoped>
-/* =========================================
-   1. COLOR PALETTE & VARIABLES
-   ========================================= */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* ═══════════════════════════════════════════════
+   LANDING PAGE - COMPLETE STYLES
+   Inspired by Lamudi & Airbnb
+   ═══════════════════════════════════════════════ */
 
 .landing-page {
-  /* Theme Definition */
-  --color-smoky-black: #1A1A1A;
-  --color-smoky-white: #F8F8F8;
-  --color-mustard: #E3B341;
-  --color-mustard-hover: #C99B2D;
-  --color-pure-white: #FFFFFF;
-  --color-gray-text: #666666;
-  --color-border: #EEEEEE;
-  
-  --font-main: 'Plus Jakarta Sans', sans-serif;
-  --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+  --gold: #FFD700;
+  --gold-dark: #DAB600;
+  --gold-light: #FFE44D;
+  --black: #1A1A1A;
+  --white: #FFFFFF;
+  --off-white: #F9F9F9;
+  --gray-100: #F3F3F3;
+  --gray-300: #D1D1D1;
+  --gray-500: #888888;
+  --gray-700: #555555;
+  --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
   --radius-pill: 50px;
-  --radius-card: 24px;
 
-  font-family: var(--font-main);
-  background-color: var(--color-smoky-white);
-  color: var(--color-smoky-black);
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--black);
   min-height: 100vh;
   overflow-x: hidden;
-}
-
-/* =========================================
-   2. NAVBAR
-   ========================================= */
-.navbar {
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  padding: 1.5rem 0;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  background-color: transparent;
-}
-
-.navbar.scrolled {
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 1rem 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 24px;
+}
+
+/* ─── NAVBAR ─── */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 16px 0;
+  transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+  padding: 12px 0;
 }
 
 .navbar-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .brand-logo {
-  font-size: 1.5rem;
+  font-size: 22px;
   font-weight: 800;
-  color: var(--color-smoky-black);
+  color: var(--white);
   text-decoration: none;
   letter-spacing: -0.5px;
+  transition: color 0.3s;
 }
 
-.text-mustard { color: var(--color-mustard); }
+.navbar.scrolled .brand-logo {
+  color: var(--black);
+}
 
-.nav-links {
+.brand-gold {
+  color: var(--gold);
+}
+
+.nav-actions {
   display: flex;
-  gap: 3rem;
+  gap: 10px;
+  align-items: center;
 }
 
-.nav-links a {
-  text-decoration: none;
-  color: var(--color-smoky-black);
-  font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s;
+.btn-nav-login {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--white);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: var(--font);
 }
 
-.nav-links a:hover { color: var(--color-mustard); }
+.navbar.scrolled .btn-nav-login {
+  color: var(--black);
+  border-color: var(--gray-300);
+}
 
-/* =========================================
-   3. HERO SECTION
-   ========================================= */
+.btn-nav-login:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--white);
+}
+
+.navbar.scrolled .btn-nav-login:hover {
+  background: var(--gray-100);
+  border-color: var(--black);
+}
+
+.btn-nav-register {
+  padding: 10px 22px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: var(--font);
+}
+
+.btn-nav-register:hover {
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.35);
+}
+
+/* ─── HERO ─── */
 .hero-section {
   position: relative;
-  padding-top: 140px;
-  padding-bottom: 100px;
-  min-height: 100vh;
+  min-height: 92vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: url('/images/logo/landingpagepicture.jpg') center/cover no-repeat;
+  padding: 120px 0 80px;
 }
 
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.7) 0%, rgba(10, 10, 10, 0.55) 50%, rgba(10, 10, 10, 0.75) 100%);
+}
+
+.hero-content {
   position: relative;
   z-index: 1;
+  text-align: center;
+  width: 100%;
 }
 
-/* Left Column: Text */
-.hero-heading {
-  font-size: 4.5rem;
-  line-height: 1.1;
+.hero-title {
+  font-size: 3.8rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
-  color: var(--color-smoky-black);
+  color: var(--white);
+  line-height: 1.12;
+  margin-bottom: 20px;
   letter-spacing: -1px;
 }
 
-.text-highlight {
-  color: var(--color-smoky-black);
-  text-decoration: underline;
-  text-decoration-color: var(--color-mustard);
-  text-decoration-thickness: 6px;
-  text-underline-offset: 4px;
+.text-gold {
+  color: var(--gold);
 }
 
-.hero-subtext {
-  font-size: 1.125rem;
-  color: var(--color-gray-text);
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 600px;
+  margin: 0 auto 40px;
   line-height: 1.6;
-  max-width: 480px;
-  margin-bottom: 2.5rem;
+  font-weight: 400;
 }
 
-.hero-buttons {
+/* ─── HERO SEARCH BAR ─── */
+.hero-search-bar {
   display: flex;
-  gap: 1.5rem;
-  align-items: center;
+  align-items: stretch;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 820px;
+  margin: 0 auto 48px;
 }
 
-/* Buttons */
-.btn {
+.search-field {
+  flex: 1;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  letter-spacing: 0.5px;
+}
+
+.search-field input,
+.search-field select {
   border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: transparent;
+  font-family: var(--font);
+  padding: 0;
   cursor: pointer;
-  font-family: var(--font-main);
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: inline-flex;
+}
+
+.search-field input::placeholder {
+  color: var(--gray-300);
+}
+
+.search-divider {
+  width: 1px;
+  background: var(--gray-100);
+  margin: 12px 0;
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background: var(--gold-dark);
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
+}
+
+/* ─── HERO STATS ─── */
+.hero-stats {
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 32px;
 }
 
-.btn-black {
-  background-color: var(--color-smoky-black);
-  color: var(--color-pure-white);
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.btn-black:hover {
-  background-color: var(--color-mustard);
-  color: var(--color-smoky-black);
-  transform: translateY(-2px);
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--gold);
 }
 
-.btn-pill {
-  border-radius: 50px;
-  padding: 0.75rem 2rem;
-  font-size: 0.9rem;
+.stat-label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
 }
 
-.btn-lg {
-  border-radius: 50px;
-  padding: 1rem 2.5rem;
+.stat-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── SECTIONS COMMON ─── */
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gold-dark);
+  background: rgba(255, 215, 0, 0.1);
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.section-desc {
   font-size: 1rem;
+  color: var(--gray-500);
+  max-width: 550px;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-/* Right Column: Image */
-.hero-image-wrapper {
+.section-cta {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn-outline {
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--black);
+  border: 2px solid var(--black);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: var(--font);
+}
+
+.btn-outline:hover {
+  background: var(--black);
+  color: var(--white);
+}
+
+/* ─── FEATURED PROPERTIES ─── */
+.properties-section {
+  padding: 100px 0;
+  background: var(--off-white);
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.property-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--gray-100);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.property-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-image-wrap {
   position: relative;
-  height: 600px;
-  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: var(--gray-100);
 }
 
-.hero-house-img {
+.card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-card);
-  box-shadow: 20px 20px 0px var(--color-mustard);
+  transition: transform 0.4s;
 }
 
-/* =========================================
-   4. FLOATING SEARCH BAR
-   ========================================= */
-.search-overlap-container {
-  margin-top: -60px;
-  padding: 0 1.5rem;
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: flex-start;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+.property-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-placeholder {
   width: 100%;
-}
-
-.search-bar {
-  background: var(--color-pure-white);
-  padding: 1rem 1.5rem;
-  border-radius: 20px;
-  box-shadow: var(--shadow-soft);
-  display: inline-flex;
-  align-items: center;
-  gap: 1.5rem;
-  border: 1px solid rgba(0,0,0,0.03);
-}
-
-.search-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 180px;
-}
-
-.label-icon {
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--color-mustard);
-  font-size: 0.75rem;
-  font-weight: 700;
+  justify-content: center;
+  font-size: 48px;
+  background: var(--gray-100);
+}
+
+.card-price {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--gold);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+}
+
+.card-featured {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--gold);
+  color: var(--black);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.search-input, .search-select {
-  border: none;
-  background: transparent;
-  font-family: var(--font-main);
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--color-smoky-black);
-  padding: 0;
-  width: 100%;
-  outline: none;
+.card-body {
+  padding: 20px;
 }
 
-.search-input::placeholder { color: #999; font-weight: 500; }
-.search-select { cursor: pointer; }
-
-.divider {
-  width: 1px;
-  height: 40px;
-  background-color: var(--color-border);
+.card-type {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gold-dark);
+  background: rgba(255, 215, 0, 0.1);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 8px;
 }
 
-.search-btn-circle {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: var(--color-smoky-black);
-  color: var(--color-pure-white);
-  border: none;
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--black);
+}
+
+.card-location {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-bottom: 12px;
+}
+
+.card-specs {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--gray-700);
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* ─── HOW IT WORKS ─── */
+.how-section {
+  padding: 100px 0;
+  background: var(--white);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.step-card {
+  position: relative;
+  text-align: center;
+  padding: 40px 30px;
+  background: var(--off-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-100);
+  transition: all 0.3s;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  border-color: var(--gold);
+}
+
+.step-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.step-number {
+  font-size: 48px;
+  font-weight: 900;
+  color: rgba(255, 215, 0, 0.15);
+  position: absolute;
+  top: 16px;
+  right: 24px;
+}
+
+.step-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--black);
+}
+
+.step-card p {
+  font-size: 14px;
+  color: var(--gray-500);
+  line-height: 1.6;
+}
+
+/* ─── CTA BANNER ─── */
+.cta-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, var(--black) 0%, #2a2520 100%);
+}
+
+.cta-content {
+  text-align: center;
+}
+
+.cta-content h2 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.cta-content p {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 32px;
+}
+
+.btn-cta {
+  padding: 16px 40px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-  margin-left: 1rem;
+  transition: all 0.3s;
+  font-family: var(--font);
 }
 
-.search-btn-circle:hover {
-  background-color: var(--color-mustard);
-  transform: scale(1.05);
+.btn-cta:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.35);
 }
 
-/* =========================================
-   5. MODAL STYLES
-   ========================================= */
+/* ─── FOOTER ─── */
+.landing-footer {
+  padding: 40px 0;
+  background: var(--black);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
 
+.footer-content {
+  text-align: center;
+}
+
+.footer-brand {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+.footer-brand span {
+  color: var(--gold);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--gold);
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── LOADING ─── */
+.prop-loading {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--gray-500);
+}
+
+.prop-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-100);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.prop-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--gray-500);
+  font-size: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL STYLES (Login & Register)
+   ═══════════════════════════════════════════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100vh;
-  font-family: var(--font-main);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  backdrop-filter: blur(12px);
-  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
   padding: 20px;
 }
 
 .modal-content {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  background: white;
+  background: var(--white);
   border-radius: 20px;
-  padding: 48px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+  max-width: 440px;
+  padding: 40px 36px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
 }
 
 .register-modal-content {
-  max-width: 520px;
-  max-height: 95vh;
-  overflow-y: auto;
+  max-width: 480px;
+  padding: 36px 32px;
 }
 
-.register-modal-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.register-modal-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.register-modal-content::-webkit-scrollbar-thumb {
-  background: var(--color-mustard);
-  border-radius: 3px;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* CLOSE BUTTON */
 .close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: #f5f5f5;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  font-size: 1.5rem;
+  border: none;
+  background: var(--gray-100);
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
-  z-index: 10;
+  transition: all 0.3s;
+  color: var(--gray-500);
 }
 
 .close-btn:hover {
-  background: var(--color-mustard);
-  color: white;
-  transform: rotate(90deg);
+  background: var(--gray-300);
+  color: var(--black);
 }
 
-/* BRAND SECTION */
 .brand-section {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .brand-mark {
-  font-size: 2.2rem;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  margin-bottom: 8px;
 }
 
-.brand-realty {
-  color: #1a1a1a;
-}
-
-.brand-ph {
-  color: var(--color-mustard);
-  margin-left: 4px;
-}
+.brand-realty { color: var(--black); }
+.brand-ph { color: var(--gold); }
 
 .brand-tagline {
-  font-size: 0.9rem;
-  color: #999;
-  font-weight: 500;
-  margin: 0;
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-top: 4px;
 }
 
-/* FORM HEADER */
 .form-header {
-  margin-bottom: 32px;
   text-align: center;
+  margin-bottom: 24px;
 }
 
 .login-title, .register-title {
-  font-size: 2rem;
+  font-size: 22px;
   font-weight: 800;
-  color: #1a1a1a;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
+  color: var(--black);
+  margin-bottom: 4px;
 }
 
 .login-subtitle, .register-subtitle {
-  color: #666;
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin: 0;
+  font-size: 14px;
+  color: var(--gray-500);
 }
 
-/* ALERT */
 .alert {
-  margin-bottom: 24px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 12px;
-  animation: slideDown 0.3s ease-out;
-}
-
-.alert-icon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-
-.alert-message {
-  flex: 1;
-}
-
-.alert-error {
-  background: #fee;
-  color: #c33;
-  border-left: 4px solid #c33;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .alert-success {
-  background: #efe;
-  color: #3c3;
-  border-left: 4px solid #3c3;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
 }
 
-/* FORM */
-.login-form-content, .register-form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.alert-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 18px;
 }
 
-label {
-  font-size: 0.85rem;
+.form-group label {
+  display: block;
+  font-size: 13px;
   font-weight: 600;
-  color: #1a1a1a;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--black);
+  margin-bottom: 6px;
 }
 
 .input-wrapper {
@@ -1479,329 +1423,253 @@ label {
 .input-icon {
   position: absolute;
   left: 14px;
-  font-size: 1.1rem;
+  font-size: 15px;
   pointer-events: none;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 14px 12px 44px;
+  padding: 12px 14px 12px 42px;
+  border: 1.5px solid var(--gray-100);
   border-radius: 12px;
-  border: 2px solid #eee;
-  font-size: 0.95rem;
-  font-family: var(--font-main);
-  transition: all 0.3s ease;
-  background: #f9f9f9;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--black);
+  background: var(--off-white);
+  transition: all 0.3s;
+  outline: none;
 }
 
 .form-input:focus {
-  outline: none;
-  border-color: var(--color-mustard);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(227, 179, 65, 0.1);
-}
-
-.form-input::placeholder {
-  color: #999;
+  border-color: var(--gold);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .eye-btn {
   position: absolute;
   right: 12px;
-  border: none;
   background: none;
+  border: none;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 16px;
   padding: 4px;
-  transition: transform 0.2s ease;
-}
-
-.eye-btn:hover {
-  transform: scale(1.15);
 }
 
 .form-error {
-  font-size: 0.8rem;
-  color: #d9534f;
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
   font-weight: 500;
-  animation: slideDown 0.2s ease-out;
 }
 
-/* REMEMBER / FORGOT */
 .form-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 13px;
 }
 
 .remember {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #666;
+  color: var(--gray-700);
 }
 
-.remember input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-mustard);
-  cursor: pointer;
-  border-radius: 4px;
+.remember input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 16px;
+  height: 16px;
 }
 
 .forgot {
-  color: var(--color-mustard);
-  font-weight: 600;
+  color: var(--gold-dark);
   text-decoration: none;
-  font-size: 0.9rem;
-  transition: opacity 0.3s ease;
+  font-weight: 600;
+  transition: color 0.3s;
 }
 
 .forgot:hover {
-  opacity: 0.8;
+  color: var(--black);
 }
 
-/* CHECKBOX */
-.checkbox-group {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-.checkbox-group input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  cursor: pointer;
-  accent-color: var(--color-mustard);
-  flex-shrink: 0;
-  border-radius: 4px;
-  border: 2px solid #eee;
-  transition: all 0.3s ease;
-}
-
-.checkbox-group input[type="checkbox"]:focus {
-  border-color: var(--color-mustard);
-  box-shadow: 0 0 0 3px rgba(227, 179, 65, 0.1);
-}
-
-.checkbox-label {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.4;
-  cursor: pointer;
-  flex: 1;
-}
-
-.link {
-  color: var(--color-mustard);
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.3s ease;
-}
-
-.link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
-}
-
-/* BUTTONS */
 .btn-submit {
   width: 100%;
-  padding: 14px;
-  border-radius: 12px;
+  padding: 13px;
   border: none;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 700;
-  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s;
+  font-family: var(--font);
 }
 
 .btn-login, .btn-register {
-  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-  color: white;
+  background: var(--gold);
+  color: var(--black);
 }
 
-.btn-login:hover:not(:disabled), .btn-register:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-mustard) 0%, #ffd84d 100%);
-  color: #1a1a1a;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(227, 179, 65, 0.3);
+.btn-login:hover, .btn-register:hover {
+  background: var(--gold-dark);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
-.btn-submit:disabled {
-  opacity: 0.7;
+.btn-login:disabled, .btn-register:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn-signup, .btn-signin {
   background: transparent;
-  color: var(--color-mustard);
-  border: 2px solid var(--color-mustard);
+  color: var(--black);
+  border: 1.5px solid var(--gray-100);
 }
 
 .btn-signup:hover, .btn-signin:hover {
-  background: var(--color-mustard);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(227, 179, 65, 0.2);
-}
-
-.btn-text {
-  display: flex;
-  align-items: center;
+  background: var(--gray-100);
+  border-color: var(--gray-300);
 }
 
 .btn-loading {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
 .spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: var(--black);
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
 }
 
-.btn-loading .spinner {
-  border-top-color: #1a1a1a;
-  border-color: rgba(26, 26, 26, 0.3);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* DIVIDER */
 .form-divider {
-  text-align: center;
-  margin: 28px 0;
-  font-size: 0.85rem;
-  color: #999;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--gray-500);
+  font-size: 13px;
 }
 
-.form-divider::before {
+.form-divider::before,
+.form-divider::after {
   content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
+  flex: 1;
   height: 1px;
-  background: #eee;
+  background: var(--gray-100);
 }
 
-.form-divider span {
-  background: white;
-  padding: 0 12px;
-  position: relative;
-}
-
-/* FOOTER */
 .form-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 24px;
-  font-size: 0.8rem;
-}
-
-.footer-link {
-  color: #999;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.footer-link:hover {
-  color: var(--color-mustard);
-}
-
-.separator {
-  color: #ddd;
-}
-
-/* Forgot-sent success view */
-.forgot-sent-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
-  padding: 8px 0 16px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--gray-500);
 }
-.sent-icon { font-size: 52px; margin-bottom: 16px; }
+
+.form-footer .footer-link {
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.form-footer .footer-link:hover {
+  color: var(--gold-dark);
+}
+
+.form-footer .separator {
+  margin: 0 6px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.checkbox-label {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.checkbox-label .link {
+  color: var(--gold-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.checkbox-label .link:hover {
+  color: var(--black);
+}
+
+/* Forgot password sent */
+.forgot-sent-view {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.sent-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
 .sent-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-black);
-  margin-bottom: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 8px;
 }
+
 .sent-subtitle {
-  font-size: 0.9rem;
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--gray-500);
+  line-height: 1.5;
+  margin-bottom: 16px;
 }
-.sent-note { font-size: 0.82rem; color: #999; }
+
+.sent-note {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
 .resend-link {
-  color: var(--color-mustard);
+  color: var(--gold-dark);
   font-weight: 600;
   text-decoration: none;
 }
-.resend-link:hover { text-decoration: underline; }
 
-/* =========================================
-   6. ANIMATIONS
-   ========================================= */
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.resend-link:hover {
+  color: var(--black);
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
+/* ─── TRANSITIONS ─── */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .modal-fade-enter-from,
@@ -1809,409 +1677,78 @@ label {
   opacity: 0;
 }
 
-/* =========================================
-   7. RESPONSIVE
-   ========================================= */
-
-@media (max-width: 1024px) {
-  .hero-heading { font-size: 3.5rem; }
-  .hero-grid { grid-template-columns: 1fr; gap: 2rem; }
-  .hero-image-wrapper { display: none; }
-  .search-bar { width: 100%; display: grid; grid-template-columns: 1fr; gap: 1rem; }
-  .divider { display: none; }
-  .search-btn-circle { width: 100%; border-radius: 12px; height: 48px; margin: 0; }
-  .nav-links { display: none; }
+.modal-fade-enter-from .modal-content {
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
 }
 
-@media (max-width: 600px) {
-  .modal-content {
-    padding: 32px 24px;
-    max-width: 100%;
-    margin: 0 20px;
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .hero-title { font-size: 3rem; }
+  .properties-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.4rem; }
+  .hero-subtitle { font-size: 1rem; }
+
+  .hero-search-bar {
+    flex-direction: column;
+    gap: 0;
   }
 
-  .login-title, .register-title {
-    font-size: 1.5rem;
+  .search-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
   }
 
-  .brand-mark {
-    font-size: 1.8rem;
+  .search-btn {
+    margin: 8px;
+    justify-content: center;
   }
 
-  .close-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
-  }
-
-  .form-header {
-    margin-bottom: 24px;
-  }
-
-  .login-form-content, .register-form-content {
+  .hero-stats {
+    flex-direction: column;
     gap: 16px;
   }
-}
 
-@media (max-width: 400px) {
-  .modal-overlay {
-    padding: 10px;
-  }
+  .stat-dot { display: none; }
+
+  .properties-grid { grid-template-columns: 1fr; }
+  .steps-grid { grid-template-columns: 1fr; }
+
+  .section-title { font-size: 1.8rem; }
+  .cta-content h2 { font-size: 1.8rem; }
 
   .modal-content {
-    padding: 24px 16px;
-  }
-
-  .login-title, .register-title {
-    font-size: 1.3rem;
-  }
-
-  .brand-mark {
-    font-size: 1.5rem;
-  }
-
-  .btn-submit {
-    padding: 12px;
-    font-size: 0.9rem;
+    padding: 32px 24px;
+    margin: 16px;
   }
 }
 
-/* =========================================
-   SHARED SECTION STYLES
-   ========================================= */
-.section-header {
-  text-align: center;
-  margin-bottom: 60px;
-}
-.section-label {
-  display: inline-block;
-  background: rgba(227,179,65,0.12);
-  color: var(--color-mustard-hover);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 6px 18px;
-  border-radius: 50px;
-  margin-bottom: 16px;
-}
-.section-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 16px;
-  color: var(--color-smoky-black);
-}
-.section-title .text-mustard { color: var(--color-mustard); }
-.section-desc {
-  font-size: 1rem;
-  color: var(--color-gray-text);
-  max-width: 620px;
-  margin: 0 auto;
-  line-height: 1.7;
-}
+@media (max-width: 480px) {
+  .hero-title { font-size: 2rem; }
+  .btn-nav-register { display: none; }
+  .container { padding: 0 16px; }
 
-/* =========================================
-   ABOUT SECTION
-   ========================================= */
-.about-section {
-  padding: 100px 0 80px;
-  background: var(--color-pure-white);
-}
+  .properties-section,
+  .how-section { padding: 60px 0; }
 
-/* Mission / Vision / Values */
-.mv-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  margin-bottom: 72px;
-}
-.mv-card {
-  background: var(--color-smoky-white);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 36px 28px;
-  text-align: center;
-  transition: box-shadow 0.3s, transform 0.3s;
-}
-.mv-card:hover {
-  box-shadow: 0 16px 40px rgba(0,0,0,0.07);
-  transform: translateY(-6px);
-}
-.mv-icon { font-size: 2.4rem; margin-bottom: 16px; }
-.mv-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--color-smoky-black);
-}
-.mv-text {
-  font-size: 0.92rem;
-  color: var(--color-gray-text);
-  line-height: 1.7;
-}
-
-/* Team */
-.team-header-row {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.team-heading {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--color-smoky-black);
-  margin-bottom: 8px;
-}
-.team-subheading {
-  font-size: 0.95rem;
-  color: var(--color-gray-text);
-}
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 24px;
-}
-.team-card {
-  text-align: center;
-  padding: 28px 16px;
-  background: var(--color-smoky-white);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  transition: box-shadow 0.3s, transform 0.3s;
-}
-.team-card:hover {
-  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
-  transform: translateY(-5px);
-}
-.team-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 auto 16px;
-  letter-spacing: 1px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-}
-.team-name {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--color-smoky-black);
-  margin-bottom: 4px;
-}
-.team-role {
-  font-size: 0.78rem;
-  color: var(--color-gray-text);
-}
-
-/* =========================================
-   PROPERTIES SECTION
-   ========================================= */
-.pub-properties-section {
-  padding: 100px 0 80px;
-  background: var(--color-smoky-white);
-}
-
-.pub-prop-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  margin-bottom: 48px;
-}
-.pub-prop-card {
-  background: var(--color-pure-white);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  overflow: hidden;
-  transition: all 0.3s;
-}
-.pub-prop-card:hover {
-  box-shadow: 0 16px 40px rgba(0,0,0,0.1);
-  transform: translateY(-6px);
-  border-color: var(--color-mustard);
-}
-.pub-prop-image-wrap {
-  position: relative;
-  height: 210px;
-  overflow: hidden;
-  background: #f0f0f0;
-}
-.pub-prop-img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s;
-}
-.pub-prop-card:hover .pub-prop-img { transform: scale(1.06); }
-.pub-prop-placeholder {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 56px; color: #ccc;
-}
-.pub-prop-overlay {
-  position: absolute; inset: 0;
-  background: rgba(16,12,8,0.5);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity 0.3s;
-}
-.pub-prop-card:hover .pub-prop-overlay { opacity: 1; }
-.btn-view-prop {
-  padding: 11px 22px;
-  background: white; color: var(--color-smoky-black);
-  border: none; border-radius: 8px;
-  font-weight: 700; font-size: 13px; cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-view-prop:hover { background: var(--color-mustard); }
-.pub-price-tag {
-  position: absolute; bottom: 12px; left: 12px;
-  background: var(--color-mustard); color: var(--color-smoky-black);
-  padding: 6px 14px; border-radius: 6px;
-  font-weight: 800; font-size: 13px;
-}
-.pub-featured-badge {
-  position: absolute; top: 12px; right: 12px;
-  background: white; color: var(--color-mustard-hover);
-  padding: 5px 10px; border-radius: 6px;
-  font-weight: 700; font-size: 11px;
-}
-.pub-prop-body { padding: 18px; }
-.pub-prop-type-badge {
-  display: inline-block;
-  background: rgba(227,179,65,0.12);
-  color: var(--color-mustard-hover);
-  font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 50px;
-  margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
-}
-.pub-prop-title {
-  font-size: 1rem; font-weight: 700;
-  color: var(--color-smoky-black);
-  margin-bottom: 6px;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-.pub-prop-location {
-  font-size: 0.85rem; color: var(--color-gray-text);
-  margin-bottom: 10px;
-}
-.pub-prop-specs {
-  display: flex; gap: 12px;
-  font-size: 0.82rem; color: #888;
-  margin-bottom: 14px;
-}
-.btn-prop-cta {
-  width: 100%;
-  padding: 10px;
-  background: var(--color-smoky-black); color: white;
-  border: none; border-radius: 8px;
-  font-weight: 700; font-size: 13px; cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-prop-cta:hover { background: var(--color-mustard); color: var(--color-smoky-black); }
-
-.prop-loading {
-  text-align: center; padding: 60px 0; color: var(--color-gray-text);
-}
-.prop-loading-spinner {
-  width: 36px; height: 36px; margin: 0 auto 16px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-mustard);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.prop-empty {
-  text-align: center; padding: 60px 0;
-  color: var(--color-gray-text); font-size: 1rem;
-}
-.prop-cta-row {
-  text-align: center;
-}
-.btn-see-all {
-  padding: 14px 36px;
-  background: var(--color-smoky-black); color: white;
-  border: none; border-radius: 50px;
-  font-weight: 700; font-size: 14px; cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-see-all:hover {
-  background: var(--color-mustard); color: var(--color-smoky-black);
-  transform: translateY(-2px);
-}
-
-/* =========================================
-   BLOGS SECTION
-   ========================================= */
-.blogs-section {
-  padding: 100px 0;
-  background: var(--color-pure-white);
-}
-.blogs-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-}
-.blog-card {
-  background: var(--color-smoky-white);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  overflow: hidden;
-  transition: all 0.3s;
-}
-.blog-card:hover {
-  box-shadow: 0 16px 40px rgba(0,0,0,0.1);
-  transform: translateY(-6px);
-}
-.blog-image-wrap {
-  height: 180px;
-  position: relative;
-  display: flex; align-items: flex-end; padding: 16px;
-}
-.blog-category-badge {
-  background: rgba(255,255,255,0.9);
-  color: var(--color-smoky-black);
-  font-size: 11px; font-weight: 700;
-  padding: 5px 12px; border-radius: 50px;
-  text-transform: uppercase; letter-spacing: 1px;
-}
-.blog-body { padding: 22px; }
-.blog-date {
-  font-size: 0.78rem; color: var(--color-gray-text);
-  margin-bottom: 8px;
-}
-.blog-title {
-  font-size: 1rem; font-weight: 700;
-  color: var(--color-smoky-black);
-  margin-bottom: 10px; line-height: 1.4;
-}
-.blog-excerpt {
-  font-size: 0.87rem; color: var(--color-gray-text);
-  line-height: 1.65; margin-bottom: 16px;
-  display: -webkit-box; -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-.blog-read-more {
-  background: none; border: none; padding: 0;
-  color: var(--color-mustard-hover);
-  font-weight: 700; font-size: 13px; cursor: pointer;
-  transition: color 0.2s;
-}
-.blog-read-more:hover { color: var(--color-smoky-black); }
-
-/* ─── Responsive ─────────────────────────── */
-@media (max-width: 1024px) {
-  .team-grid { grid-template-columns: repeat(3, 1fr); }
-  .pub-prop-grid, .blogs-grid { grid-template-columns: repeat(2, 1fr); }
-  .mv-grid { grid-template-columns: repeat(1, 1fr); }
-}
-@media (max-width: 640px) {
-  .section-title { font-size: 1.7rem; }
-  .team-grid { grid-template-columns: repeat(2, 1fr); }
-  .pub-prop-grid, .blogs-grid { grid-template-columns: 1fr; }
-  .mv-grid { grid-template-columns: 1fr; }
+  .cta-section { padding: 50px 0; }
 }
 </style>

@@ -115,6 +115,47 @@ class NotificationController extends \App\Http\Controllers\Controller
     }
 
     /**
+     * PUT /api/notifications/mark-type-read
+     * Mark all notifications of a specific type as read
+     */
+    public function markByTypeAsRead(Request $request)
+    {
+        try {
+            $type = $request->input('type');
+            $validTypes = [
+                Notification::TYPE_MESSAGE,
+                Notification::TYPE_VIEWING_REQUEST,
+                Notification::TYPE_DOCUMENT,
+                Notification::TYPE_SYSTEM,
+                Notification::TYPE_PROPERTY_UPDATE,
+                Notification::TYPE_AGENT_VERIFICATION,
+            ];
+
+            if (!in_array($type, $validTypes)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid notification type.',
+                ], 422);
+            }
+
+            $updated = Notification::where('user_id', Auth::id())
+                ->where('notification_type', $type)
+                ->where('is_read', false)
+                ->update(['is_read' => true, 'read_at' => now()]);
+
+            return response()->json([
+                'success' => true,
+                'cleared' => $updated,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * GET /api/notifications/unread-count
      * Get count of unread notifications
      */

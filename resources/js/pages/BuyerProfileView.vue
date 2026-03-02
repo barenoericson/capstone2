@@ -30,12 +30,20 @@
             <span class="nav-icon">💬</span>
             <span class="nav-label">Messages</span>
           </router-link>
+          <router-link to="/agent/saved-properties" class="nav-item">
+            <span class="nav-icon">❤️</span>
+            <span class="nav-label">My Wallet</span>
+          </router-link>
         </div>
         <div class="nav-section">
           <h3 class="section-title">Settings</h3>
           <router-link to="/profile" class="nav-item">
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
+          </router-link>
+          <router-link to="/settings" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
           </router-link>
         </div>
       </nav>
@@ -78,6 +86,7 @@
           <!-- Profile Card -->
           <div class="profile-card">
             <div class="profile-cover">
+              <div class="cover-pattern"></div>
               <div class="buyer-avatar-wrap">
                 <div
                   class="buyer-avatar"
@@ -91,26 +100,46 @@
             </div>
 
             <div class="profile-body">
-              <h1 class="buyer-name">{{ buyer.name }}</h1>
-              <p class="buyer-role-tag">🏷️ Buyer</p>
-
-              <div class="info-grid">
-                <div class="info-row">
-                  <span class="info-label">📧 Email</span>
-                  <span class="info-value">{{ buyer.email }}</span>
-                </div>
-                <div class="info-row" v-if="buyer.city || buyer.province">
-                  <span class="info-label">📍 Location</span>
-                  <span class="info-value">
-                    {{ [buyer.city, buyer.province].filter(Boolean).join(', ') }}
-                  </span>
-                </div>
-                <div class="info-row">
-                  <span class="info-label">📅 Member Since</span>
-                  <span class="info-value">{{ formatDate(buyer.created_at) }}</span>
+              <div class="profile-head">
+                <div>
+                  <h1 class="buyer-name">{{ buyer.name }}</h1>
+                  <div class="buyer-tags">
+                    <span class="buyer-tag">Buyer</span>
+                    <span class="buyer-tag outline" v-if="buyer.city || buyer.province">
+                      📍 {{ [buyer.city, buyer.province].filter(Boolean).join(', ') }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
+              <!-- Info grid -->
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-icon">📧</span>
+                  <div>
+                    <span class="info-label">Email</span>
+                    <p class="info-value">{{ buyer.email }}</p>
+                  </div>
+                </div>
+                <div class="info-item" v-if="buyer.city || buyer.province">
+                  <span class="info-icon">📍</span>
+                  <div>
+                    <span class="info-label">Location</span>
+                    <p class="info-value">
+                      {{ [buyer.city, buyer.province].filter(Boolean).join(', ') }}
+                    </p>
+                  </div>
+                </div>
+                <div class="info-item">
+                  <span class="info-icon">📅</span>
+                  <div>
+                    <span class="info-label">Member Since</span>
+                    <p class="info-value">{{ formatDate(buyer.created_at) }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
               <div class="action-row">
                 <router-link :to="`/conversations/${buyer.id}`" class="btn-chat">
                   💬 Open Chat
@@ -121,7 +150,11 @@
 
           <!-- Quick note for agent -->
           <div class="note-box">
-            <p>👁️ You are viewing this buyer's public profile. Only basic information is visible.</p>
+            <div class="note-icon">👁️</div>
+            <div>
+              <p class="note-title">Public Profile</p>
+              <p class="note-text">You are viewing this buyer's public profile. Only basic information is visible for privacy.</p>
+            </div>
           </div>
         </template>
 
@@ -187,78 +220,179 @@ export default {
 </script>
 
 <style scoped>
-.dashboard-wrapper { display: flex; min-height: 100vh; background: #f0f2f5; font-family: 'Inter', sans-serif; }
+:root {
+  --gold: #FFD700;
+  --gold-dark: #DAB600;
+  --black: #100c08;
+  --smoke: #f5f5f5;
+  --gray: #e0e0e0;
+  --white: #ffffff;
+}
 
-/* Sidebar */
+.dashboard-wrapper { display: flex; min-height: 100vh; background: var(--smoke); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
 .sidebar {
   width: 260px; min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: var(--white);
+  border-right: 1px solid var(--gray);
   display: flex; flex-direction: column;
-  position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+  position: fixed; left: 0; top: 0; height: 100vh;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0,0,0,.07);
+  z-index: 100;
 }
-.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar-logo { font-size: 22px; font-weight: 800; margin: 0; }
-.logo-realty { color: #fff; }
-.logo-ph { color: #e94560; }
-.sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
-.nav-section { margin-top: 20px; }
-.section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin: 0 8px 8px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; margin-bottom: 4px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-.nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.nav-item.active { background: linear-gradient(135deg, #e94560, #c23152); color: #fff; }
-.nav-icon { font-size: 18px; }
-.sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-.user-card { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.08); border-radius: 12px; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #e94560, #c23152); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0; }
-.user-name-card { font-size: 13px; font-weight: 600; color: #fff; margin: 0; }
-.user-role-card { font-size: 11px; color: rgba(255,255,255,0.5); margin: 0; }
+.sidebar-header { padding: 24px 16px; border-bottom: 1px solid var(--gray); }
+.sidebar-logo { font-size: 22px; font-weight: 800; margin: 0; display: flex; }
+.logo-realty { color: var(--black); }
+.logo-ph { color: var(--gold); margin-left: 2px; }
+.sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+.nav-section { margin-top: 16px; }
+.section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #aaa; margin: 0 16px 6px; display: block; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; margin: 0 8px; border-radius: 8px;
+  color: var(--black); text-decoration: none; font-size: 14px; font-weight: 500;
+  transition: all .2s;
+}
+.nav-item:hover { background: var(--smoke); color: var(--gold); }
+.nav-item.active {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black); font-weight: 700;
+}
+.nav-icon { font-size: 17px; min-width: 22px; text-align: center; }
+.sidebar-footer { padding: 14px; border-top: 1px solid var(--gray); }
+.user-card { display: flex; align-items: center; gap: 10px; background: var(--smoke); border-radius: 8px; padding: 10px; }
+.user-avatar-lg {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name-card { font-size: 13px; font-weight: 700; color: var(--black); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-role-card { font-size: 11px; color: #999; margin: 2px 0 0; }
 
-/* Main */
+/* =========================================================
+   Main Content
+   ========================================================= */
 .main-content { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-.topbar { background: #fff; border-bottom: 1px solid #e8ecf0; padding: 0 28px; height: 64px; position: sticky; top: 0; z-index: 50; }
+
+.topbar {
+  background: var(--white); border-bottom: 1px solid var(--gray);
+  padding: 0 28px; height: 64px;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
 .topbar-content { display: flex; align-items: center; justify-content: space-between; height: 100%; }
-.btn-back { background: none; border: none; color: #0f3460; font-size: 15px; font-weight: 600; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
-.btn-back:hover { background: #f0f2f5; }
-.btn-message { padding: 9px 20px; border-radius: 10px; background: linear-gradient(135deg, #0f3460, #163c72); color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; }
+.btn-back {
+  background: none; border: none;
+  color: var(--black); font-size: 15px; font-weight: 600;
+  cursor: pointer; padding: 8px 12px; border-radius: 8px;
+}
+.btn-back:hover { background: var(--smoke); color: var(--gold); }
+.btn-message {
+  padding: 9px 20px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black); font-size: 14px; font-weight: 700;
+  text-decoration: none; transition: transform .2s, box-shadow .2s;
+}
+.btn-message:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,174,13,.4); }
 
-.content-area { padding: 28px; max-width: 680px; }
+.content-area { padding: 28px; max-width: 700px; }
 
-.loading-state { text-align: center; padding: 80px; color: #666; }
-.spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #0f3460; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+/* Loading */
+.loading-state { text-align: center; padding: 80px; color: #999; }
+.spinner { width: 40px; height: 40px; border: 4px solid var(--gray); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Profile Card */
-.profile-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+/* =========================================================
+   Profile Card
+   ========================================================= */
+.profile-card {
+  background: var(--white); border-radius: 20px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08); margin-bottom: 20px;
+}
 .profile-cover {
-  height: 140px;
-  background: linear-gradient(135deg, #0f3460, #1a1a2e);
-  display: flex; align-items: flex-end; padding: 0 32px;
+  height: 160px;
+  background: linear-gradient(135deg, var(--black) 0%, #2c2520 60%, #3a2f20 100%);
+  display: flex; align-items: flex-end; padding: 0 36px;
+  position: relative; overflow: hidden;
 }
-.buyer-avatar-wrap { margin-bottom: -40px; }
+.cover-pattern {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 30px,
+    rgba(230,174,13,0.03) 30px,
+    rgba(230,174,13,0.03) 60px
+  );
+}
+.buyer-avatar-wrap { margin-bottom: -44px; z-index: 2; position: relative; }
 .buyer-avatar {
-  width: 100px; height: 100px; border-radius: 50%;
-  background: linear-gradient(135deg, #0f3460, #1a1a2e);
-  border: 4px solid #fff;
+  width: 110px; height: 110px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border: 5px solid var(--white);
   display: flex; align-items: center; justify-content: center;
-  font-size: 40px; font-weight: 700; color: #fff; overflow: hidden;
+  font-size: 42px; font-weight: 700; color: var(--black); overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
 }
-.profile-body { padding: 52px 32px 32px; }
-.buyer-name { font-size: 26px; font-weight: 800; color: #1a1a2e; margin: 0 0 4px; }
-.buyer-role-tag { font-size: 14px; color: #666; margin: 0 0 24px; }
+.profile-body { padding: 56px 36px 36px; }
+.profile-head { margin-bottom: 28px; }
+.buyer-name { font-size: 28px; font-weight: 800; color: var(--black); margin: 0 0 10px; }
+.buyer-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.buyer-tag {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: rgba(230,174,13,0.1); color: var(--gold-dark);
+  border: 1px solid rgba(230,174,13,0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.buyer-tag.outline {
+  background: var(--smoke); color: #666;
+  border-color: var(--gray); text-transform: none; font-weight: 600;
+}
 
-.info-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
-.info-row { display: flex; gap: 16px; align-items: baseline; }
-.info-label { font-size: 13px; font-weight: 600; color: #999; min-width: 120px; flex-shrink: 0; }
-.info-value { font-size: 14px; color: #333; }
+/* Info grid */
+.info-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+.info-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 12px;
+  background: var(--smoke); border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.info-item:hover { border-color: rgba(230,174,13,0.2); }
+.info-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.info-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #999; display: block; margin-bottom: 3px;
+}
+.info-value { font-size: 14px; color: #444; margin: 0; line-height: 1.5; }
 
 .action-row { display: flex; gap: 12px; }
-.btn-chat { padding: 11px 24px; border-radius: 10px; background: linear-gradient(135deg, #e94560, #c23152); color: #fff; text-decoration: none; font-size: 14px; font-weight: 700; }
+.btn-chat {
+  padding: 12px 28px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: var(--black); text-decoration: none; font-size: 14px; font-weight: 700;
+  transition: transform .2s, box-shadow .2s;
+}
+.btn-chat:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(230,174,13,.35); }
 
-.note-box { background: #e8f4fd; border: 1px solid #bde0f5; border-radius: 12px; padding: 14px 18px; color: #0a5c8a; font-size: 13px; }
+/* Note box */
+.note-box {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--white); border: 1px solid var(--gray);
+  border-radius: 14px; padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.note-icon { font-size: 24px; flex-shrink: 0; }
+.note-title { font-size: 14px; font-weight: 700; color: var(--black); margin: 0 0 3px; }
+.note-text { font-size: 13px; color: #777; margin: 0; line-height: 1.5; }
 
 .empty-state { text-align: center; padding: 80px 20px; }
-.empty-icon { font-size: 56px; margin-bottom: 16px; }
-.empty-state h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0 0 8px; }
+.empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state h3 { font-size: 20px; font-weight: 700; color: var(--black); margin: 0 0 8px; }
 .empty-state p { color: #666; }
 </style>

@@ -154,6 +154,19 @@
               </div>
             </div>
           </div>
+
+          <!-- Property Map -->
+          <div class="map-section">
+            <h3>Property Location</h3>
+            <div v-if="mapLoading" class="map-loading">
+              <div class="spinner-sm"></div>
+              <span>Loading map...</span>
+            </div>
+            <div v-else-if="mapError" class="map-error">
+              <span>📍</span> {{ mapError }}
+            </div>
+            <div id="property-map" ref="mapContainer" class="map-container"></div>
+          </div>
         </div>
 
         <!-- Right Column: Agent Card & Actions -->
@@ -214,6 +227,13 @@
               <button @click="saveProperty" class="btn-secondary">
                 ❤️ Save Property
               </button>
+              <button
+                v-if="property.panoramas && property.panoramas.length > 0"
+                @click="showTourModal = true"
+                class="btn-tour"
+              >
+                🔄 Virtual 360° Tour
+              </button>
             </div>
           </div>
 
@@ -256,29 +276,24 @@
         </div>
 
         <div class="modal-body">
-          <!-- Blocked dates notice -->
-          <div v-if="blockedDates.length > 0" class="blocked-dates-notice">
-            🚫 <strong>Unavailable dates:</strong> {{ blockedDates.join(', ') }}
-          </div>
-
+          <!-- Calendar Date Picker -->
           <div class="form-group">
-            <label>Preferred Date *</label>
-            <input
-              v-model="viewingForm.date"
-              type="date"
-              class="form-input"
-              :min="today"
-              @change="checkBlockedDate"
+            <label>Select a Date *</label>
+            <ViewingCalendar
+              :blocked-dates="blockedDates"
+              :booked-dates="bookedDates"
+              v-model:selected-date="viewingForm.date"
             />
-            <span v-if="dateBlocked" class="form-error">This date is unavailable. Please choose another date.</span>
           </div>
 
-          <div class="form-group">
+          <!-- Time picker (shown after date is selected) -->
+          <div v-if="viewingForm.date" class="form-group">
             <label>Preferred Time *</label>
             <input v-model="viewingForm.time" type="time" class="form-input" />
           </div>
 
-          <div class="form-group">
+          <!-- Message -->
+          <div v-if="viewingForm.date" class="form-group">
             <label>Message to Agent</label>
             <textarea v-model="viewingForm.message" class="form-textarea" placeholder="Any special requests or notes..."></textarea>
           </div>
@@ -287,6 +302,23 @@
         <div class="modal-footer">
           <button @click="showViewingModal = false" class="btn-secondary">Cancel</button>
           <button @click="submitViewing" class="btn-primary">Schedule</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 360° TOUR MODAL -->
+    <div v-if="showTourModal" class="tour-modal-overlay" @click.self="showTourModal = false">
+      <div class="tour-modal-box">
+        <div class="tour-modal-header">
+          <h3>🔄 Virtual 360° Tour</h3>
+          <span class="tour-property-name">{{ property.title }}</span>
+          <button @click="showTourModal = false" class="btn-close-tour">✕</button>
+        </div>
+        <div class="tour-modal-body">
+          <PanoramaViewer
+            v-if="showTourModal"
+            :panoramas="property.panoramas"
+          />
         </div>
       </div>
     </div>
@@ -308,10 +340,15 @@
 </template>
 
 <script>
+import ViewingCalendar from '../components/ViewingCalendar.vue';
+import PanoramaViewer from '../components/PanoramaViewer.vue';
+
 export default {
   name: 'PropertyDetailsPage',
 
   components: {
+    ViewingCalendar,
+    PanoramaViewer,
   },
 
   data() {
@@ -325,9 +362,11 @@ export default {
 
       // Modals
       showViewingModal: false,
+      showTourModal: false,
 
-      // Blocked dates (from agent's calendar)
+      // Blocked & booked dates (for calendar)
       blockedDates: [],
+      bookedDates: [],
       dateBlocked: false,
 
       // Forms
@@ -340,6 +379,12 @@ export default {
       // Messages
       successMessage: '',
       errorMessage: '',
+
+      // Map
+      mapLoading: false,
+      mapError: '',
+      mapInstance: null,
+      geoapifyKey: import.meta.env.VITE_GEOAPIFY_API_KEY || '',
     };
   },
 
@@ -387,6 +432,9 @@ export default {
 
           // Increment view count
           this.incrementViewCount();
+
+          // Initialize map
+          this.$nextTick(() => this.initMap());
         } else {
           this.showError(data.message || 'Failed to load property');
           this.property = null;
@@ -480,24 +528,26 @@ export default {
     async scheduleViewing() {
       this.showViewingModal = true;
       this.dateBlocked = false;
-      // Load blocked dates for this property's agent
+      this.viewingForm = { date: '', time: '', message: '' };
+
+      const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
+      const token  = localStorage.getItem('auth_token');
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+
+      // Load blocked dates and booked dates in parallel
       try {
-        const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
-        const token  = localStorage.getItem('auth_token');
-        const res    = await fetch(`${apiUrl}/api/properties/${this.property.id}/blocked-dates`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        });
-        const data = await res.json();
-        if (data.success) {
-          this.blockedDates = data.blocked_dates;
-        }
+        const [blockedRes, bookedRes] = await Promise.all([
+          fetch(`${apiUrl}/api/properties/${this.property.id}/blocked-dates`, { headers }),
+          fetch(`${apiUrl}/api/properties/${this.property.id}/booked-dates`, { headers }),
+        ]);
+        const blockedData = await blockedRes.json();
+        const bookedData  = await bookedRes.json();
+
+        if (blockedData.success) this.blockedDates = blockedData.blocked_dates;
+        if (bookedData.success) this.bookedDates = bookedData.booked_dates;
       } catch (e) {
         // Non-critical — continue
       }
-    },
-
-    checkBlockedDate() {
-      this.dateBlocked = this.blockedDates.includes(this.viewingForm.date);
     },
 
     async submitViewing() {
@@ -570,12 +620,99 @@ export default {
         this.errorMessage = '';
       }, 3000);
     },
+
+    // ========================
+    // Map methods
+    // ========================
+    async loadLeaflet() {
+      if (window.L) return;
+      // Load Leaflet CSS
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+      // Load Leaflet JS
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    },
+
+    async geocodeAddress() {
+      const parts = [this.property.address, this.property.city, this.property.province, 'Philippines'].filter(Boolean);
+      const query = parts.join(', ');
+      const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(query)}&apiKey=${this.geoapifyKey}&limit=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        const coords = data.features[0].geometry.coordinates;
+        return { lat: coords[1], lng: coords[0] };
+      }
+      return null;
+    },
+
+    async initMap() {
+      if (!this.property || !this.geoapifyKey) return;
+      this.mapLoading = true;
+      this.mapError = '';
+      try {
+        await this.loadLeaflet();
+        // Get coordinates: use stored lat/lng or geocode from address
+        let lat = parseFloat(this.property.latitude);
+        let lng = parseFloat(this.property.longitude);
+        if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+          const coords = await this.geocodeAddress();
+          if (!coords) {
+            this.mapError = 'Could not locate this property on the map.';
+            this.mapLoading = false;
+            return;
+          }
+          lat = coords.lat;
+          lng = coords.lng;
+        }
+        this.mapLoading = false;
+        // Wait for DOM to render
+        await this.$nextTick();
+        const L = window.L;
+        if (this.mapInstance) {
+          this.mapInstance.remove();
+        }
+        this.mapInstance = L.map(this.$refs.mapContainer, {
+          scrollWheelZoom: false,
+        }).setView([lat, lng], 16);
+        // Geoapify tile layer
+        L.tileLayer(
+          `https://maps.geoapify.com/v1/tile/osm-bright-smooth/{z}/{x}/{y}.png?apiKey=${this.geoapifyKey}`,
+          {
+            attribution: '&copy; <a href="https://www.geoapify.com/">Geoapify</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 20,
+          }
+        ).addTo(this.mapInstance);
+        // Custom gold marker
+        const goldIcon = L.divIcon({
+          className: 'custom-map-marker',
+          html: '<div class="marker-pin"></div>',
+          iconSize: [30, 42],
+          iconAnchor: [15, 42],
+          popupAnchor: [0, -42],
+        });
+        const marker = L.marker([lat, lng], { icon: goldIcon }).addTo(this.mapInstance);
+        marker.bindPopup(`<strong>${this.property.title}</strong><br/>📍 ${this.property.address || ''}, ${this.property.city}`);
+      } catch (e) {
+        console.error('Map error:', e);
+        this.mapError = 'Failed to load map.';
+        this.mapLoading = false;
+      }
+    },
   },
 
   mounted() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      this.$router.push('/login');
+      this.$router.push('/');
       return;
     }
     this.loadProperty();
@@ -590,8 +727,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --border-gray: #ddd;
   --font-display: 'Poppins', sans-serif;
@@ -833,7 +970,7 @@ export default {
 
 .thumbnail.active {
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 2px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
 }
 
 .thumbnail img {
@@ -1078,6 +1215,112 @@ export default {
   font-size: 15px;
   color: var(--smoky-black);
   font-weight: 700;
+}
+
+/* ============================================================================
+   MAP SECTION
+   ============================================================================ */
+
+.map-section {
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--light-gray);
+}
+
+.map-section h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--smoky-black);
+  margin-bottom: 16px;
+  font-family: var(--font-display);
+}
+
+.map-container {
+  width: 100%;
+  height: 380px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--light-gray);
+  z-index: 0;
+}
+
+.map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 200px;
+  color: #999;
+  font-size: 14px;
+}
+
+.spinner-sm {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--light-gray);
+  border-top-color: var(--palace-gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.map-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100px;
+  color: #999;
+  font-size: 14px;
+  background: var(--white-smoke);
+  border-radius: 10px;
+}
+
+/* Custom gold map marker */
+:deep(.custom-map-marker) {
+  background: none !important;
+  border: none !important;
+}
+
+:deep(.marker-pin) {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
+  position: absolute;
+  transform: rotate(-45deg);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.5);
+}
+
+:deep(.marker-pin::after) {
+  content: '';
+  width: 14px;
+  height: 14px;
+  margin: 8px 0 0 8px;
+  background: var(--smoky-black);
+  position: absolute;
+  border-radius: 50%;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+:deep(.leaflet-popup-content) {
+  margin: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+:deep(.leaflet-popup-content strong) {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--smoky-black);
 }
 
 /* ============================================================================
@@ -1412,7 +1655,7 @@ export default {
 .form-input:focus, .form-textarea:focus {
   outline: none;
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-textarea {
@@ -1638,6 +1881,125 @@ export default {
   .photo-counter {
     font-size: 12px;
     padding: 6px 12px;
+  }
+}
+
+/* 360° Tour Button */
+.btn-tour {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: white;
+  border: 2px solid var(--palace-gold, #FFD700);
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 13px;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-tour:hover {
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* 360° Tour Modal -- Fullscreen */
+.tour-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 16px;
+}
+
+.tour-modal-box {
+  width: 95vw;
+  height: 90vh;
+  background: #100c08;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 60px rgba(0, 0, 0, 0.5);
+}
+
+.tour-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: #100c08;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.tour-modal-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #FFD700;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.tour-property-name {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-close-tour {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.btn-close-tour:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFD700;
+}
+
+.tour-modal-body {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  .tour-modal-box {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .tour-modal-overlay {
+    padding: 0;
+  }
+
+  .tour-modal-header h3 {
+    font-size: 14px;
+  }
+
+  .tour-property-name {
+    display: none;
   }
 }
 </style>

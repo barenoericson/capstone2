@@ -29,6 +29,11 @@
           <span class="nav-label">Viewings</span>
         </router-link>
 
+        <router-link to="/agent/calendar" class="nav-item">
+          <span class="nav-icon">📆</span>
+          <span class="nav-label">My Calendar</span>
+        </router-link>
+
         <router-link to="/agent/documents" class="nav-item">
           <span class="nav-icon">📄</span>
           <span class="nav-label">Documents</span>
@@ -81,14 +86,14 @@ export default {
     logout() {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      this.$router.push('/login');
+      this.$router.push('/');
     },
   },
 
   mounted() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      this.$router.push('/login');
+      this.$router.push('/');
       return;
     }
 
@@ -113,8 +118,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;

@@ -148,7 +148,7 @@ class MessageController extends \App\Http\Controllers\Controller
             $validated = $request->validate([
                 'recipient_id'   => 'required|exists:users,id',
                 'message_content'=> 'nullable|string|max:5000',
-                'property_id'    => 'nullable|exists:properties,id',
+                'property_id'    => 'nullable|integer|exists:properties,id',
                 'attachment'     => 'nullable|file|max:20480',
             ]);
 
@@ -187,7 +187,11 @@ class MessageController extends \App\Http\Controllers\Controller
             $message->load(['sender', 'recipient', 'property']);
 
             // Broadcast to the recipient in real-time
-            broadcast(new MessageSent($message))->toOthers();
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $e) {
+                // Reverb not running — continue silently
+            }
 
             // Create notification for the recipient
             try {
@@ -208,11 +212,17 @@ class MessageController extends \App\Http\Controllers\Controller
                 'success' => true,
                 'data' => $message,
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-            ], 422);
+            ], 500);
         }
     }
 
@@ -224,14 +234,33 @@ class MessageController extends \App\Http\Controllers\Controller
     {
         try {
             $currentUserId = Auth::id();
-            $updated = Message::where('sender_id', $userId)
+
+            // Get IDs of unread messages from this sender before marking them
+            $unreadMessageIds = Message::where('sender_id', $userId)
                 ->where('recipient_id', $currentUserId)
                 ->where('is_read', false)
+                ->pluck('id');
+
+            $updated = Message::whereIn('id', $unreadMessageIds)
                 ->update(['is_read' => true, 'read_at' => now()]);
+
+            // Also mark related notifications as read
+            if ($unreadMessageIds->isNotEmpty()) {
+                Notification::where('user_id', $currentUserId)
+                    ->where('notification_type', 'message')
+                    ->where('related_model_type', 'Message')
+                    ->whereIn('related_model_id', $unreadMessageIds)
+                    ->where('is_read', false)
+                    ->update(['is_read' => true, 'read_at' => now()]);
+            }
 
             // Notify the sender in real-time that their messages have been seen
             if ($updated > 0) {
-                broadcast(new MessageRead($currentUserId, (int) $userId))->toOthers();
+                try {
+                    broadcast(new MessageRead($currentUserId, (int) $userId))->toOthers();
+                } catch (\Exception $e) {
+                    // Reverb not running — continue silently
+                }
             }
 
             return response()->json(['success' => true]);

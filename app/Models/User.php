@@ -6,6 +6,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class User extends Authenticatable
 {
@@ -35,6 +37,10 @@ class User extends Authenticatable
         'last_seen_at',
         'email_verified_at',
         'email_verification_token',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
+        'google_calendar_id',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -45,6 +51,8 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'two_factor_secret',       // ← ADD
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -57,6 +65,7 @@ class User extends Authenticatable
         'last_login_at' => 'datetime',
         'last_seen_at' => 'datetime',
         'preferences' => 'json',   // ← ADD
+        'google_token_expires_at' => 'datetime',
     ];
 
     /**
@@ -151,5 +160,13 @@ class User extends Authenticatable
     public function activate()
     {
         $this->update(['status' => 'active']);
+    }
+
+    /**
+     * Send the password reset notification with branded email.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        Mail::to($this->email)->send(new ResetPasswordMail($token, $this->email, $this->name));
     }
 }

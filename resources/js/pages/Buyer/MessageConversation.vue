@@ -64,7 +64,7 @@ export default {
   mounted() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      this.$router.push('/login');
+      this.$router.push('/');
       return;
     }
 
@@ -94,8 +94,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;

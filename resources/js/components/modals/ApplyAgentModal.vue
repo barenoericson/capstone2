@@ -330,8 +330,8 @@ export default {
 }
 
 .modal-close:hover {
-  background: rgba(230, 174, 13, 0.1);
-  color: #e6ae0d;
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
 }
 
 /* =====================================================================
@@ -379,7 +379,7 @@ export default {
   letter-spacing: 1px;
   font-family: 'Inter', sans-serif;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e6ae0d;
+  border-bottom: 2px solid #FFD700;
 }
 
 .form-group {
@@ -410,9 +410,9 @@ export default {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #e6ae0d;
+  border-color: #FFD700;
   background: #fffbf0;
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-input::placeholder,
@@ -443,7 +443,7 @@ export default {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #e6ae0d;
+  accent-color: #FFD700;
 }
 
 /* =====================================================================
@@ -477,7 +477,7 @@ export default {
 
 .btn-submit {
   padding: 12px 28px;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   color: #100c08;
   border: none;
   border-radius: 8px;
@@ -490,7 +490,7 @@ export default {
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .btn-submit:disabled {
@@ -520,7 +520,7 @@ export default {
 .success-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -549,7 +549,7 @@ export default {
 
 .btn-success-close {
   padding: 12px 32px;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   color: #100c08;
   border: none;
   border-radius: 8px;
@@ -562,7 +562,7 @@ export default {
 
 .btn-success-close:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 /* =====================================================================
@@ -632,11 +632,11 @@ export default {
 }
 
 .modal-container::-webkit-scrollbar-thumb {
-  background: #e6ae0d;
+  background: #FFD700;
   border-radius: 10px;
 }
 
 .modal-container::-webkit-scrollbar-thumb:hover {
-  background: #d4a000;
+  background: #DAB600;
 }
 </style>

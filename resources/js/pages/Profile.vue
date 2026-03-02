@@ -781,8 +781,8 @@ async handlePhotoUpload(event) {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --charcoal-smoke: #2a2420;
   --light-gray: #e0e0e0;
   --border-gray: #ddd;
@@ -1098,7 +1098,7 @@ async handlePhotoUpload(event) {
   outline: none;
   border-color: var(--palace-gold);
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
 }
 
 /* Page Wrapper */
@@ -1171,7 +1171,7 @@ async handlePhotoUpload(event) {
   font-size: 24px;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1179,7 +1179,7 @@ async handlePhotoUpload(event) {
 
 .btn-upload-photo:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(230, 174, 13, 0.4);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
 }
 
 .hidden-input {
@@ -1406,7 +1406,7 @@ async handlePhotoUpload(event) {
 .form-input:focus {
   outline: none;
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .error-text {

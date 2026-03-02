@@ -10,11 +10,11 @@
     --charcoal-smoke: #2a2420;
     
     /* Gold Palette */
-    --palace-gold: #E6AE0D;
-    --palace-gold-dark: #C49005;
-    --palace-gold-light: #F0C94F;
-    --palace-gold-faded: rgba(230, 174, 13, 0.1);
-    --palace-gold-lighter: rgba(230, 174, 13, 0.05);
+    --palace-gold: #FFD700;
+    --palace-gold-dark: #DAB600;
+    --palace-gold-light: #FFE44D;
+    --palace-gold-faded: rgba(255, 215, 0, 0.1);
+    --palace-gold-lighter: rgba(255, 215, 0, 0.05);
     
     /* Neutral Palette */
     --white-smoke: #F5F5F5;
@@ -58,7 +58,7 @@
     --shadow-md: 0 8px 24px rgba(16, 12, 8, 0.12);
     --shadow-lg: 0 12px 32px rgba(16, 12, 8, 0.15);
     --shadow-xl: 0 20px 48px rgba(16, 12, 8, 0.2);
-    --shadow-gold: 0 8px 20px rgba(230, 174, 13, 0.25);
+    --shadow-gold: 0 8px 20px rgba(255, 215, 0, 0.25);
     
     /* Transitions */
     --transition-fast: 0.15s ease;
@@ -998,4 +998,380 @@
 .slide-right-leave-to {
   opacity: 0;
   transform: translateX(40px);
+}
+
+/* =====================================================
+   GLOBAL DARK MODE OVERRIDES
+   Applies when <html> has class "theme-dark".
+   Set by App.vue on mount + Settings.vue on change.
+   Uses !important to override scoped component styles.
+   ===================================================== */
+
+/* ---- Base ---- */
+html.theme-dark body {
+  background: #141110 !important;
+  color: #e0e0e0 !important;
+}
+
+/* ---- Page wrappers ---- */
+html.theme-dark .dashboard-wrapper,
+html.theme-dark .settings-wrapper,
+html.theme-dark .properties-wrapper,
+html.theme-dark .profile-wrapper,
+html.theme-dark .chat-wrapper,
+html.theme-dark .conversations-wrapper,
+html.theme-dark .page-wrapper {
+  background: #141110 !important;
+}
+
+/* ---- Sidebar ---- */
+html.theme-dark .sidebar {
+  background: #1c1917 !important;
+  border-right-color: #2a2520 !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.45) !important;
+}
+html.theme-dark .sidebar-header {
+  border-bottom-color: #2a2520 !important;
+}
+html.theme-dark .logo-realty {
+  color: #f0ece8 !important;
+}
+html.theme-dark .nav-item {
+  color: #b0a898 !important;
+  background: transparent !important;
+}
+html.theme-dark .nav-item:hover {
+  background: #2a2520 !important;
+  color: #FFD700 !important;
+}
+html.theme-dark .nav-item.router-link-active:not(.nav-item-exact-only),
+html.theme-dark .nav-item.active {
+  background: linear-gradient(135deg, #FFD700, #DAB600) !important;
+  color: #100c08 !important;
+}
+html.theme-dark .section-title {
+  color: #4a4540 !important;
+}
+html.theme-dark .sidebar-footer {
+  border-top-color: #2a2520 !important;
+}
+html.theme-dark .user-card {
+  background: #252118 !important;
+}
+html.theme-dark .user-name,
+html.theme-dark .user-name-card {
+  color: #f0ece8 !important;
+}
+html.theme-dark .user-role,
+html.theme-dark .user-role-card {
+  color: #5a5550 !important;
+}
+
+/* ---- Main content area ---- */
+html.theme-dark .main-content {
+  background: #141110 !important;
+}
+
+/* ---- Topbar ---- */
+html.theme-dark .topbar {
+  background: #1c1917 !important;
+  border-bottom-color: #2a2520 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+html.theme-dark .page-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .page-sub,
+html.theme-dark .welcome-sub {
+  color: #6a6560 !important;
+}
+html.theme-dark .welcome-text {
+  color: #f0ece8 !important;
+}
+html.theme-dark .btn-back {
+  color: #b0a898 !important;
+}
+html.theme-dark .btn-back:hover {
+  background: #2a2520 !important;
+  color: #FFD700 !important;
+}
+
+/* ---- Content area background ---- */
+html.theme-dark .content-area,
+html.theme-dark .content-wrapper {
+  background: #141110 !important;
+}
+
+/* ---- Cards & panels ---- */
+html.theme-dark .settings-card,
+html.theme-dark .stat-card,
+html.theme-dark .profile-card,
+html.theme-dark .property-card,
+html.theme-dark .reviews-section,
+html.theme-dark .activity-card,
+html.theme-dark .chart-card,
+html.theme-dark .list-card,
+html.theme-dark .info-card,
+html.theme-dark .viewing-card,
+html.theme-dark .doc-card,
+html.theme-dark .message-card,
+html.theme-dark .note-box,
+html.theme-dark .review-card {
+  background: #1c1917 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark .card-title,
+html.theme-dark .stat-label,
+html.theme-dark .stat-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .card-desc,
+html.theme-dark .stat-desc,
+html.theme-dark .stat-sub {
+  color: #6a6560 !important;
+}
+html.theme-dark .card-value,
+html.theme-dark .stat-value {
+  color: #f0ece8 !important;
+}
+
+/* ---- Profile pages ---- */
+html.theme-dark .profile-body {
+  background: #1c1917 !important;
+}
+html.theme-dark .buyer-name,
+html.theme-dark .agent-name,
+html.theme-dark .buyer-role-tag,
+html.theme-dark .section-heading {
+  color: #f0ece8 !important;
+}
+html.theme-dark .info-label {
+  color: #6a6560 !important;
+}
+html.theme-dark .info-value {
+  color: #c0b8b0 !important;
+}
+html.theme-dark .reviewer-name,
+html.theme-dark .review-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .review-content {
+  color: #888 !important;
+}
+html.theme-dark .review-date {
+  color: #4a4540 !important;
+}
+
+/* ---- Settings page specific ---- */
+html.theme-dark .option-btn {
+  background: #252118 !important;
+  border-color: #3a3530 !important;
+  color: #b0a898 !important;
+}
+html.theme-dark .option-btn:hover {
+  border-color: #FFD700 !important;
+  background: #2e2820 !important;
+}
+html.theme-dark .option-btn.active {
+  background: #3a2f1a !important;
+  border-color: #FFD700 !important;
+  color: #f0ece8 !important;
+}
+html.theme-dark .option-label {
+  color: #c0b8b0 !important;
+}
+html.theme-dark .lang-btn {
+  background: #252118 !important;
+  border-color: #3a3530 !important;
+}
+html.theme-dark .lang-btn:hover {
+  border-color: #FFD700 !important;
+  background: #2e2820 !important;
+}
+html.theme-dark .lang-btn.active {
+  background: #3a2f1a !important;
+  border-color: #FFD700 !important;
+}
+html.theme-dark .lang-name {
+  color: #f0ece8 !important;
+}
+html.theme-dark .lang-native {
+  color: #6a6560 !important;
+}
+html.theme-dark .toggle-row {
+  border-color: #2a2520 !important;
+}
+html.theme-dark .toggle-label {
+  color: #f0ece8 !important;
+}
+html.theme-dark .toggle-desc {
+  color: #6a6560 !important;
+}
+html.theme-dark .preview-box {
+  border-color: #2a2520 !important;
+}
+html.theme-dark .card-icon {
+  background: #2e2820 !important;
+}
+
+/* ---- Messaging / Conversations ---- */
+html.theme-dark .chat-sidebar,
+html.theme-dark .conv-list {
+  background: #1c1917 !important;
+  border-right-color: #2a2520 !important;
+}
+html.theme-dark .chat-header,
+html.theme-dark .conv-header {
+  background: #1c1917 !important;
+  border-bottom-color: #2a2520 !important;
+}
+html.theme-dark .chat-main {
+  background: #141110 !important;
+}
+html.theme-dark .conv-item,
+html.theme-dark .conversation-item {
+  border-bottom-color: #2a2520 !important;
+}
+html.theme-dark .conv-item:hover,
+html.theme-dark .conversation-item:hover {
+  background: #2a2520 !important;
+}
+html.theme-dark .conv-name,
+html.theme-dark .conv-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .conv-last,
+html.theme-dark .conv-preview {
+  color: #6a6560 !important;
+}
+html.theme-dark .message-bubble.received {
+  background: #252118 !important;
+  color: #e0d8d0 !important;
+}
+html.theme-dark .chat-input-bar,
+html.theme-dark .message-input-row {
+  background: #1c1917 !important;
+  border-top-color: #2a2520 !important;
+}
+html.theme-dark .chat-input,
+html.theme-dark .message-input {
+  background: #252118 !important;
+  border-color: #3a3530 !important;
+  color: #e0d8d0 !important;
+}
+html.theme-dark .chat-input:focus,
+html.theme-dark .message-input:focus {
+  border-color: #FFD700 !important;
+}
+
+/* ---- Property list / cards ---- */
+html.theme-dark .prop-card {
+  background: #1c1917 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark .prop-title,
+html.theme-dark .prop-price {
+  color: #f0ece8 !important;
+}
+html.theme-dark .prop-detail,
+html.theme-dark .prop-location {
+  color: #6a6560 !important;
+}
+
+/* ---- Viewings page ---- */
+html.theme-dark .viewing-row,
+html.theme-dark .viewing-item {
+  background: #1c1917 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark .viewing-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .viewing-meta {
+  color: #6a6560 !important;
+}
+
+/* ---- Documents page ---- */
+html.theme-dark .doc-row,
+html.theme-dark .doc-item {
+  background: #1c1917 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark .doc-name {
+  color: #f0ece8 !important;
+}
+html.theme-dark .doc-meta {
+  color: #6a6560 !important;
+}
+
+/* ---- Tables ---- */
+html.theme-dark table {
+  background: #1c1917 !important;
+  color: #e0d8d0 !important;
+}
+html.theme-dark th {
+  background: #252118 !important;
+  color: #f0ece8 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark td {
+  border-color: #2a2520 !important;
+  color: #c0b8b0 !important;
+}
+html.theme-dark tr:hover td {
+  background: #2a2520 !important;
+}
+
+/* ---- Form inputs ---- */
+html.theme-dark input[type="text"],
+html.theme-dark input[type="email"],
+html.theme-dark input[type="password"],
+html.theme-dark input[type="number"],
+html.theme-dark input[type="date"],
+html.theme-dark input[type="time"],
+html.theme-dark textarea,
+html.theme-dark select {
+  background: #252118 !important;
+  border-color: #3a3530 !important;
+  color: #e0d8d0 !important;
+}
+html.theme-dark input::placeholder,
+html.theme-dark textarea::placeholder {
+  color: #5a5550 !important;
+}
+html.theme-dark input:focus,
+html.theme-dark textarea:focus,
+html.theme-dark select:focus {
+  border-color: #FFD700 !important;
+  background: #2e2820 !important;
+}
+
+/* ---- Modals ---- */
+html.theme-dark .modal-box,
+html.theme-dark .modal-content {
+  background: #1c1917 !important;
+  border-color: #2a2520 !important;
+}
+html.theme-dark .modal-header {
+  border-bottom-color: #2a2520 !important;
+}
+html.theme-dark .modal-title {
+  color: #f0ece8 !important;
+}
+html.theme-dark .modal-footer {
+  border-top-color: #2a2520 !important;
+}
+html.theme-dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* ---- Scrollbar in dark mode ---- */
+html.theme-dark ::-webkit-scrollbar-track {
+  background: #1a1714 !important;
+}
+html.theme-dark ::-webkit-scrollbar-thumb {
+  background: #3a3530 !important;
+}
+html.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background: #FFD700 !important;
 }

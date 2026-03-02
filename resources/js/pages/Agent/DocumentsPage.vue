@@ -32,6 +32,10 @@
             <span class="nav-icon">📅</span>
             <span class="nav-label">Viewings</span>
           </router-link>
+          <router-link to="/agent/calendar" class="nav-item">
+            <span class="nav-icon">📆</span>
+            <span class="nav-label">My Calendar</span>
+          </router-link>
           <router-link to="/agent/documents" class="nav-item active">
             <span class="nav-icon">📄</span>
             <span class="nav-label">Documents</span>
@@ -47,6 +51,10 @@
           <router-link to="/profile" class="nav-item">
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
+          </router-link>
+          <router-link to="/settings" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
           </router-link>
         </div>
       </nav>
@@ -177,6 +185,45 @@
       </div>
     </main>
 
+    <!-- My Uploads Section -->
+    <section class="my-uploads-section">
+      <div class="uploads-header">
+        <h2 class="uploads-title">My Uploads</h2>
+        <span class="uploads-count">{{ myUploads.length }} file{{ myUploads.length !== 1 ? 's' : '' }}</span>
+      </div>
+      <div
+        class="personal-upload-zone"
+        :class="{ 'drag-active': personalDragOver }"
+        @dragover.prevent="personalDragOver = true"
+        @dragleave.prevent="personalDragOver = false"
+        @drop.prevent="handlePersonalDrop"
+      >
+        <input ref="personalUploadInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp" style="display:none" @change="handlePersonalUploadInput" />
+        <div class="upload-zone-inner" @click="$refs.personalUploadInput.click()">
+          <span class="upload-zone-icon">📁</span>
+          <h4>{{ personalUploading ? 'Uploading...' : 'Drop files here or click to upload' }}</h4>
+          <p>PDF, Word, Excel, Images — Max 20MB</p>
+        </div>
+      </div>
+      <div v-if="myUploads.length > 0" class="my-uploads-list">
+        <div v-for="doc in myUploads" :key="'upload-' + doc.id" class="upload-card">
+          <span class="upload-card-icon">{{ getFileTypeIcon(doc.mime_type) }}</span>
+          <div class="upload-card-info">
+            <p class="upload-card-name">{{ doc.document_name }}</p>
+            <p class="upload-card-date">{{ formatDate(doc.created_at) }}</p>
+          </div>
+          <div class="upload-card-actions">
+            <a :href="doc.document_url" target="_blank" class="btn-action btn-view">👁 View</a>
+            <router-link
+              v-if="doc.mime_type && (doc.mime_type === 'application/pdf' || doc.mime_type.startsWith('image/'))"
+              :to="`/documents/${doc.id}/edit`"
+              class="btn-action btn-edit-doc"
+            >✏️ Edit</router-link>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================================ -->
     <!-- SEND DOCUMENT MODAL -->
     <!-- ============================================================ -->
@@ -284,23 +331,86 @@
     <!-- AGENT SIGN MODAL -->
     <!-- ============================================================ -->
     <div v-if="showSignModal" class="modal-overlay" @click.self="closeSignModal">
-      <div class="modal-box sign-modal-box">
+      <div class="modal-box sign-modal-box" :class="{ 'sign-modal-wide': signPhase === 'position' || signPhase === 'preview' }">
         <div class="modal-header">
           <div>
-            <h3>✍️ Sign Document</h3>
+            <h3>Sign Document</h3>
             <p class="sign-modal-subtitle">{{ signingDoc?.document_name }}</p>
           </div>
           <button @click="closeSignModal" class="btn-close">✕</button>
         </div>
 
-        <template v-if="signMode === 'draw'">
-          <!-- Tabs -->
+        <!-- Phase indicator -->
+        <div class="sign-phases">
+          <div class="phase-step" :class="{ active: signPhase === 'position', done: signPhase !== 'position' }">
+            <span class="phase-num">1</span>
+            <span class="phase-label">Place</span>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="phase-step" :class="{ active: signPhase === 'capture', done: signPhase === 'preview' || signPhase === 'signing' }">
+            <span class="phase-num">2</span>
+            <span class="phase-label">Create</span>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="phase-step" :class="{ active: signPhase === 'preview', done: signPhase === 'signing' }">
+            <span class="phase-num">3</span>
+            <span class="phase-label">Confirm</span>
+          </div>
+        </div>
+
+        <!-- ── PHASE 1: PDF PREVIEW + CLICK TO PLACE ── -->
+        <template v-if="signPhase === 'position'">
+          <div class="sign-tab-content">
+            <p class="sign-hint">Click on the document where you want to place your signature:</p>
+
+            <div v-if="pdfLoading" class="pdf-loading">
+              <div class="spinner-sm"></div>
+              <p>Loading document preview...</p>
+            </div>
+
+            <div v-else-if="!isSigningPdf" class="non-pdf-notice">
+              <span class="notice-icon">📄</span>
+              <p>This document is not a PDF. Your signature will be attached separately.</p>
+              <button class="btn-primary btn-sm" @click="signPhase = 'capture'; $nextTick(() => initAgentCanvas())">Continue to Signature</button>
+            </div>
+
+            <div v-else class="pdf-preview-area">
+              <div v-if="totalPages > 1" class="page-nav">
+                <button class="page-nav-btn" :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)">&#9664;</button>
+                <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+                <button class="page-nav-btn" :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)">&#9654;</button>
+              </div>
+
+              <div class="pdf-canvas-container" @click="handlePdfClick">
+                <canvas ref="agentPdfCanvas" class="pdf-canvas"></canvas>
+                <div
+                  v-if="positionSelected"
+                  class="sig-placeholder"
+                  :style="sigPlaceholderStyle"
+                >
+                  <span class="sig-placeholder-text">Signature Here</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p v-if="signError" class="sign-error">{{ signError }}</p>
+
+          <div class="modal-footer">
+            <button @click="closeSignModal" class="btn-secondary">Cancel</button>
+            <button class="btn-primary" :disabled="!positionSelected && isSigningPdf" @click="signPhase = 'capture'; $nextTick(() => initAgentCanvas())">
+              Next: Create Signature
+            </button>
+          </div>
+        </template>
+
+        <!-- ── PHASE 2: DRAW / UPLOAD SIGNATURE ── -->
+        <template v-else-if="signPhase === 'capture'">
           <div class="sign-tabs">
             <button :class="['sign-tab', { active: signTab === 'draw' }]" @click="switchSignTab('draw')">✏️ Draw</button>
             <button :class="['sign-tab', { active: signTab === 'upload' }]" @click="switchSignTab('upload')">📷 Upload Photo</button>
           </div>
 
-          <!-- Draw tab -->
           <div v-if="signTab === 'draw'" class="sign-tab-content">
             <p class="sign-hint">Draw your signature below:</p>
             <div class="canvas-wrapper">
@@ -310,11 +420,10 @@
               </canvas>
             </div>
             <div class="canvas-controls">
-              <button class="btn-clear" @click="clearAgentCanvas">🗑️ Clear</button>
+              <button class="btn-clear" @click="clearAgentCanvas">Clear</button>
             </div>
           </div>
 
-          <!-- Upload tab -->
           <div v-if="signTab === 'upload'" class="sign-tab-content">
             <p class="sign-hint">Upload a photo of your handwritten signature. Background will be removed automatically.</p>
             <div class="upload-area" @click="$refs.agentPhotoInput.click()" @dragover.prevent @drop.prevent="handleAgentDrop">
@@ -326,31 +435,43 @@
               </div>
               <div v-else class="photo-preview-wrap">
                 <canvas ref="agentProcessedCanvas" class="processed-canvas" width="520" height="180"></canvas>
-                <p class="preview-note">✅ Background removed</p>
+                <p class="preview-note">Background removed</p>
               </div>
             </div>
             <div v-if="agentPhotoPreview" class="canvas-controls">
-              <button class="btn-clear" @click="clearAgentPhoto">🗑️ Remove Photo</button>
+              <button class="btn-clear" @click="clearAgentPhoto">Remove Photo</button>
             </div>
           </div>
 
           <p v-if="signError" class="sign-error">{{ signError }}</p>
 
           <div class="modal-footer">
-            <button @click="closeSignModal" class="btn-secondary">Cancel</button>
-            <button @click="previewSignature" class="btn-primary">Preview Signature →</button>
+            <button @click="signPhase = 'position'" class="btn-secondary">Back</button>
+            <button @click="previewSignature" class="btn-primary">Preview Signature</button>
           </div>
         </template>
 
-        <!-- Preview step: signature in the designated area -->
-        <template v-else-if="signMode === 'preview'">
-          <div class="preview-section">
-            <p class="preview-label">Your signature will appear like this on the document:</p>
-            <div class="sig-area-box">
-              <img :src="agentSignaturePreview" class="sig-area-img" alt="Your signature preview" />
-              <div class="sig-area-line">
-                <span>Signature</span>
-                <span>{{ new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+        <!-- ── PHASE 3: PREVIEW WITH SIGNATURE ON PDF ── -->
+        <template v-else-if="signPhase === 'preview'">
+          <div class="sign-tab-content">
+            <p class="sign-hint">Review your signature placement. Click "Confirm & Sign" to finalize.</p>
+            <div class="preview-document-area">
+              <div class="pdf-canvas-container" v-if="isSigningPdf">
+                <canvas ref="previewPdfCanvas" class="pdf-canvas"></canvas>
+                <img
+                  v-if="agentSignaturePreview"
+                  :src="agentSignaturePreview"
+                  class="sig-overlay-img"
+                  :style="sigOverlayStyle"
+                  alt="Your signature"
+                />
+              </div>
+              <div v-else class="sig-area-box">
+                <img :src="agentSignaturePreview" class="sig-area-img" alt="Your signature preview" />
+                <div class="sig-area-line">
+                  <span>Agent Signature</span>
+                  <span>{{ new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -358,10 +479,19 @@
           <p v-if="signError" class="sign-error">{{ signError }}</p>
 
           <div class="modal-footer">
-            <button @click="signMode = 'draw'" class="btn-secondary" :disabled="agentSigning">↩ Re-draw</button>
+            <button @click="signPhase = 'capture'" class="btn-secondary" :disabled="agentSigning">Back</button>
             <button @click="submitAgentSignature" class="btn-primary" :disabled="agentSigning">
-              {{ agentSigning ? 'Signing...' : '✅ Confirm & Sign Document' }}
+              {{ agentSigning ? 'Signing & Sending...' : 'Confirm & Sign Document' }}
             </button>
+          </div>
+        </template>
+
+        <!-- ── SIGNING IN PROGRESS ── -->
+        <template v-else-if="signPhase === 'signing'">
+          <div class="signing-progress">
+            <div class="spinner-sm spinner-lg"></div>
+            <h3>Embedding signature into document...</h3>
+            <p>The signed document will be sent automatically.</p>
           </div>
         </template>
       </div>
@@ -375,6 +505,8 @@
 </template>
 
 <script>
+import { markRaw } from 'vue';
+
 export default {
   name: 'AgentDocumentsPage',
 
@@ -401,8 +533,8 @@ export default {
       // Agent signing
       showSignModal: false,
       signingDoc: null,
-      signMode: 'draw',   // 'draw' | 'preview'
-      signTab: 'draw',    // 'draw' | 'upload'
+      signPhase: 'position',   // 'position' | 'capture' | 'preview' | 'signing'
+      signTab: 'draw',
       signError: '',
       agentSigning: false,
       agentIsDrawing: false,
@@ -413,7 +545,26 @@ export default {
       agentPhotoDataUrl: null,
       agentSignaturePreview: null,
 
+      // PDF preview
+      pdfDoc: null,
+      totalPages: 1,
+      currentPage: 1,
+      pdfLoading: false,
+      pdfPageWidth: 0,
+      pdfPageHeight: 0,
+
+      // Signature position
+      signaturePosition: { x: 0, y: 0, page: 1 },
+      canvasDisplayWidth: 0,
+      canvasDisplayHeight: 0,
+      positionSelected: false,
+
       toast: { show: false, type: 'success', message: '' },
+
+      // My Uploads
+      myUploads: [],
+      personalDragOver: false,
+      personalUploading: false,
     };
   },
 
@@ -424,6 +575,40 @@ export default {
     sigProofDocs() {
       return this.documents.filter(d => d.agent_signature_url || d.signature_url);
     },
+    isSigningPdf() {
+      if (!this.signingDoc) return false;
+      const url = (this.signingDoc.document_url || '').toLowerCase();
+      return url.endsWith('.pdf') || (this.signingDoc.mime_type || '').includes('pdf');
+    },
+    sigPlaceholderStyle() {
+      if (!this.positionSelected || !this.canvasDisplayWidth) return {};
+      const wPct = 25;
+      const hPx  = 40;
+      const leftPct = (this.signaturePosition.x / this.canvasDisplayWidth) * 100;
+      const topPx   = this.signaturePosition.y;
+      return {
+        left: Math.min(leftPct, 100 - wPct) + '%',
+        top: topPx + 'px',
+        width: wPct + '%',
+        height: hPx + 'px',
+      };
+    },
+    sigOverlayStyle() {
+      if (!this.positionSelected || !this.canvasDisplayWidth) return {};
+      const wPct = 25;
+      const hPx  = 40;
+      const leftPct = (this.signaturePosition.x / this.canvasDisplayWidth) * 100;
+      const topPx   = this.signaturePosition.y;
+      return {
+        position: 'absolute',
+        left: Math.min(leftPct, 100 - wPct) + '%',
+        top: topPx + 'px',
+        width: wPct + '%',
+        height: hPx + 'px',
+        objectFit: 'contain',
+        pointerEvents: 'none',
+      };
+    },
   },
 
   async mounted() {
@@ -431,9 +616,22 @@ export default {
     this.userName = user.name || 'Agent';
     this.token = localStorage.getItem('auth_token') || '';
     await this.loadDocuments();
+    this.loadMyUploads();
+    this.clearDocumentNotifications();
   },
 
   methods: {
+    async clearDocumentNotifications() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        await fetch(`${this.apiUrl}/api/notifications/mark-type-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ type: 'document' }),
+        });
+      } catch (e) { /* silent */ }
+    },
+
     async loadDocuments() {
       try {
         this.loading = true;
@@ -545,28 +743,135 @@ export default {
 
     // ─── Agent Signing ────────────────────────────────
     openAgentSignModal(doc) {
-      this.signingDoc           = doc;
-      this.signMode             = 'draw';
-      this.signTab              = 'draw';
-      this.signError            = '';
-      this.agentHasDrawn        = false;
-      this.agentPhotoPreview    = false;
-      this.agentPhotoDataUrl    = null;
+      this.signingDoc            = doc;
+      this.signPhase             = 'position';
+      this.signTab               = 'draw';
+      this.signError             = '';
+      this.agentHasDrawn         = false;
+      this.agentPhotoPreview     = false;
+      this.agentPhotoDataUrl     = null;
       this.agentSignaturePreview = null;
-      this.showSignModal        = true;
-      this.$nextTick(() => this.initAgentCanvas());
+      this.positionSelected      = false;
+      this.signaturePosition     = { x: 0, y: 0, page: 1 };
+      this.pdfDoc                = null;
+      this.totalPages            = 1;
+      this.currentPage           = 1;
+      this.showSignModal         = true;
+
+      this.$nextTick(() => {
+        const url = (doc.document_url || '').toLowerCase();
+        const isPdf = url.endsWith('.pdf') || (doc.mime_type || '').includes('pdf');
+        if (isPdf && doc.document_url) {
+          this.loadPdfPreview(doc.document_url);
+        }
+      });
     },
 
     closeSignModal() {
       if (this.agentSigning) return;
       this.showSignModal = false;
       this.signingDoc    = null;
+      this.pdfDoc        = null;
     },
 
     switchSignTab(tab) {
       this.signTab   = tab;
       this.signError = '';
       if (tab === 'draw') this.$nextTick(() => this.initAgentCanvas());
+    },
+
+    // ─── PDF Preview Methods ──────────────────────────
+    async loadPdfPreview(url) {
+      this.pdfLoading = true;
+      try {
+        if (!window.pdfjsLib) {
+          await this.loadPdfJsScript();
+        }
+        const pdfjsLib = window.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const loadingTask = pdfjsLib.getDocument(url);
+        this.pdfDoc = markRaw(await loadingTask.promise);
+        this.totalPages = this.pdfDoc.numPages;
+        this.currentPage = 1;
+        await this.renderPdfPage(1);
+      } catch (e) {
+        console.error('PDF preview failed:', e);
+        this.signError = 'Could not load PDF preview. You can still sign the document.';
+      } finally {
+        this.pdfLoading = false;
+      }
+    },
+
+    loadPdfJsScript() {
+      return new Promise((resolve, reject) => {
+        if (window.pdfjsLib) { resolve(); return; }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load PDF.js'));
+        document.head.appendChild(script);
+      });
+    },
+
+    async renderPdfPage(pageNum) {
+      if (!this.pdfDoc) return;
+      const page = await this.pdfDoc.getPage(pageNum);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+
+      const canvas = this.$refs.agentPdfCanvas;
+      if (!canvas) return;
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      this.pdfPageWidth  = viewport.width;
+      this.pdfPageHeight = viewport.height;
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      this.$nextTick(() => {
+        this.canvasDisplayWidth  = canvas.offsetWidth;
+        this.canvasDisplayHeight = canvas.offsetHeight;
+      });
+    },
+
+    async goToPage(num) {
+      if (num < 1 || num > this.totalPages) return;
+      this.currentPage = num;
+      this.positionSelected = false;
+      await this.renderPdfPage(num);
+    },
+
+    handlePdfClick(e) {
+      const canvas = this.$refs.agentPdfCanvas;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      this.canvasDisplayWidth  = canvas.offsetWidth;
+      this.canvasDisplayHeight = canvas.offsetHeight;
+
+      this.signaturePosition = { x, y, page: this.currentPage };
+      this.positionSelected = true;
+      this.signError = '';
+    },
+
+    async renderPreviewPage() {
+      if (!this.pdfDoc) return;
+      const page = await this.pdfDoc.getPage(this.signaturePosition.page);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+
+      const canvas = this.$refs.previewPdfCanvas;
+      if (!canvas) return;
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
     },
 
     initAgentCanvas() {
@@ -680,31 +985,52 @@ export default {
         preview = this.agentPhotoDataUrl;
       }
       this.agentSignaturePreview = preview;
-      this.signMode = 'preview';
+      this.signPhase = 'preview';
+
+      if (this.isSigningPdf && this.pdfDoc) {
+        this.$nextTick(() => this.renderPreviewPage());
+      }
     },
 
     async submitAgentSignature() {
-      this.signError   = '';
+      this.signError    = '';
       this.agentSigning = true;
+      this.signPhase    = 'signing';
       try {
-        const res  = await fetch(`${this.apiUrl}/api/agent/documents/${this.signingDoc.id}/sign`, {
+        const scaleX = this.canvasDisplayWidth ? (this.pdfPageWidth / this.canvasDisplayWidth) : 1;
+        const scaleY = this.canvasDisplayHeight ? (this.pdfPageHeight / this.canvasDisplayHeight) : 1;
+        const pdfX = this.signaturePosition.x * scaleX;
+        const pdfY = this.signaturePosition.y * scaleY;
+
+        const res = await fetch(`${this.apiUrl}/api/agent/documents/${this.signingDoc.id}/sign`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             signature_data: this.agentSignaturePreview,
-            signature_type: this.signTab,
+            signature_type: this.signTab === 'draw' ? 'drawn' : 'photo',
+            position_x: pdfX,
+            position_y: pdfY,
+            position_page: this.signaturePosition.page || 1,
+            page_width: this.pdfPageWidth || 595,
+            page_height: this.pdfPageHeight || 842,
           }),
         });
         const data = await res.json();
-        if (!res.ok) { this.signError = data.message || 'Failed to sign.'; return; }
+        if (!res.ok) {
+          this.signError = data.message || 'Failed to sign.';
+          this.signPhase = 'preview';
+          return;
+        }
 
         const idx = this.documents.findIndex(d => d.id === this.signingDoc.id);
         if (idx !== -1 && data.document) this.documents[idx] = data.document;
 
         this.showSignModal = false;
-        this.showToast('Document signed successfully!', 'success');
+        this.pdfDoc = null;
+        this.showToast('Document signed and sent to buyer!', 'success');
       } catch (e) {
         this.signError = 'Network error. Please try again.';
+        this.signPhase = 'preview';
       } finally {
         this.agentSigning = false;
       }
@@ -736,6 +1062,59 @@ export default {
       }
     },
 
+    // ─── My Uploads ─────────────────────────────────
+    async loadMyUploads() {
+      try {
+        const res = await fetch(`${this.apiUrl}/api/documents/my`, {
+          headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) this.myUploads = data.documents || [];
+      } catch (e) { /* silent */ }
+    },
+    handlePersonalUploadInput(e) {
+      const file = e.target.files[0];
+      if (file) this.uploadPersonalFile(file);
+      e.target.value = '';
+    },
+    handlePersonalDrop(e) {
+      this.personalDragOver = false;
+      const file = e.dataTransfer.files[0];
+      if (file) this.uploadPersonalFile(file);
+    },
+    async uploadPersonalFile(file) {
+      this.personalUploading = true;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('document_name', file.name.replace(/\.[^.]+$/, ''));
+      try {
+        const res = await fetch(`${this.apiUrl}/api/documents/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${this.token}` },
+          body: fd,
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.myUploads.unshift(data.document);
+          this.showToast('Document uploaded!', 'success');
+        } else {
+          this.showToast(data.message || 'Upload failed.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Upload failed.', 'error');
+      } finally {
+        this.personalUploading = false;
+      }
+    },
+    getFileTypeIcon(mimeType) {
+      if (!mimeType) return '📄';
+      if (mimeType === 'application/pdf') return '📕';
+      if (mimeType.includes('word') || mimeType.includes('document')) return '📘';
+      if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📗';
+      if (mimeType.startsWith('image/')) return '🖼️';
+      return '📄';
+    },
+
     capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; },
 
     formatDate(d) {
@@ -754,7 +1133,7 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 3500);
     },
 
-    logout() { localStorage.clear(); this.$router.push('/login'); },
+    logout() { localStorage.clear(); this.$router.push('/'); },
   },
 };
 </script>
@@ -764,7 +1143,7 @@ export default {
 .sidebar { width: 240px; min-height: 100vh; background: #fff; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
 .sidebar-header { padding: 20px; border-bottom: 1px solid #f5f5f5; }
 .sidebar-logo { font-size: 1.2rem; font-weight: 800; }
-.logo-realty { color: #100c08; } .logo-ph { color: #e6ae0d; }
+.logo-realty { color: #100c08; } .logo-ph { color: #FFD700; }
 .sidebar-nav { flex: 1; padding: 12px 10px; }
 .nav-section { margin-top: 16px; }
 .section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; font-weight: 700; padding: 0 10px; margin-bottom: 6px; }
@@ -773,7 +1152,7 @@ export default {
 .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 .sidebar-footer { padding: 12px; border-top: 1px solid #f5f5f5; }
 .user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #fafafa; position: relative; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #e6ae0d; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
+.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
 .user-info { flex: 1; min-width: 0; }
 .user-name-card { font-size: 0.82rem; font-weight: 700; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-role-card { font-size: 0.72rem; color: #999; margin: 0; }
@@ -803,7 +1182,7 @@ export default {
 .doc-name-cell { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #100c08; }
 .doc-icon { font-size: 18px; }
 .buyer-cell { display: flex; align-items: center; gap: 8px; }
-.buyer-avatar { width: 28px; height: 28px; border-radius: 50%; background: #e6ae0d; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #100c08; flex-shrink: 0; }
+.buyer-avatar { width: 28px; height: 28px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #100c08; flex-shrink: 0; }
 .type-badge { padding: 3px 10px; border-radius: 20px; background: #f3f4f6; color: #374151; font-size: 0.75rem; font-weight: 600; }
 .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 .badge-pending { background: #fef9c3; color: #854d0e; }
@@ -811,7 +1190,7 @@ export default {
 .date-cell { color: #888; font-size: 0.8rem; }
 .actions-cell { display: flex; gap: 6px; align-items: center; }
 .btn-action { padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
-.btn-view { background: #f3f4f6; color: #374151; } .btn-view:hover { background: #e6ae0d; color: #100c08; }
+.btn-view { background: #f3f4f6; color: #374151; } .btn-view:hover { background: #FFD700; color: #100c08; }
 .btn-delete { background: #fee2e2; color: #dc2626; } .btn-delete:hover { background: #dc2626; color: #fff; }
 
 .sig-section { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -837,13 +1216,13 @@ export default {
 .form-group label { font-size: 0.85rem; font-weight: 600; color: #100c08; }
 .required { color: #dc2626; }
 .form-input, .form-select { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; }
-.form-input:focus, .form-select:focus { border-color: #e6ae0d; }
+.form-input:focus, .form-select:focus { border-color: #FFD700; }
 .form-error { font-size: 0.78rem; color: #dc2626; }
 .helper-text { padding: 10px 12px; font-size: 0.85rem; color: #888; background: #f8f9fa; border-radius: 8px; }
 .helper-text.warn { background: #fef9c3; color: #854d0e; }
 
 .file-drop { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.file-drop:hover { border-color: #e6ae0d; background: #fef9e7; }
+.file-drop:hover { border-color: #FFD700; background: #fef9e7; }
 .drop-icon { font-size: 32px; display: block; margin-bottom: 8px; }
 .file-drop p { margin: 4px 0; font-size: 0.88rem; color: #555; }
 .drop-hint { font-size: 0.75rem !important; color: #999 !important; }
@@ -852,8 +1231,8 @@ export default {
 .file-size { font-size: 0.75rem; color: #888; }
 .hidden-input { display: none; }
 
-.btn-primary   { padding: 10px 18px; background: #e6ae0d; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-primary:hover { background: #d4a000; } .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-primary   { padding: 10px 18px; background: #FFD700; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+.btn-primary:hover { background: #DAB600; } .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-secondary { padding: 10px 18px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger    { padding: 10px 18px; background: #dc2626; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -867,16 +1246,59 @@ export default {
 /* ── Source toggle (Upload PDF / External Link) ─────── */
 .source-toggle { display: flex; gap: 8px; }
 .src-btn { flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #555; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.src-btn:hover { border-color: #e6ae0d; }
-.src-btn.active { border-color: #e6ae0d; background: #fef9e7; color: #100c08; }
+.src-btn:hover { border-color: #FFD700; }
+.src-btn.active { border-color: #FFD700; background: #fef9e7; color: #100c08; }
 
 /* ── Sign modal ─────────────────────────────────────── */
-.sign-modal-box { max-width: 600px; }
+.sign-modal-box { max-width: 600px; max-height: 90vh; overflow-y: auto; }
+.sign-modal-wide { max-width: 800px; }
 .sign-modal-subtitle { font-size: 0.8rem; color: #888; margin: 2px 0 0; font-weight: 400; }
+
+/* Phase indicator */
+.sign-phases { display: flex; align-items: center; justify-content: center; gap: 0; padding: 16px 24px 10px; }
+.phase-step { display: flex; align-items: center; gap: 5px; opacity: 0.4; transition: opacity 0.2s; }
+.phase-step.active { opacity: 1; }
+.phase-step.done { opacity: 0.7; }
+.phase-num { width: 22px; height: 22px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #666; }
+.phase-step.active .phase-num { background: #FFD700; color: #100c08; }
+.phase-step.done .phase-num { background: #16a34a; color: #fff; }
+.phase-label { font-size: 11px; font-weight: 600; color: #333; }
+.phase-connector { width: 28px; height: 2px; background: #e5e7eb; margin: 0 6px; }
+
+/* PDF Preview */
+.pdf-loading { text-align: center; padding: 40px 20px; color: #666; }
+.spinner-sm { width: 36px; height: 36px; border: 3px solid #e5e7eb; border-top-color: #FFD700; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pdf-preview-area { }
+.page-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+.page-nav-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.page-nav-btn:hover:not(:disabled) { background: #fef9e7; border-color: #FFD700; }
+.page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 12px; font-weight: 600; color: #333; }
+.pdf-canvas-container { position: relative; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: crosshair; background: #f5f5f5; }
+.pdf-canvas { display: block; width: 100%; height: auto; }
+.sig-placeholder { position: absolute; border: 2px dashed #FFD700; background: rgba(230,174,13,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: all 0.15s ease; }
+.sig-placeholder-text { font-size: 10px; font-weight: 700; color: #FFD700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Non-PDF notice */
+.non-pdf-notice { text-align: center; padding: 40px 20px; }
+.notice-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.non-pdf-notice p { color: #666; font-size: 13px; margin: 0 0 14px; }
+.btn-sm { padding: 7px 16px; font-size: 12px; }
+
+/* Preview with overlay */
+.preview-document-area { position: relative; }
+.sig-overlay-img { pointer-events: none; }
+
+/* Signing progress */
+.signing-progress { text-align: center; padding: 50px 24px; }
+.signing-progress h3 { font-size: 16px; font-weight: 700; color: #100c08; margin: 14px 0 6px; }
+.signing-progress p { font-size: 13px; color: #666; margin: 0; }
+.spinner-lg { width: 44px; height: 44px; }
 
 .sign-tabs { display: flex; border-bottom: 2px solid #f0f0f0; padding: 0 24px; }
 .sign-tab  { padding: 12px 18px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.88rem; font-weight: 600; color: #888; cursor: pointer; transition: all 0.2s; }
-.sign-tab.active { color: #100c08; border-bottom-color: #e6ae0d; }
+.sign-tab.active { color: #100c08; border-bottom-color: #FFD700; }
 .sign-tab:hover:not(.active) { color: #555; }
 
 .sign-tab-content { padding: 20px 24px; }
@@ -891,7 +1313,7 @@ export default {
 
 /* Upload photo area */
 .upload-area { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; min-height: 150px; display: flex; align-items: center; justify-content: center; }
-.upload-area:hover { border-color: #e6ae0d; background: #fef9e7; }
+.upload-area:hover { border-color: #FFD700; background: #fef9e7; }
 .upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .upload-icon { font-size: 36px; }
 .upload-area p { margin: 2px 0; font-size: 0.88rem; color: #555; }
@@ -921,12 +1343,33 @@ export default {
 .sig-box-empty { background: #f9f9f9; color: #aaa; font-size: 0.82rem; flex-direction: column; gap: 8px; }
 .sig-box .sig-img { height: 60px; max-width: 100%; object-fit: contain; }
 .sig-badge { font-size: 0.72rem; color: #888; font-style: italic; text-align: center; }
-.btn-sign-inline { padding: 6px 14px; background: #e6ae0d; color: #100c08; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-.btn-sign-inline:hover { background: #d4a000; }
+.btn-sign-inline { padding: 6px 14px; background: #FFD700; color: #100c08; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.btn-sign-inline:hover { background: #DAB600; }
 
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 .toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }
+
+/* My Uploads Section */
+.my-uploads-section { margin: 0 28px 28px; }
+.uploads-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.uploads-title { font-size: 18px; font-weight: 700; color: #100c08; margin: 0; }
+.uploads-count { font-size: 13px; color: #999; background: #f5f5f5; padding: 4px 12px; border-radius: 20px; }
+.personal-upload-zone { border: 2px dashed #FFD700; border-radius: 14px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffdf5; margin-bottom: 16px; }
+.personal-upload-zone:hover, .personal-upload-zone.drag-active { background: #fdf5d0; border-color: #DAB600; }
+.upload-zone-icon { font-size: 40px; display: block; margin-bottom: 8px; }
+.upload-zone-inner h4 { font-size: 15px; font-weight: 700; color: #100c08; margin: 0 0 4px; }
+.upload-zone-inner p { font-size: 12px; color: #888; margin: 0; }
+.my-uploads-list { display: flex; flex-direction: column; gap: 10px; }
+.upload-card { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #f0f0f0; border-radius: 12px; padding: 14px 18px; transition: box-shadow 0.2s; }
+.upload-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.upload-card-icon { font-size: 28px; flex-shrink: 0; }
+.upload-card-info { flex: 1; min-width: 0; }
+.upload-card-name { font-size: 14px; font-weight: 600; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-card-date { font-size: 12px; color: #999; margin: 2px 0 0; }
+.upload-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-edit-doc { background: #fff3e0; color: #e65100; }
+.btn-edit-doc:hover { background: #e65100; color: #fff; }
 </style>

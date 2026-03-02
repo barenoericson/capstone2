@@ -25,6 +25,10 @@
           <span class="nav-icon">📅</span>
           <span class="nav-label">Viewings</span>
         </router-link>
+        <router-link to="/agent/calendar" class="nav-item">
+          <span class="nav-icon">📆</span>
+          <span class="nav-label">My Calendar</span>
+        </router-link>
       </nav>
 
       <div class="sidebar-footer">
@@ -342,6 +346,83 @@
           </div>
         </div>
 
+        <!-- 360° PANORAMAS SECTION -->
+        <div class="form-section">
+          <h2 class="section-title">🔄 360° Virtual Tour</h2>
+          <p class="section-description">
+            Upload equirectangular panoramic images for an immersive 360° virtual tour.
+            Each image represents a room that buyers can explore interactively.
+          </p>
+
+          <!-- Existing Panoramas (Edit Mode) -->
+          <div v-if="isEditMode && property && property.panoramas && property.panoramas.length > 0" class="existing-panoramas">
+            <h3 class="subsection-title">Current 360° Images</h3>
+            <div class="panorama-grid">
+              <div
+                v-for="panorama in property.panoramas"
+                :key="panorama.id"
+                class="panorama-item"
+              >
+                <div class="panorama-preview-container">
+                  <img :src="panorama.image_url" :alt="panorama.room_name" class="panorama-preview-img" />
+                  <div class="panorama-room-badge">{{ panorama.room_name }}</div>
+                  <button
+                    type="button"
+                    @click="deletePanorama(panorama.id)"
+                    class="btn-delete-panorama"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload New Panoramas -->
+          <div class="upload-section">
+            <h3 class="subsection-title">{{ isEditMode ? 'Add More 360° Images' : 'Upload 360° Images' }}</h3>
+
+            <div class="upload-area panorama-upload" @click="$refs.panoramaInput.click()">
+              <input
+                ref="panoramaInput"
+                type="file"
+                multiple
+                accept="image/*"
+                class="photo-input"
+                @change="handlePanoramaSelect"
+              />
+              <p class="upload-icon">🔄</p>
+              <p class="upload-text">Click to upload 360° panoramic images</p>
+              <p class="upload-hint">Equirectangular JPG/PNG, up to 20MB each</p>
+            </div>
+
+            <!-- Selected Panoramas Preview -->
+            <div v-if="selectedPanoramas.length > 0" class="selected-panoramas">
+              <h4>New 360° Images to Upload ({{ selectedPanoramas.length }})</h4>
+              <div v-for="(pano, index) in selectedPanoramas" :key="index" class="panorama-upload-item">
+                <img :src="pano.preview" :alt="pano.file.name" class="panorama-upload-preview" />
+                <div class="panorama-upload-details">
+                  <label>Room Name *</label>
+                  <input
+                    v-model="pano.roomName"
+                    type="text"
+                    placeholder="e.g., Living Room, Kitchen, Master Bedroom"
+                    class="form-input"
+                    required
+                  />
+                </div>
+                <button
+                  type="button"
+                  @click="removeSelectedPanorama(index)"
+                  class="btn-remove-preview"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Form Actions -->
         <div class="form-actions">
           <router-link to="/agent/properties" class="btn-secondary">
@@ -412,6 +493,7 @@ export default {
 
       // ✅ Photos
       selectedPhotos: [],
+      selectedPanoramas: [],
 
       // Messages
       successMessage: '',
@@ -653,6 +735,11 @@ export default {
               await this.uploadPhotos(propertyId, token);
             }
 
+            // ✅ Upload 360° panoramas
+            if (this.selectedPanoramas.length > 0) {
+              await this.uploadPanoramas(propertyId, token);
+            }
+
             this.showSuccess('Property updated successfully!');
             setTimeout(() => {
               this.$router.push('/agent/properties');
@@ -680,6 +767,11 @@ export default {
             // ✅ Upload photos if any
             if (this.selectedPhotos.length > 0) {
               await this.uploadPhotos(data.data.id, token);
+            }
+
+            // ✅ Upload 360° panoramas
+            if (this.selectedPanoramas.length > 0) {
+              await this.uploadPanoramas(data.data.id, token);
             }
 
             this.showSuccess('Property created successfully!');
@@ -732,6 +824,106 @@ export default {
       }
     },
 
+    // 360° Panorama methods
+    handlePanoramaSelect(event) {
+      const files = event.target.files;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        if (!file.type.startsWith('image/')) {
+          this.showError('Please select only image files');
+          continue;
+        }
+
+        if (file.size > 20 * 1024 * 1024) {
+          this.showError(`File ${file.name} is too large (max 20MB)`);
+          continue;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.selectedPanoramas.push({
+            file: file,
+            preview: e.target.result,
+            roomName: '',
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+
+      this.$refs.panoramaInput.value = '';
+    },
+
+    removeSelectedPanorama(index) {
+      this.selectedPanoramas.splice(index, 1);
+    },
+
+    async deletePanorama(panoramaId) {
+      if (!confirm('Delete this 360° image?')) return;
+
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(
+          `${this.apiUrl}/api/agent/panoramas/${panoramaId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          this.showSuccess('360° image deleted');
+          const index = this.property.panoramas.findIndex(p => p.id === panoramaId);
+          if (index > -1) {
+            this.property.panoramas.splice(index, 1);
+          }
+        } else {
+          this.showError(data.message || 'Failed to delete 360° image');
+        }
+      } catch (error) {
+        console.error('Delete panorama error:', error);
+        this.showError('Failed to delete 360° image');
+      }
+    },
+
+    async uploadPanoramas(propertyId, token) {
+      try {
+        const formData = new FormData();
+
+        this.selectedPanoramas.forEach((pano, index) => {
+          formData.append('panoramas[]', pano.file);
+          formData.append('room_names[]', pano.roomName || 'Room ' + (index + 1));
+        });
+
+        const response = await fetch(
+          `${this.apiUrl}/api/agent/properties/${propertyId}/panoramas`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          this.showSuccess(`${this.selectedPanoramas.length} 360° image(s) uploaded!`);
+          this.selectedPanoramas = [];
+        } else {
+          console.warn('Panorama upload warning:', data.message);
+        }
+      } catch (error) {
+        console.error('Panorama upload error:', error);
+      }
+    },
+
     loadUserData() {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -760,7 +952,7 @@ export default {
   mounted() {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      this.$router.push('/login');
+      this.$router.push('/');
       return;
     }
 
@@ -789,8 +981,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -1078,7 +1270,7 @@ export default {
 .form-textarea:focus {
   outline: none;
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-textarea {
@@ -1343,7 +1535,7 @@ export default {
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .btn-primary:disabled {
@@ -1485,5 +1677,148 @@ export default {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 12px;
   }
+
+  .panorama-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .panorama-upload-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panorama-upload-preview {
+    width: 100%;
+    height: 80px;
+  }
+}
+
+/* 360° Panorama Section */
+.section-description {
+  font-size: 13px;
+  color: #999;
+  margin: -12px 0 20px 0;
+  line-height: 1.5;
+}
+
+.panorama-upload {
+  border-color: #7c3aed !important;
+  background: #faf8ff !important;
+}
+
+.panorama-upload:hover {
+  background: #f5f0ff !important;
+  border-color: #6d28d9 !important;
+}
+
+.panorama-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.panorama-item {
+  border: 1px solid var(--light-gray, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panorama-preview-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.panorama-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.panorama-room-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.btn-delete-panorama {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.panorama-preview-container:hover .btn-delete-panorama {
+  opacity: 1;
+}
+
+.selected-panoramas {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--white-smoke, #f5f5f5);
+  border-radius: 8px;
+}
+
+.selected-panoramas h4 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--smoky-black, #100c08);
+}
+
+.panorama-upload-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--light-gray, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.panorama-upload-preview {
+  width: 120px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.panorama-upload-details {
+  flex: 1;
+}
+
+.panorama-upload-details label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--smoky-black, #100c08);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.existing-panoramas {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--light-gray, #e0e0e0);
 }
 </style>

@@ -33,6 +33,10 @@
             <span class="nav-label">Viewings</span>
             <span v-if="pendingViewingsCount > 0" class="badge-dot">{{ pendingViewingsCount }}</span>
           </router-link>
+          <router-link to="/agent/calendar" class="nav-item">
+            <span class="nav-icon">📆</span>
+            <span class="nav-label">My Calendar</span>
+          </router-link>
           <router-link to="/agent/documents" class="nav-item">
             <span class="nav-icon">📄</span>
             <span class="nav-label">Documents</span>
@@ -49,10 +53,10 @@
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
           </router-link>
-          <a href="#" class="nav-item">
+          <router-link to="/settings" class="nav-item">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Settings</span>
-          </a>
+          </router-link>
         </div>
       </nav>
 
@@ -346,17 +350,12 @@
       </div>
     </transition>
 
-    <!-- RealtyLinkPH Buddy Chat -->
-    <ChatBubble />
   </div>
 </template>
 
 <script>
-import ChatBubble from '../components/ChatBubble.vue';
-
 export default {
   name: 'AgentDashboard',
-  components: { ChatBubble },
   data() {
     return {
       // User
@@ -530,6 +529,8 @@ export default {
       this.showNotifBell = !this.showNotifBell;
       if (this.showNotifBell) {
         this.loadNotifications();
+        // Mark all notifications as read when the panel is opened
+        this.markAllNotificationsRead();
       }
     },
 
@@ -761,8 +762,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -1087,7 +1088,7 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .page-wrapper {
@@ -1455,7 +1456,7 @@ export default {
   padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
   font-weight: 700; font-size: 13px; color: #100c08;
 }
-.notif-view-all { font-size: 12px; color: #e6ae0d; text-decoration: none; font-weight: 600; }
+.notif-view-all { font-size: 12px; color: #FFD700; text-decoration: none; font-weight: 600; }
 .notif-empty { padding: 20px 16px; text-align: center; color: #999; font-size: 13px; }
 .notif-item {
   display: flex; align-items: center; gap: 10px;
@@ -1464,7 +1465,7 @@ export default {
 .notif-item:hover { background: #faf9f5; }
 .notif-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   color: #100c08; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px;
 }
@@ -1475,22 +1476,22 @@ export default {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .notif-unread {
-  background: #e6ae0d; color: #100c08;
+  background: #FFD700; color: #100c08;
   border-radius: 999px; padding: 1px 7px;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 .notif-mark-all {
   background: none; border: none; cursor: pointer;
-  font-size: 11px; color: #e6ae0d; font-weight: 600;
+  font-size: 11px; color: #FFD700; font-weight: 600;
   transition: color .2s;
 }
-.notif-mark-all:hover { color: #d4a000; }
+.notif-mark-all:hover { color: #DAB600; }
 .notif-unread-bg { background: #fffdf5; }
 .notif-icon-avatar { font-size: 18px; background: #f5f5f5; }
 .notif-time { font-size: 11px; color: #aaa; margin: 2px 0 0; }
 .notif-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: #e6ae0d; flex-shrink: 0;
+  background: #FFD700; flex-shrink: 0;
 }
 .notif-header-sub { border-top: 1px solid #f0f0f0; margin-top: 4px; }
 .notif-dropdown { max-height: 420px; overflow-y: auto; }
@@ -1515,7 +1516,7 @@ export default {
 .conv-widget-item:hover { background: #faf9f5; }
 .conv-widget-avatar {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #e6ae0d, #d4a000);
+  background: linear-gradient(135deg, #FFD700, #DAB600);
   color: #100c08; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 17px;
 }
@@ -1531,14 +1532,14 @@ export default {
 }
 .conv-widget-prop {
   font-size: 11px; color: #7a5c00;
-  background: #fef9e7; border: 1px solid #e6ae0d;
+  background: #fef9e7; border: 1px solid #FFD700;
   border-radius: 4px; padding: 2px 8px;
   display: inline-block; margin-top: 3px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   max-width: 200px;
 }
 .conv-widget-badge {
-  background: #e6ae0d; color: #100c08;
+  background: #FFD700; color: #100c08;
   border-radius: 999px; padding: 2px 8px;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }

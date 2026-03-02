@@ -41,4 +41,16 @@ return [
         'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models',
     ],
 
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+        'endpoint' => 'https://api.deepseek.com/v1/chat/completions',
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];

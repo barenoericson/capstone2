@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Property;
 use App\Models\PropertyPhoto;
+use App\Models\PropertyPanorama;
 use App\Models\Agent;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -48,11 +49,14 @@ class PropertyController extends Controller
         try {
             // ✅ IMPORTANT: Eager load agent.user and photos
             $property = Property::with([
-                'agent.user',  // Load the user relationship
+                'agent.user',
                 'photos' => function ($q) {
                     $q->orderBy('is_cover', 'desc')
                       ->orderBy('sort_order', 'asc');
-                }
+                },
+                'panoramas' => function ($q) {
+                    $q->orderBy('sort_order', 'asc');
+                },
             ])->findOrFail($id);
 
             return response()->json([
@@ -149,6 +153,36 @@ class PropertyController extends Controller
             $validated['status'] = $validated['status'] ?? 'available';
 
             $property = Property::create($validated);
+
+            // AI property analysis — flag suspicious listings
+            try {
+                $gemini = app(\App\Services\GeminiService::class);
+                $result = $gemini->analyzeProperty([
+                    'title'         => $property->title,
+                    'description'   => $property->description,
+                    'price'         => $property->price,
+                    'city'          => $property->city,
+                    'province'      => $property->province,
+                    'property_type' => $property->property_type,
+                    'bedrooms'      => $property->bedrooms,
+                    'bathrooms'     => $property->bathrooms,
+                    'floor_area'    => $property->floor_area,
+                    'lot_size'      => $property->lot_size,
+                ]);
+
+                if ($result['is_suspicious'] && $result['confidence'] >= 0.70) {
+                    \App\Models\PropertyFlag::create([
+                        'property_id'    => $property->id,
+                        'flag_reason'    => $result['flag_reason'],
+                        'ai_raw_response' => $result['raw_response'],
+                        'ai_confidence'  => $result['confidence'] * 100,
+                        'status'         => \App\Models\PropertyFlag::STATUS_PENDING,
+                        'flagged_at'     => now(),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('AI property analysis failed silently: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
@@ -561,6 +595,150 @@ class PropertyController extends Controller
                 'success' => false,
                 'message' => 'Failed to save property',
             ], 500);
+        }
+    }
+
+    // ============================================================
+    // 360° PANORAMA METHODS
+    // ============================================================
+
+    /**
+     * Upload 360° panoramic images for a property
+     */
+    public function uploadPanoramas(Request $request, $id)
+    {
+        try {
+            $property = Property::findOrFail($id);
+            $agent = auth()->user()->agent;
+
+            if (!$agent || $property->agent_id !== $agent->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            $request->validate([
+                'panoramas'   => 'required|array|min:1',
+                'panoramas.*' => 'required|image|max:20480',
+                'room_names'  => 'required|array|min:1',
+                'room_names.*' => 'required|string|max:100',
+            ]);
+
+            $uploadedPanoramas = [];
+            $sortOrder = $property->panoramas()->max('sort_order') ?? 0;
+            $roomNames = $request->input('room_names', []);
+
+            foreach ($request->file('panoramas') as $index => $file) {
+                try {
+                    $path = $file->store('properties/' . $id . '/panoramas', 'public');
+                    $imageUrl = \Storage::url($path);
+                    $roomName = $roomNames[$index] ?? 'Room ' . ($sortOrder + 1);
+
+                    $panorama = PropertyPanorama::create([
+                        'property_id' => $property->id,
+                        'image_path'  => $path,
+                        'image_url'   => $imageUrl,
+                        'room_name'   => $roomName,
+                        'sort_order'  => ++$sortOrder,
+                    ]);
+
+                    $uploadedPanoramas[] = $panorama;
+                } catch (\Exception $e) {
+                    \Log::error('Error uploading panorama: ' . $e->getMessage());
+                    continue;
+                }
+            }
+
+            if (empty($uploadedPanoramas)) {
+                return response()->json(['success' => false, 'message' => 'No panoramas uploaded'], 400);
+            }
+
+            $this->generateAutoHotspots($property);
+
+            return response()->json([
+                'success' => true,
+                'message' => count($uploadedPanoramas) . ' panorama(s) uploaded successfully',
+                'data'    => $uploadedPanoramas,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('PropertyController@uploadPanoramas error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to upload panoramas'], 500);
+        }
+    }
+
+    /**
+     * Delete a 360° panoramic image
+     */
+    public function deletePanorama($panoramaId)
+    {
+        try {
+            $panorama = PropertyPanorama::findOrFail($panoramaId);
+            $property = $panorama->property;
+            $agent = auth()->user()->agent;
+
+            if (!$agent || $property->agent_id !== $agent->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            if ($panorama->image_path && \Storage::disk('public')->exists($panorama->image_path)) {
+                \Storage::disk('public')->delete($panorama->image_path);
+            }
+
+            $panorama->delete();
+
+            $this->generateAutoHotspots($property);
+
+            return response()->json(['success' => true, 'message' => 'Panorama deleted successfully']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Panorama not found'], 404);
+        } catch (\Exception $e) {
+            \Log::error('PropertyController@deletePanorama error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to delete panorama'], 500);
+        }
+    }
+
+    /**
+     * Auto-generate hotspots linking adjacent panoramas
+     */
+    private function generateAutoHotspots(Property $property): void
+    {
+        $panoramas = $property->panoramas()->orderBy('sort_order')->get();
+
+        if ($panoramas->count() < 2) {
+            foreach ($panoramas as $p) {
+                $p->update(['hotspots' => null]);
+            }
+            return;
+        }
+
+        foreach ($panoramas as $index => $panorama) {
+            $hotspots = [];
+
+            if ($index > 0) {
+                $prev = $panoramas[$index - 1];
+                $hotspots[] = [
+                    'id'      => 'hs-prev-' . $prev->id,
+                    'pitch'   => -5,
+                    'yaw'     => -90,
+                    'type'    => 'scene',
+                    'text'    => $prev->room_name,
+                    'sceneId' => 'scene-' . $prev->id,
+                ];
+            }
+
+            if ($index < $panoramas->count() - 1) {
+                $next = $panoramas[$index + 1];
+                $hotspots[] = [
+                    'id'      => 'hs-next-' . $next->id,
+                    'pitch'   => -5,
+                    'yaw'     => 90,
+                    'type'    => 'scene',
+                    'text'    => $next->room_name,
+                    'sceneId' => 'scene-' . $next->id,
+                ];
+            }
+
+            $panorama->update(['hotspots' => $hotspots]);
         }
     }
 }

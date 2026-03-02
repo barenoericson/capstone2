@@ -267,7 +267,7 @@ export default {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  border: 3px solid #e6ae0d;
+  border: 3px solid #FFD700;
   background: #fff;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -277,7 +277,7 @@ export default {
 }
 .chat-bubble-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(230, 174, 13, 0.4);
+  box-shadow: 0 6px 28px rgba(255, 215, 0, 0.4);
 }
 .bubble-avatar {
   width: 100%;
@@ -342,7 +342,7 @@ export default {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 2px solid #e6ae0d;
+  border: 2px solid #FFD700;
   object-fit: cover;
 }
 .header-info { display: flex; flex-direction: column; }
@@ -354,7 +354,7 @@ export default {
   font-family: 'Poppins', sans-serif;
 }
 .hdr-realty { color: #fff; }
-.hdr-ph { color: #e6ae0d; }
+.hdr-ph { color: #FFD700; }
 .header-status {
   font-size: 11px;
   color: #aaa;
@@ -409,7 +409,7 @@ export default {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  border: 3px solid #e6ae0d;
+  border: 3px solid #FFD700;
   margin-bottom: 12px;
   object-fit: cover;
 }
@@ -432,7 +432,7 @@ export default {
 }
 .quick-prompt {
   background: #fff;
-  border: 1.5px solid #e6ae0d;
+  border: 1.5px solid #FFD700;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
@@ -483,7 +483,7 @@ export default {
   border-bottom-left-radius: 4px;
 }
 .user-bubble {
-  background: #e6ae0d;
+  background: #FFD700;
   color: #100c08;
   border-bottom-right-radius: 4px;
 }
@@ -532,14 +532,14 @@ export default {
   font-family: inherit;
   transition: border-color 0.2s;
 }
-.chat-input:focus { border-color: #e6ae0d; }
+.chat-input:focus { border-color: #FFD700; }
 .chat-input::placeholder { color: #bbb; }
 
 .send-btn {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: #e6ae0d;
+  background: #FFD700;
   color: #100c08;
   border: none;
   font-size: 18px;

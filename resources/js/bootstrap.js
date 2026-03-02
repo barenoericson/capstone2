@@ -30,12 +30,24 @@ function createEchoInstance() {
     });
 }
 
-window.Echo = createEchoInstance();
+// Only connect Echo when user is authenticated (has token)
+// This prevents connection timeout errors on public pages
+if (localStorage.getItem('auth_token')) {
+    try {
+        window.Echo = createEchoInstance();
+    } catch (e) {
+        console.warn('WebSocket connection unavailable:', e.message);
+    }
+}
 
 // Call this after login to reconnect Echo with the fresh token
 window.reconnectEcho = function () {
-    if (window.Echo) {
-        window.Echo.disconnect();
+    try {
+        if (window.Echo) {
+            window.Echo.disconnect();
+        }
+        window.Echo = createEchoInstance();
+    } catch (e) {
+        console.warn('WebSocket reconnection failed:', e.message);
     }
-    window.Echo = createEchoInstance();
 };

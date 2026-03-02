@@ -101,6 +101,14 @@ class Property extends Model
     }
 
     /**
+     * Get all panoramic images for this property
+     */
+    public function panoramas()
+    {
+        return $this->hasMany(PropertyPanorama::class)->orderBy('sort_order');
+    }
+
+    /**
      * Get all messages for this property
      */
     public function messages()
@@ -130,6 +138,14 @@ class Property extends Model
     public function reviews()
     {
         return $this->hasMany(AgentReview::class);
+    }
+
+    /**
+     * Get all flags for this property
+     */
+    public function flags()
+    {
+        return $this->hasMany(PropertyFlag::class);
     }
 
     /**

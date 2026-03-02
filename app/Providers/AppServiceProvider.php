@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Admin authorization gate
+        Gate::define('isAdmin', fn ($user) => $user->role === 'admin');
+
         // Point the password reset email link to the Vue SPA instead of the backend URL
         ResetPassword::createUrlUsing(function ($user, string $token) {
             $base = rtrim(config('app.url'), '/');

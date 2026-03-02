@@ -92,6 +92,23 @@
       </nav>
 
       <div class="content-area">
+        <!-- Upload Zone (shown on My Uploads tab) -->
+        <div
+          v-if="activeTab === 'uploads'"
+          class="upload-zone"
+          :class="{ 'drag-active': dragOver }"
+          @dragover.prevent="dragOver = true"
+          @dragleave.prevent="dragOver = false"
+          @drop.prevent="handleUploadDrop"
+        >
+          <input ref="docUploadInput" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp" style="display:none" @change="handleDocUploadInput" />
+          <div class="upload-zone-content" @click="$refs.docUploadInput.click()">
+            <span class="upload-zone-icon">📁</span>
+            <h4>{{ uploading ? 'Uploading...' : 'Drop files here or click to upload' }}</h4>
+            <p>PDF, Word, Excel, Images — Max 20MB</p>
+          </div>
+        </div>
+
         <!-- Loading -->
         <div v-if="loading" class="loading-state">
           <div class="spinner"></div>
@@ -104,6 +121,7 @@
           <h3>No documents found</h3>
           <p v-if="activeTab === 'pending'">No pending documents to sign.</p>
           <p v-else-if="activeTab === 'signed'">No signed documents yet.</p>
+          <p v-else-if="activeTab === 'uploads'">Upload your first document above.</p>
           <p v-else>Your agent hasn't sent you any documents yet.</p>
         </div>
 
@@ -111,13 +129,13 @@
         <div v-else class="documents-list">
           <div v-for="doc in filteredDocuments" :key="doc.id" class="document-card">
             <div class="doc-icon-wrap">
-              <span class="doc-icon">📑</span>
+              <span class="doc-icon">{{ activeTab === 'uploads' ? getFileTypeIcon(doc.mime_type) : '📑' }}</span>
             </div>
 
             <div class="doc-info">
               <div class="doc-header-row">
                 <h3 class="doc-name">{{ doc.document_name }}</h3>
-                <span class="doc-badge" :class="'badge-' + doc.status">
+                <span v-if="activeTab !== 'uploads'" class="doc-badge" :class="'badge-' + doc.status">
                   {{ doc.status === 'signed' ? '✅ Signed' : '🕐 Pending Signature' }}
                 </span>
               </div>
@@ -126,7 +144,7 @@
                   <span class="meta-icon">📁</span>
                   {{ formatDocType(doc.document_type) }}
                 </span>
-                <span class="meta-item">
+                <span v-if="activeTab !== 'uploads' && doc.agent_name" class="meta-item">
                   <span class="meta-icon">👤</span>
                   From: {{ doc.agent_name }}
                 </span>
@@ -158,12 +176,19 @@
                 v-if="doc.has_file"
                 @click="downloadDoc(doc)"
                 class="btn-action btn-download"
-                title="Download PDF"
+                title="Download"
               >
                 ⬇️ Download
               </button>
+              <router-link
+                v-if="activeTab === 'uploads' && doc.mime_type && (doc.mime_type === 'application/pdf' || doc.mime_type.startsWith('image/'))"
+                :to="`/documents/${doc.id}/edit`"
+                class="btn-action btn-edit"
+              >
+                ✏️ Edit
+              </router-link>
               <button
-                v-if="doc.status === 'pending'"
+                v-if="activeTab !== 'uploads' && doc.status === 'pending'"
                 class="btn-action btn-sign"
                 @click="openSignModal(doc)"
               >
@@ -185,7 +210,7 @@
 
     <!-- ===================== SIGN MODAL ===================== -->
     <div v-if="showSignModal" class="modal-overlay" @click.self="closeSignModal">
-      <div class="modal-box sign-modal">
+      <div class="modal-box sign-modal" :class="{ 'sign-modal-wide': signPhase === 'position' || signPhase === 'preview' }">
         <div class="modal-header">
           <div class="modal-title-group">
             <h2 class="modal-title">Sign Document</h2>
@@ -194,21 +219,83 @@
           <button class="modal-close" @click="closeSignModal">✕</button>
         </div>
 
-        <!-- ── DRAW / UPLOAD STEP ── -->
-        <template v-if="signMode === 'draw'">
-          <div class="sign-tabs">
+        <!-- Phase indicator -->
+        <div class="sign-phases">
+          <div class="phase-step" :class="{ active: signPhase === 'position', done: signPhase !== 'position' }">
+            <span class="phase-num">1</span>
+            <span class="phase-label">Place Signature</span>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="phase-step" :class="{ active: signPhase === 'capture', done: signPhase === 'preview' || signPhase === 'signing' }">
+            <span class="phase-num">2</span>
+            <span class="phase-label">Create Signature</span>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="phase-step" :class="{ active: signPhase === 'preview', done: signPhase === 'signing' }">
+            <span class="phase-num">3</span>
+            <span class="phase-label">Confirm</span>
+          </div>
+        </div>
+
+        <!-- ── PHASE 1: PDF PREVIEW + CLICK TO PLACE ── -->
+        <template v-if="signPhase === 'position'">
+          <div class="sign-tab-content">
+            <p class="sign-hint">Click on the document where you want to place your signature:</p>
+
+            <div v-if="pdfLoading" class="pdf-loading">
+              <div class="spinner"></div>
+              <p>Loading document preview...</p>
+            </div>
+
+            <div v-else-if="!isPdfDoc" class="non-pdf-notice">
+              <span class="notice-icon">📄</span>
+              <p>This document is not a PDF. Your signature will be attached separately.</p>
+              <button class="btn-submit btn-sm" @click="signPhase = 'capture'; $nextTick(() => initCanvas())">Continue to Signature</button>
+            </div>
+
+            <div v-else class="pdf-preview-area">
+              <!-- Page navigation -->
+              <div v-if="totalPages > 1" class="page-nav">
+                <button class="page-nav-btn" :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)">◀</button>
+                <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+                <button class="page-nav-btn" :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)">▶</button>
+              </div>
+
+              <div class="pdf-canvas-container" @click="handlePdfClick">
+                <canvas ref="pdfCanvas" class="pdf-canvas"></canvas>
+                <!-- Signature placement indicator -->
+                <div
+                  v-if="positionSelected"
+                  class="sig-placeholder"
+                  :style="sigPlaceholderStyle"
+                >
+                  <span class="sig-placeholder-text">Signature Here</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p v-if="signError" class="sign-error">{{ signError }}</p>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" @click="closeSignModal">Cancel</button>
             <button
-              class="sign-tab"
-              :class="{ active: signTab === 'draw' }"
-              @click="switchSignTab('draw')"
+              class="btn-submit"
+              :disabled="!positionSelected && isPdfDoc"
+              @click="signPhase = 'capture'; $nextTick(() => initCanvas())"
             >
+              Next: Create Signature
+            </button>
+          </div>
+        </template>
+
+        <!-- ── PHASE 2: DRAW / UPLOAD SIGNATURE ── -->
+        <template v-else-if="signPhase === 'capture'">
+          <div class="sign-tabs">
+            <button class="sign-tab" :class="{ active: signTab === 'draw' }" @click="switchSignTab('draw')">
               ✏️ Draw Signature
             </button>
-            <button
-              class="sign-tab"
-              :class="{ active: signTab === 'upload' }"
-              @click="switchSignTab('upload')"
-            >
+            <button class="sign-tab" :class="{ active: signTab === 'upload' }" @click="switchSignTab('upload')">
               📷 Upload Photo
             </button>
           </div>
@@ -249,7 +336,7 @@
               </div>
               <div v-else class="photo-preview-wrap">
                 <canvas ref="processedCanvas" class="processed-canvas" width="560" height="200"></canvas>
-                <p class="preview-note">✅ Background removed</p>
+                <p class="preview-note">Background removed</p>
               </div>
             </div>
             <div v-if="photoPreview" class="canvas-controls">
@@ -260,20 +347,32 @@
           <p v-if="signError" class="sign-error">{{ signError }}</p>
 
           <div class="modal-footer">
-            <button class="btn-cancel" @click="closeSignModal" :disabled="signing">Cancel</button>
-            <button class="btn-submit" @click="previewSignature">Preview Signature →</button>
+            <button class="btn-cancel" @click="signPhase = 'position'" :disabled="signing">Back</button>
+            <button class="btn-submit" @click="previewSignature">Preview Signature</button>
           </div>
         </template>
 
-        <!-- ── PREVIEW STEP ── -->
-        <template v-else-if="signMode === 'preview'">
-          <div class="preview-section">
-            <p class="preview-label">Your signature will appear like this on the document:</p>
-            <div class="sig-area-box">
-              <img :src="signaturePreview" class="sig-area-img" alt="Your signature preview" />
-              <div class="sig-area-line">
-                <span>Buyer Signature</span>
-                <span>{{ new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+        <!-- ── PHASE 3: PREVIEW WITH SIGNATURE ON PDF ── -->
+        <template v-else-if="signPhase === 'preview'">
+          <div class="sign-tab-content">
+            <p class="sign-hint">Review your signature placement. Click "Confirm & Sign" to finalize.</p>
+            <div class="preview-document-area">
+              <div class="pdf-canvas-container" v-if="isPdfDoc">
+                <canvas ref="previewPdfCanvas" class="pdf-canvas"></canvas>
+                <img
+                  v-if="signaturePreview"
+                  :src="signaturePreview"
+                  class="sig-overlay-img"
+                  :style="sigOverlayStyle"
+                  alt="Your signature"
+                />
+              </div>
+              <div v-else class="sig-area-box">
+                <img :src="signaturePreview" class="sig-area-img" alt="Your signature preview" />
+                <div class="sig-area-line">
+                  <span>Buyer Signature</span>
+                  <span>{{ new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -281,10 +380,19 @@
           <p v-if="signError" class="sign-error">{{ signError }}</p>
 
           <div class="modal-footer">
-            <button class="btn-cancel" @click="signMode = 'draw'" :disabled="signing">↩ Re-draw</button>
+            <button class="btn-cancel" @click="signPhase = 'capture'" :disabled="signing">Back</button>
             <button class="btn-submit" @click="submitSignature" :disabled="signing">
-              {{ signing ? 'Submitting...' : '✅ Confirm & Sign Document' }}
+              {{ signing ? 'Signing & Sending...' : 'Confirm & Sign Document' }}
             </button>
+          </div>
+        </template>
+
+        <!-- ── SIGNING IN PROGRESS ── -->
+        <template v-else-if="signPhase === 'signing'">
+          <div class="signing-progress">
+            <div class="spinner spinner-lg"></div>
+            <h3>Embedding signature into document...</h3>
+            <p>The signed document will be sent automatically.</p>
           </div>
         </template>
       </div>
@@ -298,6 +406,8 @@
 </template>
 
 <script>
+import { markRaw } from 'vue';
+
 export default {
   name: 'BuyerDocuments',
 
@@ -314,16 +424,34 @@ export default {
         { label: 'All', value: 'all' },
         { label: 'Pending', value: 'pending' },
         { label: 'Signed', value: 'signed' },
+        { label: 'My Uploads', value: 'uploads' },
       ],
+      myUploads: [],
+      dragOver: false,
+      uploading: false,
 
       // Sign modal
       showSignModal: false,
       signingDoc: null,
-      signMode: 'draw',        // 'draw' | 'preview'
+      signPhase: 'position',   // 'position' | 'capture' | 'preview' | 'signing'
       signTab: 'draw',         // 'draw' | 'upload'
       signing: false,
       signError: '',
-      signaturePreview: null,  // data URL shown in preview step
+      signaturePreview: null,
+
+      // PDF preview
+      pdfDoc: null,
+      totalPages: 1,
+      currentPage: 1,
+      pdfLoading: false,
+      pdfPageWidth: 0,
+      pdfPageHeight: 0,
+
+      // Signature position (relative to canvas)
+      signaturePosition: { x: 0, y: 0, page: 1 },
+      canvasDisplayWidth: 0,
+      canvasDisplayHeight: 0,
+      positionSelected: false,
 
       // Draw state
       isDrawing: false,
@@ -342,11 +470,46 @@ export default {
 
   computed: {
     filteredDocuments() {
+      if (this.activeTab === 'uploads') return this.myUploads;
       if (this.activeTab === 'all') return this.documents;
       return this.documents.filter(d => d.status === this.activeTab);
     },
     pendingCount() {
       return this.documents.filter(d => d.status === 'pending').length;
+    },
+    isPdfDoc() {
+      if (!this.signingDoc) return false;
+      const url = (this.signingDoc.document_url || '').toLowerCase();
+      return url.endsWith('.pdf') || (this.signingDoc.mime_type || '').includes('pdf');
+    },
+    sigPlaceholderStyle() {
+      if (!this.positionSelected || !this.canvasDisplayWidth) return {};
+      const wPct = 25; // 25% of document width
+      const hPx  = 40;
+      const leftPct = (this.signaturePosition.x / this.canvasDisplayWidth) * 100;
+      const topPx   = this.signaturePosition.y;
+      return {
+        left: Math.min(leftPct, 100 - wPct) + '%',
+        top: topPx + 'px',
+        width: wPct + '%',
+        height: hPx + 'px',
+      };
+    },
+    sigOverlayStyle() {
+      if (!this.positionSelected || !this.canvasDisplayWidth) return {};
+      const wPct = 25;
+      const hPx  = 40;
+      const leftPct = (this.signaturePosition.x / this.canvasDisplayWidth) * 100;
+      const topPx   = this.signaturePosition.y;
+      return {
+        position: 'absolute',
+        left: Math.min(leftPct, 100 - wPct) + '%',
+        top: topPx + 'px',
+        width: wPct + '%',
+        height: hPx + 'px',
+        objectFit: 'contain',
+        pointerEvents: 'none',
+      };
     },
   },
 
@@ -356,16 +519,28 @@ export default {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userName = user.name || 'Buyer';
     this.loadDocuments();
+    this.loadMyUploads();
+    this.clearDocumentNotifications();
   },
 
   methods: {
+    async clearDocumentNotifications() {
+      try {
+        await fetch(`${this.apiUrl}/api/notifications/mark-type-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ type: 'document' }),
+        });
+      } catch (e) { /* silent */ }
+    },
+
     // ========================
     // Load documents
     // ========================
     async loadDocuments() {
       this.loading = true;
       try {
-        const res = await fetch(`${this.apiUrl}/buyer/documents`, {
+        const res = await fetch(`${this.apiUrl}/api/buyer/documents`, {
           headers: { Authorization: `Bearer ${this.token}` },
         });
         const data = await res.json();
@@ -378,11 +553,71 @@ export default {
     },
 
     // ========================
+    // Load my uploads
+    // ========================
+    async loadMyUploads() {
+      try {
+        const res = await fetch(`${this.apiUrl}/api/documents/my`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+        });
+        const data = await res.json();
+        this.myUploads = data.documents || [];
+      } catch (e) { /* silent */ }
+    },
+
+    // ========================
+    // Upload document
+    // ========================
+    handleDocUploadInput(e) {
+      const file = e.target.files[0];
+      if (file) this.uploadFile(file);
+      e.target.value = '';
+    },
+    handleUploadDrop(e) {
+      this.dragOver = false;
+      const file = e.dataTransfer.files[0];
+      if (file) this.uploadFile(file);
+    },
+    async uploadFile(file) {
+      this.uploading = true;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('document_name', file.name.replace(/\.[^.]+$/, ''));
+      try {
+        const res = await fetch(`${this.apiUrl}/api/documents/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${this.token}` },
+          body: fd,
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.myUploads.unshift(data.document);
+          this.showToast('Document uploaded!', 'success');
+        } else {
+          this.showToast(data.message || 'Upload failed.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Upload failed.', 'error');
+      } finally {
+        this.uploading = false;
+      }
+    },
+
+    getFileTypeIcon(mimeType) {
+      if (!mimeType) return '📄';
+      if (mimeType === 'application/pdf') return '📕';
+      if (mimeType.includes('word') || mimeType.includes('document')) return '📘';
+      if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📗';
+      if (mimeType.startsWith('image/')) return '🖼️';
+      return '📄';
+    },
+
+    // ========================
     // Download
     // ========================
     async downloadDoc(doc) {
       try {
-        const res = await fetch(`${this.apiUrl}/documents/${doc.id}/download`, {
+        const res = await fetch(`${this.apiUrl}/api/documents/${doc.id}/download`, {
           headers: { Authorization: `Bearer ${this.token}` },
         });
         if (!res.ok) { this.showToast('Download failed.', 'error'); return; }
@@ -415,27 +650,140 @@ export default {
     // ========================
     openSignModal(doc) {
       this.signingDoc        = doc;
-      this.signMode          = 'draw';
+      this.signPhase         = 'position';
       this.signTab           = 'draw';
       this.signError         = '';
       this.hasDrawn          = false;
       this.photoPreview      = false;
       this.photoDataUrl      = null;
       this.signaturePreview  = null;
+      this.positionSelected  = false;
+      this.signaturePosition = { x: 0, y: 0, page: 1 };
+      this.pdfDoc            = null;
+      this.totalPages        = 1;
+      this.currentPage       = 1;
       this.showSignModal     = true;
-      this.$nextTick(() => this.initCanvas());
+
+      // Load PDF preview if it's a PDF
+      this.$nextTick(() => {
+        const url = (doc.document_url || '').toLowerCase();
+        const isPdf = url.endsWith('.pdf') || (doc.mime_type || '').includes('pdf');
+        if (isPdf && doc.document_url) {
+          this.loadPdfPreview(doc.document_url);
+        }
+      });
     },
 
     closeSignModal() {
       if (this.signing) return;
       this.showSignModal = false;
       this.signingDoc    = null;
+      this.pdfDoc        = null;
     },
 
     switchSignTab(tab) {
       this.signTab   = tab;
       this.signError = '';
       if (tab === 'draw') this.$nextTick(() => this.initCanvas());
+    },
+
+    // ========================
+    // PDF Preview loading
+    // ========================
+    async loadPdfPreview(url) {
+      this.pdfLoading = true;
+      try {
+        // Load PDF.js from CDN if not already loaded
+        if (!window.pdfjsLib) {
+          await this.loadPdfJsScript();
+        }
+        const pdfjsLib = window.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Fetch the PDF
+        const loadingTask = pdfjsLib.getDocument(url);
+        this.pdfDoc = markRaw(await loadingTask.promise);
+        this.totalPages = this.pdfDoc.numPages;
+        this.currentPage = 1;
+        await this.renderPdfPage(1);
+      } catch (e) {
+        console.error('PDF preview failed:', e);
+        this.signError = 'Could not load PDF preview. You can still sign the document.';
+      } finally {
+        this.pdfLoading = false;
+      }
+    },
+
+    loadPdfJsScript() {
+      return new Promise((resolve, reject) => {
+        if (window.pdfjsLib) { resolve(); return; }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load PDF.js'));
+        document.head.appendChild(script);
+      });
+    },
+
+    async renderPdfPage(pageNum) {
+      if (!this.pdfDoc) return;
+      const page = await this.pdfDoc.getPage(pageNum);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+
+      const canvas = this.$refs.pdfCanvas;
+      if (!canvas) return;
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      this.pdfPageWidth  = viewport.width;
+      this.pdfPageHeight = viewport.height;
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // Store displayed dimensions for coordinate mapping
+      this.$nextTick(() => {
+        this.canvasDisplayWidth  = canvas.offsetWidth;
+        this.canvasDisplayHeight = canvas.offsetHeight;
+      });
+    },
+
+    async goToPage(num) {
+      if (num < 1 || num > this.totalPages) return;
+      this.currentPage = num;
+      this.positionSelected = false;
+      await this.renderPdfPage(num);
+    },
+
+    handlePdfClick(e) {
+      const canvas = this.$refs.pdfCanvas;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      this.canvasDisplayWidth  = canvas.offsetWidth;
+      this.canvasDisplayHeight = canvas.offsetHeight;
+
+      this.signaturePosition = { x, y, page: this.currentPage };
+      this.positionSelected = true;
+      this.signError = '';
+    },
+
+    async renderPreviewPage() {
+      if (!this.pdfDoc) return;
+      const page = await this.pdfDoc.getPage(this.signaturePosition.page);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+
+      const canvas = this.$refs.previewPdfCanvas;
+      if (!canvas) return;
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
     },
 
     // ========================
@@ -565,7 +913,7 @@ export default {
     },
 
     // ========================
-    // Two-step: preview then submit
+    // Preview then submit
     // ========================
     previewSignature() {
       this.signError = '';
@@ -578,31 +926,55 @@ export default {
         preview = this.photoDataUrl;
       }
       this.signaturePreview = preview;
-      this.signMode = 'preview';
+      this.signPhase = 'preview';
+
+      // Render the PDF page in preview if it's a PDF
+      if (this.isPdfDoc && this.pdfDoc) {
+        this.$nextTick(() => this.renderPreviewPage());
+      }
     },
 
     async submitSignature() {
       this.signError = '';
       this.signing   = true;
+      this.signPhase = 'signing';
       try {
-        const res = await fetch(`${this.apiUrl}/buyer/documents/${this.signingDoc.id}/sign`, {
+        // Calculate position in PDF coordinate space
+        const scaleX = this.canvasDisplayWidth ? (this.pdfPageWidth / this.canvasDisplayWidth) : 1;
+        const scaleY = this.canvasDisplayHeight ? (this.pdfPageHeight / this.canvasDisplayHeight) : 1;
+        const pdfX = this.signaturePosition.x * scaleX;
+        const pdfY = this.signaturePosition.y * scaleY;
+
+        const res = await fetch(`${this.apiUrl}/api/buyer/documents/${this.signingDoc.id}/sign`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             signature_data: this.signaturePreview,
-            signature_type: this.signTab,
+            signature_type: this.signTab === 'draw' ? 'drawn' : 'photo',
+            position_x: pdfX,
+            position_y: pdfY,
+            position_page: this.signaturePosition.page || 1,
+            page_width: this.pdfPageWidth || 595,
+            page_height: this.pdfPageHeight || 842,
           }),
         });
         const data = await res.json();
-        if (!res.ok) { this.signError = data.message || 'Failed to submit signature.'; return; }
+        if (!res.ok) {
+          this.signError = data.message || 'Failed to submit signature.';
+          this.signPhase = 'preview';
+          return;
+        }
 
         const idx = this.documents.findIndex(d => d.id === this.signingDoc.id);
         if (idx !== -1 && data.document) this.documents[idx] = data.document;
 
-        this.closeSignModal();
-        this.showToast('Document signed successfully!', 'success');
+        this.showSignModal = false;
+        this.signingDoc = null;
+        this.pdfDoc = null;
+        this.showToast('Document signed and sent!', 'success');
       } catch (e) {
         this.signError = 'Network error. Please try again.';
+        this.signPhase = 'preview';
       } finally {
         this.signing = false;
       }
@@ -617,13 +989,13 @@ export default {
     },
 
     logout() {
-      fetch(`${this.apiUrl}/logout`, {
+      fetch(`${this.apiUrl}/api/auth/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${this.token}` },
       }).finally(() => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
-        this.$router.push('/login');
+        this.$router.push('/');
       });
     },
   },
@@ -718,11 +1090,21 @@ export default {
 .signed-proof { display: flex; align-items: center; }
 .signature-thumb { max-width: 100px; max-height: 40px; object-fit: contain; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
 
+/* Upload zone */
+.upload-zone { border: 2px dashed #0f3460; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f0f4ff; margin-bottom: 24px; }
+.upload-zone:hover, .upload-zone.drag-active { background: #e0e8ff; border-color: #e94560; }
+.upload-zone-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.upload-zone h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0 0 6px; }
+.upload-zone p { font-size: 13px; color: #888; margin: 0; }
+.btn-edit { background: #fff3e0; color: #e65100; }
+.btn-edit:hover { background: #e65100; color: #fff; }
+
 /* =========================================================
    Sign Modal
    ========================================================= */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-.modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 620px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; }
+.modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 620px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; max-height: 90vh; overflow-y: auto; }
+.sign-modal-wide { max-width: 800px; }
 .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 28px 0; }
 .modal-title { font-size: 20px; font-weight: 800; color: #1a1a2e; margin: 0 0 4px; }
 .modal-subtitle { font-size: 13px; color: #666; margin: 0; }
@@ -775,6 +1157,50 @@ export default {
 .btn-submit { padding: 10px 24px; border-radius: 10px; border: none; background: linear-gradient(135deg, #e94560, #c23152); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(233,69,96,0.35); }
 .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(233,69,96,0.45); }
 .btn-submit:disabled, .btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* =========================================================
+   Phase Indicator
+   ========================================================= */
+.sign-phases { display: flex; align-items: center; justify-content: center; gap: 0; padding: 18px 28px 12px; }
+.phase-step { display: flex; align-items: center; gap: 6px; opacity: 0.4; transition: opacity 0.2s; }
+.phase-step.active { opacity: 1; }
+.phase-step.done { opacity: 0.7; }
+.phase-num { width: 24px; height: 24px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #666; }
+.phase-step.active .phase-num { background: #0f3460; color: #fff; }
+.phase-step.done .phase-num { background: #27ae60; color: #fff; }
+.phase-label { font-size: 12px; font-weight: 600; color: #333; }
+.phase-connector { width: 32px; height: 2px; background: #e0e0e0; margin: 0 8px; }
+
+/* =========================================================
+   PDF Preview
+   ========================================================= */
+.pdf-loading { text-align: center; padding: 40px 20px; color: #666; }
+.pdf-preview-area { }
+.page-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
+.page-nav-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fff; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.page-nav-btn:hover:not(:disabled) { background: #f0f4ff; border-color: #0f3460; }
+.page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 13px; font-weight: 600; color: #333; }
+.pdf-canvas-container { position: relative; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; cursor: crosshair; background: #f5f5f5; }
+.pdf-canvas { display: block; width: 100%; height: auto; }
+.sig-placeholder { position: absolute; border: 2px dashed #e94560; background: rgba(233,69,96,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: all 0.15s ease; }
+.sig-placeholder-text { font-size: 11px; font-weight: 700; color: #e94560; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Non-PDF notice */
+.non-pdf-notice { text-align: center; padding: 40px 20px; }
+.notice-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.non-pdf-notice p { color: #666; font-size: 14px; margin: 0 0 16px; }
+.btn-sm { padding: 8px 18px; font-size: 13px; }
+
+/* Preview with overlay */
+.preview-document-area { position: relative; }
+.sig-overlay-img { pointer-events: none; }
+
+/* Signing progress */
+.signing-progress { text-align: center; padding: 60px 28px; }
+.signing-progress h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 16px 0 8px; }
+.signing-progress p { font-size: 14px; color: #666; margin: 0; }
+.spinner-lg { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: #0f3460; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
 
 /* =========================================================
    Toast

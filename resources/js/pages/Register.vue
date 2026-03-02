@@ -370,7 +370,7 @@ const goBack = () => {
 }
 
 .register-form::-webkit-scrollbar-thumb {
-  background: #E3B341;
+  background: #FFD700;
   border-radius: 3px;
 }
 
@@ -395,7 +395,7 @@ const goBack = () => {
 }
 
 .close-btn:hover {
-  background: #E3B341;
+  background: #FFD700;
   color: white;
   transform: rotate(90deg);
 }
@@ -418,7 +418,7 @@ const goBack = () => {
 }
 
 .brand-ph {
-  color: #E3B341;
+  color: #FFD700;
   margin-left: 4px;
 }
 
@@ -530,9 +530,9 @@ label {
 
 .form-input:focus {
   outline: none;
-  border-color: #E3B341;
+  border-color: #FFD700;
   background: white;
-  box-shadow: 0 0 0 4px rgba(227, 179, 65, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
 }
 
 .form-input::placeholder {
@@ -575,7 +575,7 @@ label {
   height: 20px;
   margin-top: 2px;
   cursor: pointer;
-  accent-color: #E3B341;
+  accent-color: #FFD700;
   flex-shrink: 0;
   border-radius: 4px;
   border: 2px solid #eee;
@@ -583,8 +583,8 @@ label {
 }
 
 .checkbox-group input[type="checkbox"]:focus {
-  border-color: #E3B341;
-  box-shadow: 0 0 0 3px rgba(227, 179, 65, 0.1);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .checkbox-label {
@@ -596,7 +596,7 @@ label {
 }
 
 .link {
-  color: #E3B341;
+  color: #FFD700;
   font-weight: 600;
   text-decoration: none;
   transition: opacity 0.3s ease;
@@ -630,10 +630,10 @@ label {
 }
 
 .btn-register:hover:not(:disabled) {
-  background: linear-gradient(135deg, #E3B341 0%, #ffd84d 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFE44D 100%);
   color: #1a1a1a;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(227, 179, 65, 0.3);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
 }
 
 .btn-register:disabled {
@@ -697,9 +697,9 @@ label {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
-  border: 2px solid #E3B341;
+  border: 2px solid #FFD700;
   background: transparent;
-  color: #E3B341;
+  color: #FFD700;
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
@@ -710,10 +710,10 @@ label {
 }
 
 .btn-signin:hover {
-  background: #E3B341;
+  background: #FFD700;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(227, 179, 65, 0.2);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.2);
 }
 
 /* FOOTER */
@@ -733,7 +733,7 @@ label {
 }
 
 .footer-link:hover {
-  color: #E3B341;
+  color: #FFD700;
 }
 
 .separator {

@@ -133,7 +133,18 @@
                   <p v-if="msg.message_content" class="msg-text">{{ msg.message_content }}</p>
                   <div v-if="msg.attachment_path" class="msg-attachment">
                     <img v-if="isImage(msg.attachment_type)" :src="attachmentUrl(msg.attachment_path)" :alt="msg.attachment_name" class="attachment-image" @click="openAttachment(msg.attachment_path)" />
-                    <a v-else :href="attachmentUrl(msg.attachment_path)" target="_blank" class="attachment-link">📎 {{ msg.attachment_name }}</a>
+                    <div v-else class="file-card">
+                      <div class="file-card-icon" :style="{ background: getFileIcon(msg.attachment_type).color }">
+                        {{ getFileIcon(msg.attachment_type).icon }}
+                      </div>
+                      <div class="file-card-info">
+                        <span class="file-card-name">{{ msg.attachment_name }}</span>
+                        <span class="file-card-type">{{ getFileIcon(msg.attachment_type).label }}</span>
+                      </div>
+                      <a :href="attachmentUrl(msg.attachment_path)" :download="msg.attachment_name" class="file-card-download" title="Download">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      </a>
+                    </div>
                   </div>
                   <div class="msg-meta">
                     <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
@@ -179,8 +190,9 @@
       <!-- Input Area -->
       <div class="input-area">
         <div v-if="pendingFile" class="attachment-preview">
-          <span class="file-icon">📎</span>
+          <span class="file-icon">{{ getFileIcon(pendingFile.type).icon }}</span>
           <span class="file-name">{{ pendingFile.name }}</span>
+          <span class="file-size-label">{{ formatFileSize(pendingFile.size) }}</span>
           <button @click="pendingFile = null" class="btn-remove-file">✕</button>
         </div>
         <div class="input-row">
@@ -317,6 +329,23 @@ export default {
     isImage(mimeType) { return mimeType && mimeType.startsWith('image/'); },
     attachmentUrl(path) { return `${this.apiUrl}/storage/${path}`; },
     openAttachment(path) { window.open(this.attachmentUrl(path), '_blank'); },
+    getFileIcon(mimeType) {
+      if (!mimeType) return { icon: '📎', label: 'File', color: '#888' };
+      if (mimeType === 'application/pdf') return { icon: '📕', label: 'PDF Document', color: '#e74c3c' };
+      if (mimeType.includes('word') || mimeType.includes('document')) return { icon: '📘', label: 'Word Document', color: '#2b579a' };
+      if (mimeType.includes('sheet') || mimeType.includes('excel')) return { icon: '📗', label: 'Excel Spreadsheet', color: '#217346' };
+      if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return { icon: '📙', label: 'Presentation', color: '#d24726' };
+      if (mimeType.startsWith('video/')) return { icon: '🎬', label: 'Video', color: '#6c5ce7' };
+      if (mimeType.startsWith('audio/')) return { icon: '🎵', label: 'Audio', color: '#00b894' };
+      if (mimeType === 'application/zip' || mimeType.includes('compressed')) return { icon: '🗜️', label: 'Archive', color: '#fdcb6e' };
+      return { icon: '📎', label: 'File', color: '#888' };
+    },
+    formatFileSize(bytes) {
+      if (!bytes) return '';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    },
 
     scrollToBottom() {
       this.$nextTick(() => {
@@ -399,7 +428,7 @@ export default {
 
         const form = new FormData();
         form.append('recipient_id', recipientId);
-        if (this.newMessage.trim()) form.append('message_content', this.newMessage.trim());
+        form.append('message_content', this.newMessage.trim());
         if (propertyId) form.append('property_id', propertyId);
         if (this.pendingFile) form.append('attachment', this.pendingFile);
 
@@ -429,15 +458,21 @@ export default {
         const data = await res.json();
 
         const idx = this.messages.findIndex(m => m.id === optimistic.id);
-        if (data.success && idx !== -1) {
+        if (data.success && data.data && idx !== -1) {
+          // Replace optimistic with real message from server
           this.messages.splice(idx, 1, data.data);
         } else if (idx !== -1) {
+          // API error — remove failed optimistic message and show error
           this.messages.splice(idx, 1);
+          const errMsg = data.message || 'Failed to send message';
+          console.error('Send failed:', errMsg, data.errors || '');
+          alert(errMsg);
         }
         this.scrollToBottom();
         this.$refs.messageInput?.focus();
       } catch (e) {
         console.error('Send error:', e);
+        // Network error — keep the optimistic message visible
       } finally {
         this.sending = false;
       }
@@ -541,7 +576,7 @@ export default {
 
   async mounted() {
     const token = localStorage.getItem('auth_token');
-    if (!token) { this.$router.push('/login'); return; }
+    if (!token) { this.$router.push('/'); return; }
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.myId = user.id;
@@ -570,7 +605,7 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
-:root { --gold: #e6ae0d; --gold-dark: #d4a000; --gold-light: #fdf5d0; --black: #100c08; --smoke: #f5f5f5; --gray: #e0e0e0; --gray-light: #f0f0f0; }
+:root { --gold: #FFD700; --gold-dark: #DAB600; --gold-light: #fdf5d0; --black: #100c08; --smoke: #f5f5f5; --gray: #e0e0e0; --gray-light: #f0f0f0; }
 
 .chat-wrapper { display: flex; height: 100vh; font-family: 'Inter', sans-serif; background: var(--smoke); }
 
@@ -622,7 +657,7 @@ export default {
 
 /* Typing Indicator */
 .typing-indicator { display: flex; align-items: center; gap: 10px; padding: 8px 24px 4px; }
-.typing-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #e6ae0d, #d4a000); color: #100c08; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; overflow: hidden; }
+.typing-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, #FFD700, #DAB600); color: #100c08; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; overflow: hidden; }
 .typing-bubble { display: flex; align-items: center; gap: 4px; background: white; border: 1px solid #e8e8e8; border-radius: 18px; padding: 10px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: #aaa; animation: typing-bounce 1.2s infinite; }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -685,14 +720,27 @@ export default {
 .msg-attachment { margin-top: 6px; }
 .attachment-image { max-width: 240px; max-height: 200px; border-radius: 10px; cursor: pointer; display: block; transition: transform 0.2s; }
 .attachment-image:hover { transform: scale(1.02); }
-.attachment-link { color: inherit; font-size: 13px; font-weight: 600; text-decoration: none; background: rgba(0,0,0,.06); padding: 6px 12px; border-radius: 6px; display: inline-block; transition: background 0.2s; }
-.attachment-link:hover { background: rgba(0,0,0,.12); }
+
+/* File card for non-image attachments */
+.file-card { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 10px 12px; min-width: 220px; max-width: 300px; }
+.sent .file-card { background: rgba(255,255,255,0.25); border-color: rgba(0,0,0,0.06); }
+.file-card-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: #fff; }
+.file-card-info { flex: 1; min-width: 0; }
+.file-card-name { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--black); }
+.sent .file-card-name { color: var(--white); }
+.file-card-type { display: block; font-size: 11px; color: #888; margin-top: 2px; }
+.sent .file-card-type { color: rgba(255,255,255,0.7); }
+.file-card-download { flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.06); display: flex; align-items: center; justify-content: center; color: var(--black); transition: all 0.2s; text-decoration: none; }
+.file-card-download:hover { background: var(--gold); color: var(--black); }
+.sent .file-card-download { background: rgba(255,255,255,0.2); color: var(--white); }
+.sent .file-card-download:hover { background: var(--white); color: var(--black); }
 
 /* Input */
 .input-area { background: white; border-top: 1px solid var(--gray); padding: 14px 24px; flex-shrink: 0; }
 .attachment-preview { display: flex; align-items: center; gap: 8px; background: var(--gold-light); border: 1px solid var(--gold); border-radius: 8px; padding: 8px 14px; font-size: 13px; margin-bottom: 10px; }
 .file-icon { font-size: 16px; }
 .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.file-size-label { font-size: 11px; color: #888; flex-shrink: 0; }
 .btn-remove-file { background: none; border: none; cursor: pointer; color: #999; font-size: 16px; line-height: 1; padding: 2px 4px; border-radius: 4px; transition: all 0.2s; }
 .btn-remove-file:hover { background: #fee; color: #d33; }
 

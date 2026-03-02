@@ -219,6 +219,18 @@
           <h2>Congratulations!</h2>
           <p class="result-message">{{ verificationResult.message }}</p>
 
+          <!-- Dual AI Verification Badge -->
+          <div v-if="verificationResult.verification_method === 'dual_ai'" class="dual-ai-badge">
+            <span class="dual-ai-icon">&#x1F916;&#x1F916;</span>
+            <span class="dual-ai-text">Dual AI Verified</span>
+            <span class="dual-ai-sub">Gemini + DeepSeek</span>
+          </div>
+          <div v-else class="dual-ai-badge dual-ai-single">
+            <span class="dual-ai-icon">&#x1F916;</span>
+            <span class="dual-ai-text">AI Verified</span>
+            <span class="dual-ai-sub">Gemini Vision</span>
+          </div>
+
           <div class="ai-badge">
             <img src="/images/buddy-avatar.jpg" alt="Buddy" class="ai-badge-avatar" />
             <div>
@@ -227,16 +239,35 @@
             </div>
           </div>
 
+          <!-- Authenticity Details - Approved -->
+          <div v-if="verificationResult.security_features_found && verificationResult.security_features_found.length" class="authenticity-details authenticity-success">
+            <div class="authenticity-header">
+              <span class="auth-icon">&#x2705;</span>
+              <strong>Security Features Verified</strong>
+              <span v-if="verificationResult.authenticity_score" class="auth-score auth-score-good">{{ Math.round(verificationResult.authenticity_score * 100) }}% authentic</span>
+            </div>
+            <div class="auth-tags">
+              <span v-for="feature in verificationResult.security_features_found" :key="feature" class="auth-tag auth-tag-good">{{ feature }}</span>
+            </div>
+          </div>
+
           <div class="result-actions">
             <button class="btn-primary-lg" @click="goToAgentDashboard">Go to Agent Dashboard →</button>
           </div>
         </div>
 
-        <!-- REJECTED — Not a PRC License -->
+        <!-- REJECTED — Not a PRC License or Fake -->
         <div v-else-if="verificationResult && verificationResult.decision === 'rejected'" class="result-card result-rejected">
-          <div class="result-icon">🚫</div>
+          <div class="result-icon">&#x1F6AB;</div>
           <h2>Application Rejected</h2>
           <p class="result-message">{{ verificationResult.message }}</p>
+
+          <!-- Dual AI Badge for rejected -->
+          <div v-if="verificationResult.verification_method === 'dual_ai'" class="dual-ai-badge dual-ai-reject">
+            <span class="dual-ai-icon">&#x1F916;&#x1F916;</span>
+            <span class="dual-ai-text">Dual AI Flagged</span>
+            <span class="dual-ai-sub">Gemini + DeepSeek</span>
+          </div>
 
           <div class="ai-badge ai-badge-danger">
             <img src="/images/buddy-avatar.jpg" alt="Buddy" class="ai-badge-avatar" />
@@ -247,22 +278,60 @@
           </div>
 
           <div v-if="verificationResult.document_type" class="detected-doc-type">
-            <span class="ddt-icon">📄</span>
+            <span class="ddt-icon">&#x1F4C4;</span>
             <span>Detected document type: <strong>{{ verificationResult.document_type }}</strong></span>
+          </div>
+
+          <!-- Red Flags Detected -->
+          <div v-if="verificationResult.red_flags_detected && verificationResult.red_flags_detected.length" class="authenticity-details authenticity-danger">
+            <div class="authenticity-header">
+              <span class="auth-icon">&#x1F6A9;</span>
+              <strong>Red Flags Detected</strong>
+              <span v-if="verificationResult.authenticity_score !== null && verificationResult.authenticity_score !== undefined" class="auth-score auth-score-bad">{{ Math.round(verificationResult.authenticity_score * 100) }}% authentic</span>
+            </div>
+            <div class="auth-tags">
+              <span v-for="flag in verificationResult.red_flags_detected" :key="flag" class="auth-tag auth-tag-bad">{{ flag }}</span>
+            </div>
+          </div>
+
+          <!-- Missing Security Features -->
+          <div v-if="verificationResult.security_features_missing && verificationResult.security_features_missing.length" class="authenticity-details authenticity-warn">
+            <div class="authenticity-header">
+              <span class="auth-icon">&#x26A0;&#xFE0F;</span>
+              <strong>Missing Security Features</strong>
+            </div>
+            <div class="auth-tags">
+              <span v-for="feature in verificationResult.security_features_missing" :key="feature" class="auth-tag auth-tag-warn">{{ feature }}</span>
+            </div>
+          </div>
+
+          <!-- DeepSeek Concerns -->
+          <div v-if="verificationResult.deepseek_concerns && verificationResult.deepseek_concerns.length" class="authenticity-details authenticity-danger">
+            <div class="authenticity-header">
+              <span class="auth-icon">&#x1F9E0;</span>
+              <strong>DeepSeek AI Concerns</strong>
+            </div>
+            <div class="auth-tags">
+              <span v-for="concern in verificationResult.deepseek_concerns" :key="concern" class="auth-tag auth-tag-bad">{{ concern }}</span>
+            </div>
           </div>
 
           <div class="review-info">
             <div class="review-item">
-              <span class="ri-icon">⏳</span>
+              <span class="ri-icon">&#x23F3;</span>
               <span>You can reapply after <strong>12 hours</strong> with a valid PRC license photo</span>
             </div>
             <div class="review-item">
-              <span class="ri-icon">🪪</span>
-              <span>Make sure to upload a clear photo of your <strong>PRC License Card</strong></span>
+              <span class="ri-icon">&#x1FAAA;</span>
+              <span>Make sure to upload a clear photo of your <strong>PRC License Card</strong> or <strong>PRC Certification Letter</strong></span>
             </div>
             <div class="review-item">
-              <span class="ri-icon">⚠️</span>
-              <span>Resumes, diplomas, IDs, or other documents will not be accepted</span>
+              <span class="ri-icon">&#x26A0;&#xFE0F;</span>
+              <span>Resumes, diplomas, fake/edited documents, or other non-PRC documents will not be accepted</span>
+            </div>
+            <div class="review-item">
+              <span class="ri-icon">&#x1F464;</span>
+              <span>The name on your PRC license must match your RealtyLinkPH account name</span>
             </div>
           </div>
 
@@ -450,14 +519,15 @@ export default {
       this.verifyPhase = 1;
       this.verifyingText = 'Scanning your PRC license...';
 
-      // Simulate phased progress while API call runs
+      // Simulate phased progress while dual-AI verification runs
       const phaseTimer = setInterval(() => {
-        if (this.verifyPhase < 3) {
+        if (this.verifyPhase < 4) {
           this.verifyPhase++;
-          if (this.verifyPhase === 2) this.verifyingText = 'Extracting license details...';
-          if (this.verifyPhase === 3) this.verifyingText = 'Verifying your information...';
+          if (this.verifyPhase === 2) this.verifyingText = 'Gemini AI is analyzing document security features...';
+          if (this.verifyPhase === 3) this.verifyingText = 'DeepSeek AI is cross-verifying the data...';
+          if (this.verifyPhase === 4) this.verifyingText = 'Cross-referencing both AI results...';
         }
-      }, 4000);
+      }, 3500);
 
       try {
         const fd = new FormData();
@@ -490,6 +560,13 @@ export default {
             message: data.message,
             ai_reasoning: data.ai_reasoning || '',
             document_type: data.document_type || null,
+            authenticity_score: data.authenticity_score ?? null,
+            security_features_found: data.security_features_found || [],
+            security_features_missing: data.security_features_missing || [],
+            red_flags_detected: data.red_flags_detected || [],
+            verification_method: data.verification_method || 'single_ai',
+            deepseek_decision: data.deepseek_decision || null,
+            deepseek_concerns: data.deepseek_concerns || [],
           };
 
           if (data.approved) {
@@ -567,7 +644,7 @@ export default {
   margin: 8px 0 0;
 }
 .logo-realty { color: #100c08; }
-.logo-ph { color: #e6ae0d; }
+.logo-ph { color: #FFD700; }
 .header-sub {
   display: block;
   font-size: 14px;
@@ -601,7 +678,7 @@ export default {
   transition: all 0.3s;
 }
 .step.active {
-  border-color: #e6ae0d;
+  border-color: #FFD700;
   background: #fef9e7;
 }
 .step.done {
@@ -621,7 +698,7 @@ export default {
   color: #666;
   flex-shrink: 0;
 }
-.step.active .step-circle { background: #e6ae0d; color: #100c08; }
+.step.active .step-circle { background: #FFD700; color: #100c08; }
 .step.done .step-circle { background: #22c55e; color: #fff; }
 .step-label { font-size: 13px; font-weight: 600; color: #666; }
 .step.active .step-label { color: #b8860b; }
@@ -664,7 +741,7 @@ export default {
   box-sizing: border-box;
   font-family: inherit;
 }
-.form-input:focus { border-color: #e6ae0d; }
+.form-input:focus { border-color: #FFD700; }
 .form-textarea { resize: vertical; min-height: 60px; }
 .field-error { font-size: 12px; color: #dc2626; font-weight: 500; }
 
@@ -680,7 +757,7 @@ export default {
 /* ── Buttons ──────────────────────────────────────────── */
 .btn-primary-lg {
   padding: 12px 28px;
-  background: #e6ae0d;
+  background: #FFD700;
   color: #100c08;
   border: none;
   border-radius: 12px;
@@ -720,7 +797,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.upload-zone:hover { border-color: #e6ae0d; background: #fffdf5; }
+.upload-zone:hover { border-color: #FFD700; background: #fffdf5; }
 .hidden-input { display: none; }
 
 .upload-empty {
@@ -760,7 +837,7 @@ export default {
   padding: 16px 20px;
   background: #fef9e7;
   border-radius: 12px;
-  border-left: 4px solid #e6ae0d;
+  border-left: 4px solid #FFD700;
   display: flex;
   gap: 12px;
 }
@@ -784,7 +861,7 @@ export default {
   margin: 0 auto 14px;
   position: relative;
   overflow: hidden;
-  border: 3px solid #e6ae0d;
+  border: 3px solid #FFD700;
 }
 .buddy-img {
   width: 100%;
@@ -796,7 +873,7 @@ export default {
   position: absolute;
   inset: -6px;
   border-radius: 50%;
-  border: 3px solid #e6ae0d;
+  border: 3px solid #FFD700;
   animation: pulse 2s ease-in-out infinite;
 }
 @keyframes pulse {
@@ -811,7 +888,7 @@ export default {
   width: 36px;
   height: 36px;
   border: 4px solid #e5e7eb;
-  border-top-color: #e6ae0d;
+  border-top-color: #FFD700;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
@@ -885,7 +962,7 @@ export default {
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid #e6ae0d;
+  border: 2px solid #FFD700;
 }
 .ai-badge strong { font-size: 13px; color: #100c08; }
 .ai-badge p { font-size: 13px; color: #555; margin: 4px 0 0; }
@@ -925,13 +1002,101 @@ export default {
 }
 .ddt-icon { font-size: 20px; flex-shrink: 0; }
 
+/* Dual AI Badge */
+.dual-ai-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 320px;
+  margin: 0 auto 18px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #dcfce7, #d1fae5);
+  border: 2px solid #86efac;
+}
+.dual-ai-single {
+  background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+  border-color: #93c5fd;
+}
+.dual-ai-reject {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border-color: #fca5a5;
+}
+.dual-ai-icon { font-size: 20px; }
+.dual-ai-text {
+  font-weight: 700;
+  font-size: 14px;
+  color: #100c08;
+}
+.dual-ai-sub {
+  font-size: 11px;
+  color: #6b7280;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 10px;
+}
+
+/* Authenticity Details */
+.authenticity-details {
+  max-width: 480px;
+  margin: 0 auto 18px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  text-align: left;
+}
+.authenticity-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+.authenticity-danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+.authenticity-warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+.authenticity-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #100c08;
+}
+.auth-icon { font-size: 18px; flex-shrink: 0; }
+.auth-score {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+.auth-score-good { background: #dcfce7; color: #166534; }
+.auth-score-bad { background: #fecaca; color: #991b1b; }
+.auth-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.auth-tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.auth-tag-good { background: #dcfce7; color: #166534; }
+.auth-tag-bad { background: #fee2e2; color: #991b1b; }
+.auth-tag-warn { background: #fef3c7; color: #92400e; }
+
 .cooldown-info {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 14px 20px;
   background: #fef9e7;
-  border: 1px solid #e6ae0d;
+  border: 1px solid #FFD700;
   border-radius: 10px;
   font-size: 14px;
   color: #100c08;

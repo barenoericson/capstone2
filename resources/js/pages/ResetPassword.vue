@@ -212,7 +212,7 @@ export default {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --color-mustard: #e6ae0d;
+  --color-mustard: #FFD700;
   --color-black: #100c08;
   --color-smoke: #f5f5f5;
 }
@@ -316,7 +316,7 @@ export default {
   background: var(--color-mustard);
   color: var(--color-black);
 }
-.btn-login:hover:not(:disabled) { background: #d4a000; transform: translateY(-1px); }
+.btn-login:hover:not(:disabled) { background: #DAB600; transform: translateY(-1px); }
 .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-text { display: block; }
 .btn-loading { display: flex; align-items: center; justify-content: center; gap: 8px; }

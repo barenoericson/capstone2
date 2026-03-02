@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Mail\VerifyEmailMail;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
@@ -37,6 +39,9 @@ class AuthController extends BaseController
                 ], 422);
             }
 
+            // Generate email verification token
+            $verificationToken = Str::random(64);
+
             // Create user
             $user = User::create([
                 'name' => $request->name,
@@ -44,6 +49,7 @@ class AuthController extends BaseController
                 'password' => Hash::make($request->password),
                 'role' => $request->role ?? 'buyer',
                 'status' => 'active',
+                'email_verification_token' => $verificationToken,
             ]);
 
             // Create agent profile if registering as agent
@@ -54,11 +60,18 @@ class AuthController extends BaseController
                 ]);
             }
 
+            // Send verification email
+            try {
+                Mail::to($user->email)->send(new VerifyEmailMail($verificationToken, $user->name));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Failed to send verification email: ' . $e->getMessage());
+            }
+
             // Create token
             $token = $user->createToken('api_token')->plainTextToken;
 
             return response()->json([
-                'message' => 'User registered successfully',
+                'message' => 'User registered successfully. Please check your email to verify your account.',
                 'user' => $user,
                 'token' => $token,
                 'token_type' => 'Bearer'

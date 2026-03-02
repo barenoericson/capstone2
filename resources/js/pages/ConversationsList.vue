@@ -195,6 +195,18 @@ export default {
   },
 
   methods: {
+    async clearMessageNotifications() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
+        await fetch(`${apiUrl}/api/notifications/mark-type-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ type: 'message' }),
+        });
+      } catch (e) { /* silent */ }
+    },
+
     otherId(conv) {
       return conv.agent?.id ?? conv.buyer?.id ?? 0;
     },
@@ -318,7 +330,7 @@ export default {
 
   async mounted() {
     const token = localStorage.getItem('auth_token');
-    if (!token) { this.$router.push('/login'); return; }
+    if (!token) { this.$router.push('/'); return; }
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.myId = user.id;
@@ -327,6 +339,7 @@ export default {
 
     await this.loadConversations();
     this.subscribeToEcho();
+    this.clearMessageNotifications();
 
     // Heartbeat every 30 seconds
     this.sendHeartbeat();
@@ -343,7 +356,7 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@700;800&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
-:root { --gold: #e6ae0d; --gold-dark: #d4a000; --black: #100c08; --smoke: #f5f5f5; --gray: #e0e0e0; }
+:root { --gold: #FFD700; --gold-dark: #DAB600; --black: #100c08; --smoke: #f5f5f5; --gray: #e0e0e0; }
 
 .conversations-wrapper { display: flex; min-height: 100vh; background: var(--smoke); font-family: 'Inter', sans-serif; }
 

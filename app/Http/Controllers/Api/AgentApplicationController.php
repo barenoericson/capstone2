@@ -165,37 +165,58 @@ class AgentApplicationController extends Controller
                 return $application;
             });
 
+            // Common authenticity data for all responses
+            $verificationMethod = $verificationResult['verification_method'] ?? 'single_ai';
+            $authenticityData = [
+                'authenticity_score'       => $verificationResult['authenticity_score'] ?? null,
+                'security_features_found'  => $verificationResult['security_features_found'] ?? [],
+                'security_features_missing'=> $verificationResult['security_features_missing'] ?? [],
+                'red_flags_detected'       => $verificationResult['red_flags_detected'] ?? [],
+                'verification_method'      => $verificationMethod,
+                'deepseek_decision'        => $verificationResult['deepseek_decision'] ?? null,
+                'deepseek_concerns'        => $verificationResult['deepseek_concerns'] ?? [],
+            ];
+
             // Return appropriate response based on AI decision
             if ($aiDecision === 'approved') {
-                return response()->json([
+                return response()->json(array_merge([
                     'success'      => true,
                     'decision'     => 'approved',
                     'approved'     => true,
                     'message'      => 'Congratulations! RealtyLinkPH Buddy has verified your PRC license. You are now a registered agent!',
                     'ai_reasoning' => $verificationResult['reasoning'],
                     'application'  => $application,
-                ]);
+                ], $authenticityData));
             } elseif ($aiDecision === 'rejected') {
                 $documentType = $verificationResult['extracted']['document_type'] ?? 'non-PRC document';
-                return response()->json([
+                $redFlags = $verificationResult['red_flags_detected'] ?? [];
+                $rejectionMsg = "RealtyLinkPH Buddy detected that the uploaded document is not a valid PRC license.";
+                if (!empty($redFlags)) {
+                    $rejectionMsg .= " Red flags found: " . implode(', ', array_slice($redFlags, 0, 3)) . ".";
+                } else {
+                    $rejectionMsg .= " It appears to be a \"{$documentType}\".";
+                }
+                $rejectionMsg .= " Please upload a genuine PRC license card. You may reapply after 12 hours.";
+
+                return response()->json(array_merge([
                     'success'       => true,
                     'decision'      => 'rejected',
                     'approved'      => false,
-                    'message'       => "RealtyLinkPH Buddy detected that the uploaded document is not a valid PRC license. It appears to be a \"{$documentType}\". Please upload a genuine PRC license card. You may reapply after 12 hours.",
+                    'message'       => $rejectionMsg,
                     'ai_reasoning'  => $verificationResult['reasoning'],
                     'document_type' => $documentType,
                     'application'   => $application,
-                ]);
+                ], $authenticityData));
             } else {
                 // unclear → pending for admin review
-                return response()->json([
+                return response()->json(array_merge([
                     'success'      => true,
                     'decision'     => 'unclear',
                     'approved'     => false,
                     'message'      => 'RealtyLinkPH Buddy was unable to fully verify your PRC license. Your application has been submitted for admin review. Please allow up to 12 hours.',
                     'ai_reasoning' => $verificationResult['reasoning'],
                     'application'  => $application,
-                ]);
+                ], $authenticityData));
             }
 
         } catch (\Exception $e) {

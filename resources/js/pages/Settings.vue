@@ -9,50 +9,96 @@
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">{{ t('dashboard') }}</span>
-        </router-link>
+        <!-- ===== AGENT SIDEBAR ===== -->
+        <template v-if="userRole === 'agent'">
+          <router-link to="/agent/dashboard" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">{{ t('overview') }}</span>
+          </router-link>
+          <div class="nav-section">
+            <h3 class="section-title">{{ t('management') }}</h3>
+            <router-link to="/agent/properties" class="nav-item">
+              <span class="nav-icon">🏠</span>
+              <span class="nav-label">{{ t('myProperties') }}</span>
+            </router-link>
+            <router-link to="/agent/viewings" class="nav-item">
+              <span class="nav-icon">📅</span>
+              <span class="nav-label">{{ t('viewings') }}</span>
+            </router-link>
+            <router-link to="/agent/calendar" class="nav-item">
+              <span class="nav-icon">📆</span>
+              <span class="nav-label">My Calendar</span>
+            </router-link>
+            <router-link to="/agent/documents" class="nav-item">
+              <span class="nav-icon">📄</span>
+              <span class="nav-label">{{ t('documents') }}</span>
+            </router-link>
+            <router-link to="/conversations" class="nav-item">
+              <span class="nav-icon">💬</span>
+              <span class="nav-label">{{ t('messages') }}</span>
+            </router-link>
+            <router-link to="/agent/saved-properties" class="nav-item">
+              <span class="nav-icon">❤️</span>
+              <span class="nav-label">{{ t('myWallet') }}</span>
+            </router-link>
+          </div>
+          <div class="nav-section">
+            <h3 class="section-title">{{ t('settingsLabel') }}</h3>
+            <router-link to="/profile" class="nav-item">
+              <span class="nav-icon">👤</span>
+              <span class="nav-label">{{ t('profile') }}</span>
+            </router-link>
+            <router-link to="/settings" class="nav-item active">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-label">{{ t('settings') }}</span>
+            </router-link>
+          </div>
+        </template>
 
-        <div class="nav-section">
-          <h3 class="section-title">{{ t('browse') }}</h3>
-          <router-link to="/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">{{ t('discover') }}</span>
+        <!-- ===== BUYER SIDEBAR ===== -->
+        <template v-else>
+          <router-link to="/dashboard" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">{{ t('dashboard') }}</span>
           </router-link>
-          <router-link to="/saved-properties" class="nav-item">
-            <span class="nav-icon">❤️</span>
-            <span class="nav-label">{{ t('myWallet') }}</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <h3 class="section-title">{{ t('activity') }}</h3>
-          <router-link to="/conversations" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">{{ t('inbox') }}</span>
-          </router-link>
-          <router-link to="/viewings" class="nav-item">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">{{ t('viewings') }}</span>
-          </router-link>
-          <router-link to="/documents" class="nav-item">
-            <span class="nav-icon">📄</span>
-            <span class="nav-label">{{ t('documents') }}</span>
-          </router-link>
-        </div>
-
-        <div class="nav-section">
-          <h3 class="section-title">{{ t('settingsLabel') }}</h3>
-          <router-link to="/profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">{{ t('profile') }}</span>
-          </router-link>
-          <router-link to="/settings" class="nav-item active">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">{{ t('settings') }}</span>
-          </router-link>
-        </div>
+          <div class="nav-section">
+            <h3 class="section-title">{{ t('browse') }}</h3>
+            <router-link to="/properties" class="nav-item">
+              <span class="nav-icon">🏠</span>
+              <span class="nav-label">{{ t('discover') }}</span>
+            </router-link>
+            <router-link to="/saved-properties" class="nav-item">
+              <span class="nav-icon">❤️</span>
+              <span class="nav-label">{{ t('myWallet') }}</span>
+            </router-link>
+          </div>
+          <div class="nav-section">
+            <h3 class="section-title">{{ t('activity') }}</h3>
+            <router-link to="/conversations" class="nav-item">
+              <span class="nav-icon">💬</span>
+              <span class="nav-label">{{ t('inbox') }}</span>
+            </router-link>
+            <router-link to="/viewings" class="nav-item">
+              <span class="nav-icon">📅</span>
+              <span class="nav-label">{{ t('viewings') }}</span>
+            </router-link>
+            <router-link to="/documents" class="nav-item">
+              <span class="nav-icon">📄</span>
+              <span class="nav-label">{{ t('documents') }}</span>
+            </router-link>
+          </div>
+          <div class="nav-section">
+            <h3 class="section-title">{{ t('settingsLabel') }}</h3>
+            <router-link to="/profile" class="nav-item">
+              <span class="nav-icon">👤</span>
+              <span class="nav-label">{{ t('profile') }}</span>
+            </router-link>
+            <router-link to="/settings" class="nav-item active">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-label">{{ t('settings') }}</span>
+            </router-link>
+          </div>
+        </template>
       </nav>
 
       <div class="sidebar-footer">
@@ -60,7 +106,7 @@
           <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
           <div class="user-info">
             <p class="user-name">{{ userName }}</p>
-            <p class="user-role">Buyer</p>
+            <p class="user-role">{{ userRole === 'agent' ? 'Agent' : 'Buyer' }}</p>
           </div>
         </div>
       </div>
@@ -175,6 +221,40 @@
           </div>
         </div>
 
+        <!-- Google Calendar Section -->
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="card-icon">📅</div>
+            <div>
+              <h2 class="card-title">{{ t('googleCalendar') }}</h2>
+              <p class="card-desc">{{ t('googleCalendarDesc') }}</p>
+            </div>
+          </div>
+
+          <div class="gcal-section">
+            <div v-if="gcalLoading" class="gcal-status">
+              <span class="gcal-spinner">⏳</span> Checking connection...
+            </div>
+
+            <div v-else-if="gcalConnected" class="gcal-connected">
+              <div class="gcal-status-row">
+                <span class="gcal-badge connected">✓ {{ t('connected') }}</span>
+                <p class="gcal-info">{{ t('googleCalendarConnected') }}</p>
+              </div>
+              <button @click="disconnectGoogle" class="btn-disconnect" :disabled="gcalDisconnecting">
+                {{ gcalDisconnecting ? 'Disconnecting...' : t('disconnect') }}
+              </button>
+            </div>
+
+            <div v-else class="gcal-disconnected">
+              <p class="gcal-info">{{ t('googleCalendarInfo') }}</p>
+              <button @click="connectGoogle" class="btn-connect">
+                📅 {{ t('connectGoogleCalendar') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Save Banner -->
         <transition name="save-banner">
           <div v-if="saved" class="save-banner">
@@ -194,6 +274,8 @@ const translations = {
     myWallet: 'My Wallet', activity: 'Activity', inbox: 'Inbox',
     viewings: 'Viewings', documents: 'Documents', settingsLabel: 'Settings',
     profile: 'Profile', settings: 'Settings',
+    overview: 'Overview', management: 'Management', myProperties: 'My Properties',
+    messages: 'Messages',
     settingsDesc: 'Customize your RealtyLinkPH experience',
     appearance: 'Appearance', appearanceDesc: 'Choose how RealtyLinkPH looks for you',
     lightTheme: 'Light', darkTheme: 'Dark', systemTheme: 'System Default',
@@ -204,12 +286,22 @@ const translations = {
     viewingUpdates: 'Viewing Updates', viewingUpdatesDesc: 'Alerts for viewing approvals and schedules',
     propertyAlerts: 'Property Alerts', propertyAlertsDesc: 'New listings matching your interests',
     settingsSaved: 'Settings saved successfully!',
+    googleCalendar: 'Google Calendar',
+    googleCalendarDesc: 'Sync your approved viewings with Google Calendar',
+    connected: 'Connected',
+    disconnect: 'Disconnect',
+    connectGoogleCalendar: 'Connect Google Calendar',
+    googleCalendarConnected: 'Your approved viewings will automatically be added to your Google Calendar.',
+    googleCalendarInfo: 'Connect your Google Calendar to automatically create events when viewings are approved.',
+    googleCalendarSuccess: 'Google Calendar connected successfully!',
   },
   tl: {
     dashboard: 'Dashboard', browse: 'Mag-browse', discover: 'Tuklasin',
     myWallet: 'Ang Aking Wallet', activity: 'Aktibidad', inbox: 'Inbox',
     viewings: 'Mga Bisita', documents: 'Mga Dokumento', settingsLabel: 'Mga Setting',
     profile: 'Profile', settings: 'Mga Setting',
+    overview: 'Overview', management: 'Pamamahala', myProperties: 'Aking Mga Ari-arian',
+    messages: 'Mga Mensahe',
     settingsDesc: 'I-customize ang iyong karanasan sa RealtyLinkPH',
     appearance: 'Hitsura', appearanceDesc: 'Piliin kung paano magmumukhang ang RealtyLinkPH para sa iyo',
     lightTheme: 'Maliwanag', darkTheme: 'Madilim', systemTheme: 'Default ng Sistema',
@@ -220,6 +312,14 @@ const translations = {
     viewingUpdates: 'Mga Update sa Bisita', viewingUpdatesDesc: 'Mga alerto para sa mga pagbisita',
     propertyAlerts: 'Mga Alerto sa Ari-arian', propertyAlertsDesc: 'Mga bagong listing na akma sa iyong interes',
     settingsSaved: 'Matagumpay na na-save ang mga setting!',
+    googleCalendar: 'Google Calendar',
+    googleCalendarDesc: 'I-sync ang iyong mga viewing sa Google Calendar',
+    connected: 'Nakakonekta',
+    disconnect: 'I-disconnect',
+    connectGoogleCalendar: 'I-connect ang Google Calendar',
+    googleCalendarConnected: 'Awtomatikong maidadagdag ang mga viewing sa iyong Google Calendar.',
+    googleCalendarInfo: 'I-connect ang iyong Google Calendar para awtomatikong gumawa ng events.',
+    googleCalendarSuccess: 'Matagumpay na nakakonekta ang Google Calendar!',
   },
 };
 
@@ -229,6 +329,7 @@ export default {
   data() {
     return {
       userName: '',
+      userRole: '',
       currentTheme: localStorage.getItem('theme_preference') || 'light',
       currentLang: localStorage.getItem('lang_preference') || 'en',
       saved: false,
@@ -243,6 +344,12 @@ export default {
         { code: 'en', name: 'English', native: 'English', flag: '🇺🇸' },
         { code: 'tl', name: 'Filipino', native: 'Tagalog', flag: '🇵🇭' },
       ],
+
+      // Google Calendar
+      apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
+      gcalConnected: false,
+      gcalLoading: true,
+      gcalDisconnecting: false,
 
       notifSettings: [
         {
@@ -300,12 +407,14 @@ export default {
 
     applyTheme() {
       const html = document.documentElement;
-      html.classList.remove('theme-light', 'theme-dark', 'theme-system');
+      html.classList.remove('theme-light', 'theme-dark');
 
       if (this.currentTheme === 'dark') {
         html.classList.add('theme-dark');
       } else if (this.currentTheme === 'system') {
-        html.classList.add('theme-system');
+        const prefersDark = window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+        html.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
       } else {
         html.classList.add('theme-light');
       }
@@ -337,21 +446,88 @@ export default {
         });
       } catch (e) { /* ignore */ }
     },
+
+    async checkGoogleCalendarStatus() {
+      try {
+        this.gcalLoading = true;
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/google/status`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        this.gcalConnected = data.connected || false;
+      } catch (e) {
+        this.gcalConnected = false;
+      } finally {
+        this.gcalLoading = false;
+      }
+    },
+
+    async connectGoogle() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/google/redirect`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        }
+      } catch (e) {
+        console.error('Error connecting Google:', e);
+      }
+    },
+
+    async disconnectGoogle() {
+      try {
+        this.gcalDisconnecting = true;
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/google/disconnect`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.gcalConnected = false;
+          this.showSaved();
+        }
+      } catch (e) {
+        console.error('Error disconnecting Google:', e);
+      } finally {
+        this.gcalDisconnecting = false;
+      }
+    },
+
+    handleGoogleCallback() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('google') === 'connected') {
+        this.gcalConnected = true;
+        this.saved = true;
+        // Clean up URL
+        const url = new URL(window.location);
+        url.searchParams.delete('google');
+        window.history.replaceState({}, '', url);
+        setTimeout(() => { this.saved = false; }, 3000);
+      }
+    },
   },
 
   mounted() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    this.userName = user.name || 'Buyer';
+    this.userName = user.name || 'User';
+    this.userRole = user.role || 'buyer';
     this.loadSavedNotifSettings();
     this.applyTheme();
+    this.checkGoogleCalendarStatus();
+    this.handleGoogleCallback();
   },
 };
 </script>
 
 <style scoped>
 :root {
-  --gold: #e6ae0d;
-  --gold-dark: #d4a000;
+  --gold: #FFD700;
+  --gold-dark: #DAB600;
   --black: #100c08;
   --smoke: #f5f5f5;
   --light-gray: #e0e0e0;
@@ -561,6 +737,43 @@ export default {
   font-size: 14px; font-weight: 600;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 9999;
 }
+/* Google Calendar */
+.gcal-section { padding: 4px 0; }
+.gcal-status { font-size: 0.88rem; color: #666; display: flex; align-items: center; gap: 8px; }
+.gcal-spinner { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.gcal-connected { display: flex; flex-direction: column; gap: 14px; }
+.gcal-status-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.gcal-badge {
+  padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+}
+.gcal-badge.connected { background: #dcfce7; color: #166534; }
+.gcal-info { font-size: 0.85rem; color: #666; margin: 0; }
+.gcal-disconnected { display: flex; flex-direction: column; gap: 14px; }
+
+.btn-connect {
+  padding: 12px 20px; border-radius: 12px; border: 2px solid var(--gold);
+  background: linear-gradient(135deg, #fdf5d0, #fef0a0); color: var(--black);
+  font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  align-self: flex-start;
+}
+.btn-connect:hover { background: var(--gold); }
+
+.btn-disconnect {
+  padding: 10px 16px; border-radius: 10px; border: 1px solid #fecaca;
+  background: #fee2e2; color: #991b1b; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; align-self: flex-start;
+}
+.btn-disconnect:hover:not(:disabled) { background: #dc2626; color: #fff; }
+.btn-disconnect:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Dark mode overrides for Google Calendar */
+.settings-wrapper.dark-mode .gcal-info { color: #888; }
+.settings-wrapper.dark-mode .btn-connect { background: #3a3020; border-color: var(--gold); color: #f5f5f5; }
+.settings-wrapper.dark-mode .btn-connect:hover { background: var(--gold); color: var(--black); }
+.settings-wrapper.dark-mode .btn-disconnect { background: #3b1515; border-color: #7f1d1d; color: #fca5a5; }
+
 .save-banner-enter-active, .save-banner-leave-active { transition: all 0.3s; }
 .save-banner-enter-from, .save-banner-leave-to { opacity: 0; transform: translateY(20px); }
 </style>

@@ -32,6 +32,10 @@
             <span class="nav-icon">📅</span>
             <span class="nav-label">Viewings</span>
           </router-link>
+          <router-link to="/agent/calendar" class="nav-item">
+            <span class="nav-icon">📆</span>
+            <span class="nav-label">My Calendar</span>
+          </router-link>
           <router-link to="/agent/documents" class="nav-item">
             <span class="nav-icon">📄</span>
             <span class="nav-label">Documents</span>
@@ -48,10 +52,10 @@
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
           </router-link>
-          <a href="#" class="nav-item">
+          <router-link to="/settings" class="nav-item">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Settings</span>
-          </a>
+          </router-link>
         </div>
       </nav>
 
@@ -556,8 +560,8 @@ export default {
 :root {
   --smoky-black: #100c08;
   --white-smoke: #f5f5f5;
-  --palace-gold: #e6ae0d;
-  --palace-gold-dark: #d4a000;
+  --palace-gold: #FFD700;
+  --palace-gold-dark: #DAB600;
   --light-gray: #e0e0e0;
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -858,7 +862,7 @@ export default {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 174, 13, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .page-wrapper {
@@ -898,7 +902,7 @@ export default {
 .filter-select:focus {
   outline: none;
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 3px rgba(230, 174, 13, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 /* Properties Grid */

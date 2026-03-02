@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\GoogleCalendarController;
+
+// Google OAuth callback (must be outside sanctum middleware)
+Route::get('/google/callback', [GoogleCalendarController::class, 'callback']);
 
 // Root route
 Route::get('/', fn() => view('app'))->name('home');

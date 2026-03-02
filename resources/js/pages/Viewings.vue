@@ -152,7 +152,26 @@
                 ✅ Your viewing is confirmed! Please be on time.
               </div>
 
+              <!-- Negotiation info -->
+              <div v-if="v.status === 'negotiating' && v.latest_proposal" class="notes-box negotiation-notes">
+                <strong>📋 Proposed by {{ v.latest_proposal.proposed_by_role === 'agent' ? 'Agent' : 'You' }}:</strong>
+                {{ formatDate(v.latest_proposal.proposed_date) }} at {{ formatTime(v.latest_proposal.proposed_time) }}
+                <div v-if="v.latest_proposal.note" class="proposal-note">"{{ v.latest_proposal.note }}"</div>
+              </div>
+
               <div class="card-actions">
+                <!-- Negotiation actions (when agent proposed) -->
+                <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
+                  <button @click="acceptProposal(v)" class="btn-action btn-accept" :disabled="actionLoading === v.id">Accept</button>
+                  <button @click="openCounterModal(v)" class="btn-action btn-edit">Edit Schedule</button>
+                  <button @click="rejectViewing(v)" class="btn-action btn-reject-sm" :disabled="actionLoading === v.id">Reject</button>
+                </template>
+
+                <!-- Waiting for agent (buyer proposed) -->
+                <span v-else-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'" class="waiting-label">
+                  ⏳ Waiting for agent response...
+                </span>
+
                 <router-link
                   v-if="v.property"
                   :to="'/property/' + v.property.id"
@@ -164,6 +183,37 @@
         </div>
       </div>
     </main>
+
+    <!-- Counter-propose modal -->
+    <div v-if="showCounterModal" class="modal-overlay" @click.self="showCounterModal = false">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>📅 Propose New Schedule</h3>
+          <button @click="showCounterModal = false" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-subtitle" v-if="counterTarget">For: <strong>{{ counterTarget.property?.title }}</strong></p>
+          <div class="form-group">
+            <label>Proposed Date *</label>
+            <input v-model="counterForm.date" type="date" class="form-input" :min="todayStr" />
+          </div>
+          <div class="form-group">
+            <label>Proposed Time *</label>
+            <input v-model="counterForm.time" type="time" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Note to Agent</label>
+            <textarea v-model="counterForm.note" class="form-textarea" placeholder="Explain why you'd prefer this schedule..." maxlength="500"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="showCounterModal = false" class="btn-secondary">Cancel</button>
+          <button @click="submitCounterPropose" class="btn-primary" :disabled="counterLoading">
+            {{ counterLoading ? 'Sending...' : 'Propose Schedule' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Notification toast -->
     <transition name="slide-down">
@@ -190,11 +240,17 @@ export default {
       echoChannel: null,
       toast: { show: false, type: 'success', message: '' },
       tabs: [
-        { value: 'all',       label: 'All' },
-        { value: 'requested', label: 'Pending' },
-        { value: 'approved',  label: 'Approved' },
-        { value: 'rejected',  label: 'Rejected' },
+        { value: 'all',         label: 'All' },
+        { value: 'requested',   label: 'Pending' },
+        { value: 'negotiating', label: 'Negotiating' },
+        { value: 'approved',    label: 'Approved' },
+        { value: 'rejected',    label: 'Rejected' },
       ],
+      actionLoading: null,
+      showCounterModal: false,
+      counterTarget: null,
+      counterForm: { date: '', time: '', note: '' },
+      counterLoading: false,
     };
   },
 
@@ -202,6 +258,9 @@ export default {
     filteredViewings() {
       if (this.activeTab === 'all') return this.viewings;
       return this.viewings.filter(v => v.status === this.activeTab);
+    },
+    todayStr() {
+      return new Date().toISOString().split('T')[0];
     },
   },
 
@@ -212,6 +271,7 @@ export default {
 
     await this.loadViewings();
     this.subscribeToNotifications();
+    this.clearViewingNotifications();
   },
 
   beforeUnmount() {
@@ -221,6 +281,17 @@ export default {
   },
 
   methods: {
+    async clearViewingNotifications() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        await fetch(`${this.apiUrl}/api/notifications/mark-type-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ type: 'viewing_request' }),
+        });
+      } catch (e) { /* silent */ }
+    },
+
     async loadViewings() {
       try {
         this.loading = true;
@@ -244,13 +315,15 @@ export default {
       try {
         this.echoChannel = window.Echo.private('notifications.' + this.myId)
           .listen('.ViewingStatusChanged', (data) => {
-            // Update the viewing in the list
             const idx = this.viewings.findIndex(v => v.id === data.id);
             if (idx !== -1) {
               this.viewings[idx].status = data.status;
               this.viewings[idx].rejection_reason = data.rejection_reason;
+              if (data.status === 'approved') {
+                this.viewings[idx].viewing_date = data.viewing_date;
+                this.viewings[idx].viewing_time = data.viewing_time;
+              }
             } else {
-              // Reload to be safe
               this.loadViewings();
             }
 
@@ -258,6 +331,10 @@ export default {
               ? `Your viewing for "${data.property?.title}" was approved!`
               : `Your viewing for "${data.property?.title}" was rejected.`;
             this.showToast(msg, data.status === 'approved' ? 'success' : 'error');
+          })
+          .listen('.ViewingNegotiationProposed', (data) => {
+            this.loadViewings();
+            this.showToast(`New schedule proposed for "${data.property?.title}"`, 'info');
           });
       } catch (e) {
         console.error('Echo subscribe error:', e);
@@ -270,10 +347,11 @@ export default {
 
     statusLabel(status) {
       const map = {
-        requested: 'Pending',
-        approved:  'Approved',
-        rejected:  'Rejected',
-        completed: 'Completed',
+        requested:   'Pending',
+        negotiating: 'Negotiating',
+        approved:    'Approved',
+        rejected:    'Rejected',
+        completed:   'Completed',
       };
       return map[status] || status;
     },
@@ -294,6 +372,94 @@ export default {
       return `${h12}:${m} ${ampm}`;
     },
 
+    async acceptProposal(v) {
+      this.actionLoading = v.id;
+      try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/buyer/viewings/${v.id}/accept-proposal`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showToast('Schedule accepted! Viewing confirmed.', 'success');
+          this.loadViewings();
+        } else {
+          this.showToast(data.message || 'Failed to accept proposal.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Failed to accept proposal.', 'error');
+      } finally {
+        this.actionLoading = null;
+      }
+    },
+
+    openCounterModal(v) {
+      this.counterTarget = v;
+      this.counterForm = {
+        date: v.latest_proposal?.proposed_date || '',
+        time: v.latest_proposal?.proposed_time || '',
+        note: '',
+      };
+      this.showCounterModal = true;
+    },
+
+    async submitCounterPropose() {
+      if (!this.counterForm.date || !this.counterForm.time) {
+        this.showToast('Please fill in both date and time.', 'error');
+        return;
+      }
+      this.counterLoading = true;
+      try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/buyer/viewings/${this.counterTarget.id}/counter-propose`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            proposed_date: this.counterForm.date,
+            proposed_time: this.counterForm.time,
+            note: this.counterForm.note,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showCounterModal = false;
+          this.showToast('New schedule proposed!', 'success');
+          this.loadViewings();
+        } else {
+          this.showToast(data.message || 'Failed to propose schedule.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Failed to propose schedule.', 'error');
+      } finally {
+        this.counterLoading = false;
+      }
+    },
+
+    async rejectViewing(v) {
+      if (!confirm('Are you sure you want to reject this viewing?')) return;
+      this.actionLoading = v.id;
+      try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/buyer/viewings/${v.id}/reject`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ rejection_reason: 'Rejected by buyer' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showToast('Viewing rejected.', 'success');
+          this.loadViewings();
+        } else {
+          this.showToast(data.message || 'Failed to reject viewing.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Failed to reject viewing.', 'error');
+      } finally {
+        this.actionLoading = null;
+      }
+    },
+
     showToast(message, type = 'success') {
       this.toast = { show: true, type, message };
       setTimeout(() => { this.toast.show = false; }, 4000);
@@ -301,7 +467,7 @@ export default {
 
     logout() {
       localStorage.clear();
-      this.$router.push('/login');
+      this.$router.push('/');
     },
   },
 };
@@ -316,7 +482,7 @@ export default {
 .sidebar-header { padding: 20px; border-bottom: 1px solid #f5f5f5; }
 .sidebar-logo { font-size: 1.2rem; font-weight: 800; }
 .logo-realty { color: #100c08; }
-.logo-ph { color: #e6ae0d; }
+.logo-ph { color: #FFD700; }
 .sidebar-nav { flex: 1; padding: 12px 10px; }
 .nav-section { margin-top: 16px; }
 .section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; font-weight: 700; padding: 0 10px; margin-bottom: 6px; }
@@ -327,7 +493,7 @@ export default {
 
 .sidebar-footer { padding: 12px; border-top: 1px solid #f5f5f5; }
 .user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #fafafa; position: relative; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #e6ae0d; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
+.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
 .user-info { flex: 1; min-width: 0; }
 .user-name-card { font-size: 0.82rem; font-weight: 700; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-role-card { font-size: 0.72rem; color: #999; margin: 0; }
@@ -346,7 +512,7 @@ export default {
 .page-title { font-size: 1.1rem; font-weight: 700; color: #100c08; margin: 0; }
 .filter-tabs { display: flex; gap: 6px; }
 .filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.8rem; font-weight: 600; color: #666; cursor: pointer; transition: all 0.15s; }
-.filter-tab.active { background: #e6ae0d; border-color: #e6ae0d; color: #100c08; }
+.filter-tab.active { background: #FFD700; border-color: #FFD700; color: #100c08; }
 
 /* ---- Page content ---- */
 .page-wrapper { padding: 24px; }
@@ -365,8 +531,9 @@ export default {
 /* Status color accent */
 .viewing-card.status-approved { border-left: 4px solid #16a34a; }
 .viewing-card.status-rejected  { border-left: 4px solid #dc2626; }
-.viewing-card.status-requested { border-left: 4px solid #e6ae0d; }
-.viewing-card.status-completed { border-left: 4px solid #6b7280; }
+.viewing-card.status-requested { border-left: 4px solid #FFD700; }
+.viewing-card.status-completed   { border-left: 4px solid #6b7280; }
+.viewing-card.status-negotiating { border-left: 4px solid #2563eb; }
 
 .card-thumb { position: relative; height: 160px; background: #f5f5f5; }
 .thumb-img { width: 100%; height: 100%; object-fit: cover; }
@@ -376,7 +543,8 @@ export default {
 .badge-requested { background: #fef9c3; color: #854d0e; }
 .badge-approved  { background: #dcfce7; color: #166534; }
 .badge-rejected  { background: #fee2e2; color: #991b1b; }
-.badge-completed { background: #f3f4f6; color: #374151; }
+.badge-completed   { background: #f3f4f6; color: #374151; }
+.badge-negotiating { background: #dbeafe; color: #1e40af; }
 
 .card-body { padding: 16px; }
 .prop-title { font-size: 0.95rem; font-weight: 700; color: #100c08; margin: 0 0 4px; }
@@ -392,16 +560,45 @@ export default {
 .card-actions { display: flex; gap: 8px; margin-top: 12px; }
 .btn-action { padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; border: none; }
 .btn-view   { background: #f5f5f5; color: #100c08; }
-.btn-view:hover { background: #e6ae0d; }
+.btn-view:hover { background: #FFD700; }
 
 /* ---- Primary button ---- */
-.btn-primary { display: inline-block; padding: 10px 20px; background: #e6ae0d; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; }
-.btn-primary:hover { background: #d4a000; }
+.btn-primary { display: inline-block; padding: 10px 20px; background: #FFD700; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; }
+.btn-primary:hover { background: #DAB600; }
 
 /* ---- Toast ---- */
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 .toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* Negotiation */
+.negotiation-notes { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.proposal-note { margin-top: 6px; font-style: italic; color: #3b82f6; }
+.btn-accept { background: #dcfce7; color: #166534; }
+.btn-accept:hover { background: #16a34a; color: #fff; }
+.btn-edit { background: #dbeafe; color: #1e40af; }
+.btn-edit:hover { background: #2563eb; color: #fff; }
+.btn-reject-sm { background: #fee2e2; color: #991b1b; }
+.btn-reject-sm:hover { background: #dc2626; color: #fff; }
+.waiting-label { font-size: 0.8rem; color: #6b7280; font-style: italic; }
+.toast-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 460px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #f0f0f0; }
+.modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #100c08; }
+.btn-close { background: none; border: none; font-size: 18px; color: #999; cursor: pointer; }
+.modal-body { padding: 20px 24px; }
+.modal-subtitle { font-size: 0.85rem; color: #555; margin: 0 0 16px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #f0f0f0; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #333; margin-bottom: 6px; }
+.form-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box; }
+.form-input:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 0 3px rgba(230,174,13,0.15); }
+.form-textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.88rem; min-height: 70px; resize: vertical; box-sizing: border-box; }
+.form-textarea:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 0 3px rgba(230,174,13,0.15); }
+.btn-secondary { padding: 9px 18px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #555; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s ease; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(20px); }

@@ -29,6 +29,10 @@
             <span class="nav-label">Viewings</span>
             <span v-if="pendingCount > 0" class="badge-dot">{{ pendingCount }}</span>
           </router-link>
+          <router-link to="/agent/calendar" class="nav-item">
+            <span class="nav-icon">📆</span>
+            <span class="nav-label">My Calendar</span>
+          </router-link>
           <router-link to="/agent/documents" class="nav-item">
             <span class="nav-icon">📄</span>
             <span class="nav-label">Documents</span>
@@ -44,6 +48,10 @@
           <router-link to="/profile" class="nav-item">
             <span class="nav-icon">👤</span>
             <span class="nav-label">Profile</span>
+          </router-link>
+          <router-link to="/settings" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
           </router-link>
         </div>
       </nav>
@@ -86,6 +94,7 @@
               >
                 {{ tab.label }}
                 <span v-if="tab.value === 'requested' && pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
+                <span v-if="tab.value === 'negotiating' && negotiatingCount > 0" class="tab-badge tab-badge-blue">{{ negotiatingCount }}</span>
               </button>
             </div>
           </div>
@@ -139,19 +148,55 @@
               <div v-if="v.status === 'rejected' && v.rejection_reason" class="notes-box rejection-notes">
                 <strong>Rejection reason:</strong> {{ v.rejection_reason }}
               </div>
+
+              <!-- Negotiation info -->
+              <div v-if="v.latest_proposal" class="negotiation-box">
+                <div class="negotiation-header">
+                  <span class="negotiation-icon">🔄</span>
+                  <strong>{{ v.latest_proposal.proposed_by_role === 'buyer' ? 'Buyer' : 'You' }} proposed a new schedule:</strong>
+                </div>
+                <div class="negotiation-details">
+                  <span>📅 {{ formatDate(v.latest_proposal.proposed_date) }}</span>
+                  <span>🕐 {{ formatTime(v.latest_proposal.proposed_time) }}</span>
+                </div>
+                <div v-if="v.latest_proposal.note" class="negotiation-note">
+                  💬 {{ v.latest_proposal.note }}
+                </div>
+              </div>
             </div>
 
             <div class="row-actions">
               <span class="status-badge" :class="'badge-' + v.status">{{ statusLabel(v.status) }}</span>
 
-              <!-- Approve/Reject for pending -->
+              <!-- Approve / Edit Schedule / Reject for pending (requested) -->
               <template v-if="v.status === 'requested'">
                 <button @click="approveViewing(v)" class="btn-approve" :disabled="actionLoading === v.id">
                   {{ actionLoading === v.id ? '...' : '✅ Approve' }}
                 </button>
+                <button @click="openCounterModal(v)" class="btn-edit-schedule">
+                  ✏️ Edit Schedule
+                </button>
                 <button @click="openRejectModal(v)" class="btn-reject">
                   ❌ Reject
                 </button>
+              </template>
+
+              <!-- Negotiating: buyer proposed → Accept / Edit / Reject -->
+              <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'">
+                <button @click="acceptProposal(v)" class="btn-approve" :disabled="actionLoading === v.id">
+                  {{ actionLoading === v.id ? '...' : '✅ Accept' }}
+                </button>
+                <button @click="openCounterModal(v)" class="btn-edit-schedule">
+                  ✏️ Edit Schedule
+                </button>
+                <button @click="openRejectModal(v)" class="btn-reject">
+                  ❌ Reject
+                </button>
+              </template>
+
+              <!-- Negotiating: agent proposed → waiting -->
+              <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
+                <span class="waiting-label">⏳ Waiting for buyer response</span>
               </template>
 
               <!-- Mark completed for approved -->
@@ -261,6 +306,53 @@
       </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- COUNTER-PROPOSE MODAL -->
+    <!-- ============================================================ -->
+    <div v-if="showCounterModal" class="modal-overlay" @click.self="showCounterModal = false">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>✏️ Propose New Schedule</h3>
+          <button @click="showCounterModal = false" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-subtitle">
+            Propose a different schedule for the viewing of
+            <strong>{{ counterTarget?.property?.title }}</strong> with
+            <strong>{{ counterTarget?.buyer?.name }}</strong>.
+          </p>
+
+          <div class="form-group">
+            <label>Proposed Date <span class="required">*</span></label>
+            <input type="date" v-model="counterForm.proposed_date" class="form-input" :min="today" />
+          </div>
+
+          <div class="form-group">
+            <label>Proposed Time <span class="required">*</span></label>
+            <input type="time" v-model="counterForm.proposed_time" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Note (optional)</label>
+            <textarea
+              v-model="counterForm.note"
+              class="form-textarea"
+              placeholder="Add a note explaining the schedule change..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <span v-if="counterError" class="form-error">{{ counterError }}</span>
+        </div>
+        <div class="modal-footer">
+          <button @click="showCounterModal = false" class="btn-secondary">Cancel</button>
+          <button @click="submitCounterPropose" class="btn-primary" :disabled="counterLoading">
+            {{ counterLoading ? 'Sending...' : 'Send Proposal' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Notification toast -->
     <transition name="slide-up">
       <div v-if="toast.show" class="toast" :class="'toast-' + toast.type">
@@ -305,10 +397,18 @@ export default {
 
       tabs: [
         { value: 'requested', label: 'Pending' },
+        { value: 'negotiating', label: 'Negotiating' },
         { value: 'approved',  label: 'Approved' },
         { value: 'all',       label: 'All' },
         { value: 'rejected',  label: 'Rejected' },
       ],
+
+      // Counter-propose modal
+      showCounterModal: false,
+      counterTarget: null,
+      counterForm: { proposed_date: '', proposed_time: '', note: '' },
+      counterLoading: false,
+      counterError: '',
     };
   },
 
@@ -319,6 +419,9 @@ export default {
     },
     pendingCount() {
       return this.viewings.filter(v => v.status === 'requested').length;
+    },
+    negotiatingCount() {
+      return this.viewings.filter(v => v.status === 'negotiating').length;
     },
     today() {
       return new Date().toISOString().split('T')[0];
@@ -332,6 +435,7 @@ export default {
 
     await Promise.all([this.loadViewings(), this.loadBlockedDates()]);
     this.subscribeToNotifications();
+    this.clearViewingNotifications();
   },
 
   beforeUnmount() {
@@ -341,6 +445,17 @@ export default {
   },
 
   methods: {
+    async clearViewingNotifications() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        await fetch(`${this.apiUrl}/api/notifications/mark-type-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ type: 'viewing_request' }),
+        });
+      } catch (e) { /* silent */ }
+    },
+
     async loadViewings() {
       try {
         this.loading = true;
@@ -379,9 +494,12 @@ export default {
       try {
         this.echoChannel = window.Echo.private('notifications.' + this.myId)
           .listen('.ViewingRequested', (data) => {
-            // A new viewing request arrived — reload list
             this.loadViewings();
             this.showToast(`New viewing request from ${data.buyer?.name} for "${data.property?.title}"`, 'info');
+          })
+          .listen('.ViewingNegotiationProposed', (data) => {
+            this.loadViewings();
+            this.showToast(`${data.proposal?.proposed_by || 'Buyer'} proposed a new schedule for "${data.property?.title}"`, 'info');
           });
       } catch (e) {
         console.error('Echo subscribe error:', e);
@@ -530,7 +648,69 @@ export default {
     },
 
     statusLabel(status) {
-      return { requested: 'Pending', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' }[status] || status;
+      return { requested: 'Pending', negotiating: 'Negotiating', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' }[status] || status;
+    },
+
+    openCounterModal(v) {
+      this.counterTarget = v;
+      this.counterForm = { proposed_date: '', proposed_time: '', note: '' };
+      this.counterError = '';
+      this.showCounterModal = true;
+    },
+
+    async submitCounterPropose() {
+      if (!this.counterForm.proposed_date || !this.counterForm.proposed_time) {
+        this.counterError = 'Please select a date and time.';
+        return;
+      }
+      try {
+        this.counterLoading = true;
+        this.counterError = '';
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/agent/viewings/${this.counterTarget.id}/counter-propose`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.counterForm),
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showCounterModal = false;
+          this.loadViewings();
+          this.showToast('Schedule proposal sent to buyer!', 'success');
+        } else {
+          this.counterError = data.message || 'Failed to send proposal.';
+        }
+      } catch (e) {
+        this.counterError = 'Error sending proposal.';
+      } finally {
+        this.counterLoading = false;
+      }
+    },
+
+    async acceptProposal(v) {
+      try {
+        this.actionLoading = v.id;
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${this.apiUrl}/api/agent/viewings/${v.id}/accept-proposal`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.loadViewings();
+          this.showToast('Proposal accepted! Viewing confirmed.', 'success');
+        } else {
+          this.showToast(data.message || 'Failed to accept proposal.', 'error');
+        }
+      } catch (e) {
+        this.showToast('Error accepting proposal.', 'error');
+      } finally {
+        this.actionLoading = null;
+      }
     },
 
     formatDate(dateStr) {
@@ -556,7 +736,7 @@ export default {
 
     logout() {
       localStorage.clear();
-      this.$router.push('/login');
+      this.$router.push('/');
     },
   },
 };
@@ -571,7 +751,7 @@ export default {
 .sidebar-header { padding: 20px; border-bottom: 1px solid #f5f5f5; }
 .sidebar-logo { font-size: 1.2rem; font-weight: 800; }
 .logo-realty { color: #100c08; }
-.logo-ph { color: #e6ae0d; }
+.logo-ph { color: #FFD700; }
 .sidebar-nav { flex: 1; padding: 12px 10px; }
 .nav-section { margin-top: 16px; }
 .section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; font-weight: 700; padding: 0 10px; margin-bottom: 6px; }
@@ -587,7 +767,7 @@ export default {
 
 .sidebar-footer { padding: 12px; border-top: 1px solid #f5f5f5; }
 .user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #fafafa; position: relative; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #e6ae0d; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
+.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
 .user-info { flex: 1; min-width: 0; }
 .user-name-card { font-size: 0.82rem; font-weight: 700; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-role-card { font-size: 0.72rem; color: #999; margin: 0; }
@@ -605,11 +785,11 @@ export default {
 .topbar-content { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
 .page-title { font-size: 1.1rem; font-weight: 700; color: #100c08; margin: 0; }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
-.btn-calendar { padding: 8px 16px; border-radius: 10px; border: 1.5px solid #e6ae0d; background: transparent; color: #100c08; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.btn-calendar { padding: 8px 16px; border-radius: 10px; border: 1.5px solid #FFD700; background: transparent; color: #100c08; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
 .btn-calendar:hover { background: #fef9e7; }
 .filter-tabs { display: flex; gap: 6px; }
 .filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.8rem; font-weight: 600; color: #666; cursor: pointer; transition: all 0.15s; position: relative; }
-.filter-tab.active { background: #e6ae0d; border-color: #e6ae0d; color: #100c08; }
+.filter-tab.active { background: #FFD700; border-color: #FFD700; color: #100c08; }
 .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; margin-left: 4px; }
 
 /* ---- Page wrapper ---- */
@@ -626,8 +806,9 @@ export default {
 .viewing-row { background: #fff; border-radius: 14px; padding: 16px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
 .viewing-row.status-approved { border-left: 4px solid #16a34a; }
 .viewing-row.status-rejected  { border-left: 4px solid #dc2626; }
-.viewing-row.status-requested { border-left: 4px solid #e6ae0d; }
+.viewing-row.status-requested { border-left: 4px solid #FFD700; }
 .viewing-row.status-completed { border-left: 4px solid #6b7280; }
+.viewing-row.status-negotiating { border-left: 4px solid #2563eb; }
 
 .row-thumb { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: #f5f5f5; }
 .thumb-img { width: 100%; height: 100%; object-fit: cover; }
@@ -647,6 +828,7 @@ export default {
 .badge-approved  { background: #dcfce7; color: #166534; }
 .badge-rejected  { background: #fee2e2; color: #991b1b; }
 .badge-completed { background: #f3f4f6; color: #374151; }
+.badge-negotiating { background: #dbeafe; color: #1e40af; }
 
 .btn-approve  { padding: 8px 14px; border-radius: 8px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
 .btn-approve:hover:not(:disabled) { background: #16a34a; color: #fff; }
@@ -671,17 +853,17 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .form-group label { font-size: 0.85rem; font-weight: 600; color: #100c08; }
 .required { color: #dc2626; }
 .form-textarea { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; resize: vertical; outline: none; transition: border-color 0.2s; font-family: inherit; }
-.form-textarea:focus { border-color: #e6ae0d; }
+.form-textarea:focus { border-color: #FFD700; }
 .form-input { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
-.form-input:focus { border-color: #e6ae0d; }
+.form-input:focus { border-color: #FFD700; }
 .form-error { font-size: 0.78rem; color: #dc2626; }
 
 /* Block form */
 .block-form { margin-bottom: 20px; }
 .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 .form-row .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
-.btn-block { padding: 10px 16px; border-radius: 10px; background: #e6ae0d; color: #100c08; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
-.btn-block:hover:not(:disabled) { background: #d4a000; }
+.btn-block { padding: 10px 16px; border-radius: 10px; background: #FFD700; color: #100c08; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+.btn-block:hover:not(:disabled) { background: #DAB600; }
 
 .blocked-title { font-size: 0.88rem; font-weight: 700; color: #100c08; margin-bottom: 10px; }
 .state-empty { padding: 16px 0; color: #999; font-size: 0.85rem; }
@@ -693,8 +875,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-unblock:hover { background: #dc2626; color: #fff; }
 
 /* Buttons */
-.btn-primary   { padding: 10px 20px; background: #e6ae0d; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-primary:hover { background: #d4a000; }
+.btn-primary   { padding: 10px 20px; background: #FFD700; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+.btn-primary:hover { background: #DAB600; }
 .btn-secondary { padding: 10px 20px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger    { padding: 10px 20px; background: #dc2626; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger:hover:not(:disabled) { background: #b91c1c; }
@@ -704,6 +886,23 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .toast-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+/* Negotiation box */
+.negotiation-box { margin-top: 8px; padding: 10px 14px; border-radius: 10px; background: #eff6ff; border: 1px solid #bfdbfe; }
+.negotiation-header { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #1e40af; margin-bottom: 4px; }
+.negotiation-icon { font-size: 14px; }
+.negotiation-details { display: flex; gap: 14px; font-size: 0.8rem; color: #1e40af; margin-bottom: 2px; }
+.negotiation-note { font-size: 0.8rem; color: #3b82f6; font-style: italic; }
+
+/* Edit schedule button */
+.btn-edit-schedule { padding: 8px 14px; border-radius: 8px; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
+.btn-edit-schedule:hover { background: #2563eb; color: #fff; }
+
+/* Waiting label */
+.waiting-label { font-size: 0.8rem; color: #6b7280; font-style: italic; text-align: center; padding: 4px 0; }
+
+/* Tab badge blue */
+.tab-badge-blue { background: #2563eb; }
 
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }

@@ -14,6 +14,7 @@ class Document extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'uploaded_by',
         'property_id',
         'buyer_id',
         'agent_id',
@@ -22,6 +23,8 @@ class Document extends Model
         'document_path',
         'document_url',
         'file_size',
+        'mime_type',
+        'annotations',
         'status',
         'signed_at',
     ];
@@ -31,6 +34,7 @@ class Document extends Model
      */
     protected $casts = [
         'file_size' => 'integer',
+        'annotations' => 'array',
         'signed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -53,6 +57,14 @@ class Document extends Model
     /**
      * Relationships
      */
+
+    /**
+     * Get the user who uploaded this document
+     */
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
 
     /**
      * Get the property associated with this document
