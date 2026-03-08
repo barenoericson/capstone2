@@ -1,7 +1,8 @@
 <template>
   <div class="admin-layout">
     <!-- ========== SIDEBAR ========== -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -37,6 +38,7 @@
     <!-- ========== MAIN CONTENT ========== -->
     <main class="main-content">
       <nav class="topbar">
+        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
         <h1 class="page-title">{{ currentTabTitle }}</h1>
       </nav>
 
@@ -946,6 +948,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       // Navigation
       activeTab: 'overview',
       navTabs: [

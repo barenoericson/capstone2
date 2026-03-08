@@ -1,7 +1,8 @@
 <template>
   <div class="saved-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -71,6 +72,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">My Wallet ❤️</h1>
             <p class="page-sub">Your saved properties collection</p>
           </div>
@@ -198,6 +200,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       token: localStorage.getItem('auth_token') || '',
       userName: '',
@@ -498,4 +501,29 @@ export default {
 .toast.info { background: var(--black); }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .topbar { padding: 14px 16px; }
+  .topbar-content { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .page-title { font-size: 20px; }
+  .topbar-right { width: 100%; justify-content: space-between; }
+  .content-area { padding: 16px; }
+  .properties-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card-image-wrap { height: 180px; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .properties-grid { grid-template-columns: 1fr; gap: 14px; }
+  .content-area { padding: 12px; }
+  .card-body { padding: 14px; }
+  .card-title { font-size: 14px; }
+  .page-title { font-size: 18px; }
+  .empty-state { padding: 60px 16px; }
+  .empty-icon { font-size: 52px; }
+  .empty-state h3 { font-size: 20px; }
+}
 </style>

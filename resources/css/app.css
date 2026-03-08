@@ -1375,3 +1375,59 @@ html.theme-dark ::-webkit-scrollbar-thumb {
 html.theme-dark ::-webkit-scrollbar-thumb:hover {
   background: #FFD700 !important;
 }
+
+/* ========================================
+   MOBILE HAMBURGER MENU (Global)
+   ======================================== */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--smoky-black);
+  transition: border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.hamburger-btn:hover {
+  border-color: var(--palace-gold);
+  background: var(--palace-gold-faded);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+  }
+  .sidebar-overlay {
+    display: block;
+  }
+  .sidebar.open {
+    left: 0 !important;
+  }
+}
+
+/* Dark mode hamburger */
+html.theme-dark .hamburger-btn {
+  color: #f0ece8;
+  border-color: #3a3530;
+}
+html.theme-dark .hamburger-btn:hover {
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
+}
+html.theme-dark .sidebar-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}

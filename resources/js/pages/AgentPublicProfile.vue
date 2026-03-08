@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar (buyer sidebar) -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -65,6 +66,7 @@
     <main class="main-content">
       <nav class="topbar">
         <div class="topbar-content">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
           <button @click="$router.back()" class="btn-back">← Back</button>
           <div class="topbar-right">
             <router-link
@@ -309,6 +311,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       apiUrl: localStorage.getItem('api_url') || '',
       token: '',
       myName: '',
@@ -862,4 +865,42 @@ export default {
 }
 .toast-success { background: var(--black); color: var(--gold); }
 .toast-error { background: #dc2626; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .content-area { padding: 16px; max-width: 100%; }
+  .topbar { padding: 0 16px; }
+  .profile-cover { height: 120px; padding: 0 20px; }
+  .agent-avatar { width: 80px; height: 80px; font-size: 30px; }
+  .agent-avatar-wrap { margin-bottom: -36px; }
+  .profile-body { padding: 44px 20px 24px; }
+  .profile-head { flex-direction: column; gap: 14px; }
+  .agent-name { font-size: 22px; }
+  .rating-card { min-width: unset; width: 100%; }
+  .action-row { flex-direction: column; }
+  .action-row .btn-rate,
+  .action-row .btn-chat { width: 100%; text-align: center; }
+  .reviews-section { padding: 20px; }
+  .review-card { padding: 14px; }
+  .modal-box { max-width: 95vw; }
+  .star-pick { font-size: 34px; }
+  .modal-header { padding: 20px 20px 0; }
+  .modal-body { padding: 18px 20px; }
+  .modal-footer { padding: 16px 20px 20px; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .profile-cover { height: 100px; padding: 0 14px; }
+  .agent-avatar { width: 64px; height: 64px; font-size: 24px; border-width: 3px; }
+  .agent-avatar-wrap { margin-bottom: -28px; }
+  .profile-body { padding: 36px 14px 18px; }
+  .agent-name { font-size: 18px; }
+  .info-item { padding: 10px 12px; }
+  .star-pick { font-size: 28px; }
+  .star-picker-wrap { padding: 18px 14px; }
+  .reviews-section { padding: 14px; }
+}
 </style>

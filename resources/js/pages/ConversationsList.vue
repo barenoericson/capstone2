@@ -1,7 +1,8 @@
 <template>
   <div class="conversations-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -60,6 +61,7 @@
     <main class="main-content">
       <div class="topbar">
         <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
           <h1 class="page-title">Messages</h1>
           <span class="conv-count" v-if="!loading">{{ filteredConversations.length }} conversation{{ filteredConversations.length !== 1 ? 's' : '' }}</span>
         </div>
@@ -165,6 +167,7 @@ export default {
   name: 'ConversationsList',
   data() {
     return {
+      sidebarOpen: false,
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       myId: null,
       userName: '',

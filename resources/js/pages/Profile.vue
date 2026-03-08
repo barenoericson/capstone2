@@ -1,399 +1,434 @@
 <template>
-  <div class="dashboard-wrapper">
-    <!-- Sidebar Navigation (Same as Dashboard) -->
-    <aside class="sidebar">
+  <div class="profile-layout">
+
+    <!-- ═══════ SIDEBAR ═══════ -->
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link :to="dashboardRoute" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <!-- Dashboard Link -->
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+        <router-link :to="dashboardRoute" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <span>Dashboard</span>
         </router-link>
 
-        <!-- Buyer Menu Items -->
-        <div v-if="userRole === 'buyer'" class="nav-section">
-          <h3 class="section-title">Browse</h3>
-          <router-link to="/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Discover</span>
+        <!-- Buyer nav -->
+        <template v-if="userRole === 'buyer'">
+          <router-link to="/properties" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span>Properties</span>
           </router-link>
-          <router-link to="/saved-properties" class="nav-item">
-            <span class="nav-icon">❤️</span>
-            <span class="nav-label">My Wallet</span>
+          <router-link to="/saved-properties" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+            <span>Saved</span>
           </router-link>
-        </div>
+          <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span>Messages</span>
+          </router-link>
+          <router-link to="/viewings" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span>Viewings</span>
+          </router-link>
+          <router-link to="/documents" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <span>Documents</span>
+          </router-link>
+        </template>
 
-        <!-- Viewing & Messages -->
-        <div class="nav-section">
-          <h3 class="section-title">Activity</h3>
-          <a href="#" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Inbox</span>
-          </a>
-          <router-link to="/viewings" class="nav-item">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Viewings</span>
+        <!-- Agent nav -->
+        <template v-else-if="userRole === 'agent'">
+          <router-link to="/agent/properties" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span>My Properties</span>
           </router-link>
-        </div>
-
-        <!-- Agent Menu Items -->
-        <div v-if="userRole === 'agent'" class="nav-section">
-          <h3 class="section-title">Management</h3>
-          <router-link to="/agent/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">My Properties</span>
+          <router-link to="/agent/viewings" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span>Viewings</span>
           </router-link>
-          <router-link to="/agent/documents" class="nav-item">
-            <span class="nav-icon">📄</span>
-            <span class="nav-label">Documents</span>
+          <router-link to="/agent/calendar" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span>Calendar</span>
           </router-link>
-        </div>
-
-        <!-- Admin Menu Items -->
-        <div v-if="userRole === 'admin'" class="nav-section">
-          <h3 class="section-title">Admin</h3>
-          <router-link to="/admin/users" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span class="nav-label">Users</span>
+          <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span>Messages</span>
           </router-link>
-          <router-link to="/admin/agents" class="nav-item">
-            <span class="nav-icon">🧑‍💼</span>
-            <span class="nav-label">Verify Agents</span>
+          <router-link to="/agent/documents" class="nav-item" @click="sidebarOpen = false">
+            <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <span>Documents</span>
           </router-link>
-        </div>
-
-        <!-- Settings -->
-        <div class="nav-section">
-          <h3 class="section-title">Settings</h3>
-          <router-link to="/profile" class="nav-item active">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
-          </router-link>
-          <a href="#" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Settings</span>
-          </a>
-        </div>
+        </template>
       </nav>
 
-      <!-- Sidebar Footer -->
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar-lg">{{ userName.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <p class="user-name-card">{{ userName }}</p>
-            <p class="user-role-card">{{ capitalizeRole(userRole) }}</p>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user router-link-exact-active" @click="sidebarOpen = false">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
-          <button @click="toggleUserMenu" class="btn-options">⋮</button>
-
-          <!-- User Menu Dropdown -->
-          <div v-if="showUserMenu" class="user-dropdown">
-            <router-link to="/profile" class="dropdown-item">👤 My Profile</router-link>
-            <a href="#" @click.prevent="logout" class="dropdown-item logout">🚪 Logout</a>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">{{ capitalizeRole(userRole) }}</span>
           </div>
-        </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Top Navbar -->
-      <nav class="topbar">
-        <div class="topbar-content">
-          <div class="topbar-left">
-            <h1 class="page-title">My Profile</h1>
-          </div>
-          <div class="topbar-right">
-            <button class="btn-icon">🔔</button>
-            <input type="text" placeholder="Search..." class="search-input" />
-          </div>
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+
+    <!-- ═══════ MAIN ═══════ -->
+    <div class="main-wrapper">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" @click="sidebarOpen = !sidebarOpen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="topbar-title">My Profile</span>
         </div>
-      </nav>
+        <div class="topbar-right">
+          <router-link to="/settings" class="tb-settings">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            Settings
+          </router-link>
+        </div>
+      </header>
 
-      <!-- Page Content Wrapper -->
-      <div class="page-wrapper">
-        <!-- Main Panel -->
-        <div class="main-panel">
-          <!-- Profile Header with Photo -->
-          <div class="profile-header">
-            <div class="profile-photo-section">
-              <div class="profile-photo-container">
-                <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" class="profile-photo" />
-                <div v-else class="profile-photo-placeholder">
-                  {{ userName.charAt(0).toUpperCase() }}
+      <main class="content-area">
+        <div class="content-inner">
+
+          <!-- ① PROFILE HERO -->
+          <div class="profile-hero">
+            <div class="hero-deco" aria-hidden="true">
+              <div class="deco-ring dr1"></div>
+              <div class="deco-ring dr2"></div>
+              <div class="deco-ring dr3"></div>
+            </div>
+            <div class="hero-body">
+              <div class="hero-av-wrap">
+                <div class="hero-av" @click="triggerPhotoUpload" title="Change photo">
+                  <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+                  <span v-else class="av-init">{{ userName.charAt(0).toUpperCase() }}</span>
+                  <div class="av-overlay">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <span>Change</span>
+                  </div>
                 </div>
-                <button @click="triggerPhotoUpload" class="btn-upload-photo" title="Change photo">
-                  📷
-                </button>
-                <input
-                  ref="photoInput"
-                  type="file"
-                  accept="image/*"
-                  @change="handlePhotoUpload"
-                  class="hidden-input"
-                />
+                <input ref="photoInput" type="file" accept="image/*" @change="handlePhotoUpload" class="hidden-input" />
+                <div class="av-ring"></div>
               </div>
-
-              <div class="profile-basic-info">
-                <h2>{{ userName }}</h2>
-                <p class="user-email">{{ userEmail }}</p>
-                <p class="user-role-badge">
-                  <span class="role-badge" :class="'role-' + userRole">
-                    {{ capitalizeRole(userRole) }}
-                  </span>
+              <div class="hero-info">
+                <div class="hi-top">
+                  <h1 class="hero-name">{{ userName }}</h1>
+                  <span class="role-pill" :class="'rp-' + userRole">{{ capitalizeRole(userRole) }}</span>
+                </div>
+                <p class="hero-email">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  {{ userEmail }}
                 </p>
-                <p class="member-since">Member since {{ memberSince }}</p>
+                <p class="hero-since">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Member since {{ memberSince }}
+                </p>
+                <div class="hero-progress">
+                  <div class="hp-labels">
+                    <span>Profile completion</span>
+                    <span class="hp-pct">{{ profileCompletion }}%</span>
+                  </div>
+                  <div class="hp-track"><div class="hp-fill" :style="{ width: profileCompletion + '%' }"></div></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Tabs Navigation -->
-          <div class="profile-tabs">
-            <button
-              v-for="tab in visibleTabs"
-              :key="tab.id"
-              :class="['tab-btn', { active: activeTab === tab.id }]"
-              @click="activeTab = tab.id"
-            >
-              {{ tab.icon }} {{ tab.label }}
+          <!-- Journey Tracker (buyer only) — migrated from Dashboard -->
+          <div v-if="userRole === 'buyer'" class="journey-section">
+            <div class="journey-top">
+              <div>
+                <h3 class="journey-title">Your Home Buying Journey</h3>
+                <p class="journey-sub">{{ journeySteps.filter(s => s.done).length }} of {{ journeySteps.length }} steps completed — click any step to navigate</p>
+              </div>
+              <div class="journey-pct-badge">{{ journeyProgress }}%</div>
+            </div>
+            <div class="journey-track">
+              <div v-for="(step, i) in journeySteps" :key="step.key"
+                class="journey-step"
+                :class="{ done: step.done, active: i === currentJourneyStep && !step.done, last: i === journeySteps.length - 1 }"
+                :title="getStepTooltip(step)"
+                @click="navigateToStep(step)">
+                <div class="step-node">
+                  <svg v-if="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span v-else>{{ i + 1 }}</span>
+                </div>
+                <span class="step-lbl">{{ step.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ② TABS -->
+          <div class="tab-nav">
+            <button v-for="tab in profileTabs" :key="tab.id"
+              class="tab-btn" :class="{ active: activeTab === tab.id }"
+              @click="activeTab = tab.id">
+              <span class="tab-ic" v-html="tab.svg"></span>
+              {{ tab.label }}
             </button>
           </div>
 
-          <!-- Personal Information Tab -->
-          <section v-if="activeTab === 'personal'" class="tab-content-section">
-            <div class="section-header">
-              <h3>Personal Information</h3>
-              <button v-if="!isEditingPersonal" @click="isEditingPersonal = true" class="btn-edit">
-                ✏️ Edit
-              </button>
-              <div v-else class="edit-actions">
-                <button @click="cancelEditPersonal" class="btn-cancel">Cancel</button>
-                <button @click="savePersonalInfo" class="btn-save" :disabled="savingPersonal">
-                  {{ savingPersonal ? '⏳ Saving...' : '💾 Save' }}
+          <!-- ③ PERSONAL INFO -->
+          <section v-if="activeTab === 'personal'" class="section-card">
+            <div class="sc-head">
+              <div class="sc-title-row">
+                <div class="sc-icon si-blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                  <h3 class="sc-title">Personal Information</h3>
+                  <p class="sc-sub">Manage your name, email, and contact details</p>
+                </div>
+              </div>
+              <div class="sc-actions">
+                <button v-if="!isEditingPersonal" @click="isEditingPersonal = true" class="btn-edit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </button>
+                <div v-else class="edit-btns">
+                  <button @click="cancelEditPersonal" class="btn-cancel">Cancel</button>
+                  <button @click="savePersonalInfo" class="btn-save" :disabled="savingPersonal">
+                    {{ savingPersonal ? 'Saving…' : 'Save Changes' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="!isEditingPersonal" class="info-grid">
+              <div class="info-item">
+                <span class="ii-label">Full Name</span>
+                <span class="ii-value">{{ formData.name || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="ii-label">Email Address</span>
+                <span class="ii-value">{{ formData.email || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="ii-label">Phone Number</span>
+                <span class="ii-value">{{ formData.phone || 'Not provided' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="ii-label">Account Type</span>
+                <span class="ii-value">{{ capitalizeRole(userRole) }}</span>
+              </div>
+              <div class="info-item ii-full">
+                <span class="ii-label">About / Bio</span>
+                <span class="ii-value ii-bio">{{ formData.bio || 'Not provided — click Edit to add a bio' }}</span>
+              </div>
+            </div>
+
+            <form v-else @submit.prevent="savePersonalInfo" class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input v-model="formData.name" type="text" class="form-input" placeholder="Enter your full name" />
+                <span v-if="errors.name" class="err-text">{{ errors.name }}</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input v-model="formData.email" type="email" class="form-input" placeholder="Enter your email" />
+                <span v-if="errors.email" class="err-text">{{ errors.email }}</span>
+              </div>
+              <div class="form-group fg-full">
+                <label class="form-label">Phone Number</label>
+                <input v-model="formData.phone" type="tel" class="form-input" placeholder="+63 9XX XXX XXXX" />
+                <span v-if="errors.phone" class="err-text">{{ errors.phone }}</span>
+              </div>
+              <div class="form-group fg-full">
+                <label class="form-label">About / Bio</label>
+                <textarea v-model="formData.bio" class="form-input form-textarea" rows="3"
+                  placeholder="Tell buyers and agents a bit about yourself — your property goals, preferred location, budget range, etc."></textarea>
+              </div>
+            </form>
+          </section>
+
+          <!-- ④ SECURITY -->
+          <section v-if="activeTab === 'security'" class="section-card">
+            <div class="sc-head">
+              <div class="sc-title-row">
+                <div class="sc-icon si-gold">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div>
+                  <h3 class="sc-title">Security Settings</h3>
+                  <p class="sc-sub">Manage your password and account security</p>
+                </div>
+              </div>
+              <div class="sc-actions">
+                <button v-if="!showChangePassword" @click="showChangePassword = true" class="btn-edit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Change Password
                 </button>
               </div>
             </div>
 
-            <form v-if="isEditingPersonal" @submit.prevent="savePersonalInfo" class="form-grid">
-              <div class="form-group">
-                <label>Name</label>
-                <input v-model="formData.name" type="text" class="form-input" placeholder="Full name" />
-                <span v-if="errors.name" class="error-text">{{ errors.name }}</span>
+            <div v-if="!showChangePassword" class="info-grid">
+              <div class="info-item">
+                <span class="ii-label">Password</span>
+                <span class="ii-value pass-dots">●●●●●●●●</span>
               </div>
-
-              <div class="form-group">
-                <label>Email Address</label>
-                <input v-model="formData.email" type="email" class="form-input" placeholder="Email address" />
-                <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
+              <div class="info-item">
+                <span class="ii-label">Last Changed</span>
+                <span class="ii-value">{{ lastPasswordChange }}</span>
               </div>
+            </div>
 
-              <div class="form-group full-width">
-                <label>Phone Number</label>
-                <input
-                  v-model="formData.phone"
-                  type="tel"
-                  class="form-input"
-                  placeholder="+63 123 456 7890"
-                />
-                <span v-if="errors.phone" class="error-text">{{ errors.phone }}</span>
+            <form v-else @submit.prevent="changePassword" class="form-grid">
+              <div class="form-group fg-full">
+                <label class="form-label">Current Password</label>
+                <input v-model="passwordForm.currentPassword" type="password" class="form-input" placeholder="Enter current password" />
+                <span v-if="errors.currentPassword" class="err-text">{{ errors.currentPassword }}</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input v-model="passwordForm.newPassword" type="password" class="form-input" placeholder="Min 8 characters" />
+                <span v-if="errors.password" class="err-text">{{ errors.password }}</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input v-model="passwordForm.confirmPassword" type="password" class="form-input" placeholder="Repeat new password" />
+                <span v-if="errors.passwordConfirmation" class="err-text">{{ errors.passwordConfirmation }}</span>
+              </div>
+              <div class="form-actions fg-full">
+                <button type="button" @click="showChangePassword = false" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-save" :disabled="changingPassword">
+                  {{ changingPassword ? 'Updating…' : 'Update Password' }}
+                </button>
               </div>
             </form>
 
-            <div v-else class="info-grid">
-              <div class="info-item">
-                <label>Name</label>
-                <p>{{ formData.name }}</p>
-              </div>
-              <div class="info-item">
-                <label>Email Address</label>
-                <p>{{ formData.email }}</p>
-              </div>
-              <div class="info-item full-width">
-                <label>Phone Number</label>
-                <p>{{ formData.phone || '—' }}</p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Security Tab -->
-          <section v-if="activeTab === 'security'" class="tab-content-section">
-            <div class="section-header">
-              <h3>Security Settings</h3>
-            </div>
-
-            <!-- Change Password -->
-            <div class="security-card">
-              <div class="security-header">
-                <h4>🔐 Change Password</h4>
-                <button
-                  v-if="!showChangePassword"
-                  @click="showChangePassword = true"
-                  class="btn-edit"
-                >
-                  ✏️ Change
-                </button>
-              </div>
-
-              <form v-if="showChangePassword" @submit.prevent="changePassword" class="form-grid">
-                <div class="form-group full-width">
-                  <label>Current Password</label>
-                  <input
-                    v-model="passwordForm.currentPassword"
-                    type="password"
-                    class="form-input"
-                    placeholder="Enter current password"
-                  />
-                  <span v-if="errors.currentPassword" class="error-text">{{ errors.currentPassword }}</span>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>New Password</label>
-                  <input
-                    v-model="passwordForm.newPassword"
-                    type="password"
-                    class="form-input"
-                    placeholder="Enter new password (min 8 characters)"
-                  />
-                  <span v-if="errors.password" class="error-text">{{ errors.password }}</span>
-                  <small>Must be at least 8 characters</small>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Confirm New Password</label>
-                  <input
-                    v-model="passwordForm.confirmPassword"
-                    type="password"
-                    class="form-input"
-                    placeholder="Confirm new password"
-                  />
-                  <span v-if="errors.passwordConfirmation" class="error-text">{{ errors.passwordConfirmation }}</span>
-                </div>
-
-                <div class="form-actions">
-                  <button @click="showChangePassword = false" class="btn-cancel">Cancel</button>
-                  <button type="submit" class="btn-save" :disabled="changingPassword">
-                    {{ changingPassword ? '⏳ Updating...' : '💾 Update Password' }}
-                  </button>
-                </div>
-              </form>
-
-              <p v-else class="security-info">
-                Last changed: <strong>{{ lastPasswordChange }}</strong>
-              </p>
-            </div>
-
-            <!-- Login Activity -->
-            <div class="security-card">
-              <h4>📍 Recent Login Activity</h4>
-              <div class="login-history">
+            <div class="sub-section">
+              <h4 class="sub-title">Recent Login Activity</h4>
+              <div class="login-list">
                 <div v-for="login in loginHistory" :key="login.id" class="login-item">
-                  <div class="login-info">
-                    <p class="device">{{ login.device }}</p>
-                    <p class="location">{{ login.location }}</p>
+                  <div class="li-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                   </div>
-                  <div class="login-time">{{ login.time }}</div>
+                  <div class="li-info">
+                    <p class="li-device">{{ login.device }}</p>
+                    <p class="li-loc">{{ login.location }}</p>
+                  </div>
+                  <span class="li-time">{{ login.time }}</span>
                 </div>
               </div>
             </div>
           </section>
 
-          <!-- Account Tab -->
-          <section v-if="activeTab === 'account'" class="tab-content-section">
-            <div class="section-header">
-              <h3>Account Management</h3>
-            </div>
-
-            <!-- Account Status -->
-            <div class="account-card">
-              <h4>Account Status</h4>
-              <div class="status-info">
-                <p class="status-label">Current Status:</p>
-                <p class="status-value">
-                  <span class="status-badge active">Active</span>
-                </p>
+          <!-- ⑤ ACCOUNT -->
+          <section v-if="activeTab === 'account'" class="section-card">
+            <div class="sc-head">
+              <div class="sc-title-row">
+                <div class="sc-icon si-green">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                  <h3 class="sc-title">Account Management</h3>
+                  <p class="sc-sub">View status and manage your account</p>
+                </div>
               </div>
-              <p class="account-details">Your account is in good standing. Account created on {{ memberSince }}</p>
             </div>
 
-            <!-- Danger Zone -->
-            <div class="account-card danger-zone">
-              <h4>⚠️ Danger Zone</h4>
-              <p class="danger-description">These actions are permanent and cannot be undone.</p>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="ii-label">Account Status</span>
+                <span class="status-active">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+                  Active
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="ii-label">Member Since</span>
+                <span class="ii-value">{{ memberSince }}</span>
+              </div>
+              <div class="info-item">
+                <span class="ii-label">Account Type</span>
+                <span class="ii-value">{{ capitalizeRole(userRole) }}</span>
+              </div>
+            </div>
 
-              <button @click="openDeleteModal" class="btn-danger full-width" style="margin-bottom: 12px">
-                🗑️ Delete Account
+            <div class="danger-zone">
+              <div class="dz-head">
+                <div class="dz-warn-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                  <h4 class="dz-title">Danger Zone</h4>
+                  <p class="dz-desc">These actions are permanent and cannot be undone.</p>
+                </div>
+              </div>
+              <button @click="openDeleteModal" class="btn-danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                Delete Account
               </button>
             </div>
           </section>
-        </div>
-      </div>
-    </main>
 
-    <!-- Delete Account Modal -->
+        </div><!-- /content-inner -->
+      </main>
+
+      <footer class="footer">
+        <span>&copy; 2026 RealtyLinkPH. All rights reserved.</span>
+      </footer>
+    </div><!-- /main-wrapper -->
+
+    <!-- Delete Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
       <div class="modal-box">
-        <div class="modal-header">
-          <h3>🚨 Delete Account</h3>
-          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+        <div class="modal-head">
+          <h3>Delete Account</h3>
+          <button class="modal-close" @click="showDeleteModal = false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-
         <div class="modal-body">
-          <p class="warning-text">
-            ⚠️ <strong>Warning:</strong> Deleting your account will permanently remove all your data and cannot be
-            undone.
-          </p>
-
-          <p>Before deleting, please note:</p>
-          <ul class="warning-list">
-            <li>All your profile information will be deleted</li>
-            <li>All your properties/listings will be removed</li>
+          <div class="modal-alert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <p><strong>Warning:</strong> This permanently removes all your data and cannot be undone.</p>
+          </div>
+          <ul class="warn-list">
+            <li>All profile information will be deleted</li>
+            <li>All properties and listings will be removed</li>
             <li>All messages and communications will be deleted</li>
             <li>This action cannot be reversed</li>
           </ul>
-
-          <div class="form-group">
-            <label>Type your email to confirm:</label>
-            <input
-              v-model="deleteConfirmEmail"
-              type="text"
-              class="form-input"
-              :placeholder="userEmail"
-            />
-            <span v-if="errors.deleteConfirm" class="error-text">{{ errors.deleteConfirm }}</span>
+          <div class="form-group fg-full">
+            <label class="form-label">Type your email to confirm</label>
+            <input v-model="deleteConfirmEmail" type="text" class="form-input" :placeholder="userEmail" />
+            <span v-if="errors.deleteConfirm" class="err-text">{{ errors.deleteConfirm }}</span>
           </div>
         </div>
-
-        <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn-secondary">Cancel</button>
-          <button
-            @click="confirmDeleteAccount"
+        <div class="modal-foot">
+          <button @click="showDeleteModal = false" class="btn-cancel">Cancel</button>
+          <button @click="confirmDeleteAccount"
             :disabled="deleteConfirmEmail !== userEmail || deletingAccount"
-            class="btn-danger"
-          >
-            {{ deletingAccount ? '⏳ Deleting...' : '🗑️ Delete My Account' }}
+            class="btn-danger">
+            {{ deletingAccount ? 'Deleting…' : 'Delete My Account' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Success Message -->
-    <transition name="fade">
-      <div v-if="successMessage" class="success-message">
-        ✓ {{ successMessage }}
-      </div>
-    </transition>
-
-    <!-- Error Message -->
-    <transition name="fade">
-      <div v-if="errorMessage" class="error-message">
-        ✗ {{ errorMessage }}
-      </div>
-    </transition>
+    <transition name="fade"><div v-if="successMessage" class="toast toast-ok">{{ successMessage }}</div></transition>
+    <transition name="fade"><div v-if="errorMessage" class="toast toast-err">{{ errorMessage }}</div></transition>
   </div>
 </template>
 
@@ -402,1536 +437,622 @@ export default {
   name: 'Profile',
   data() {
     return {
-      // User Data
-      userName: '',
-      userEmail: '',
-      userRole: '',
-      memberSince: '',
-      profilePhotoUrl: null,
-
-      // UI State
+      sidebarOpen: false,
+      userName: '', userEmail: '', userRole: '', memberSince: '', profilePhotoUrl: null,
+      viewings: [], recentConversations: [],
       activeTab: 'personal',
-      showUserMenu: false,
-      isEditingPersonal: false,
-      showChangePassword: false,
-      showDeleteModal: false,
-
-      // Loading States
-      savingPersonal: false,
-      changingPassword: false,
-      deletingAccount: false,
-
-      // Messages
-      successMessage: '',
-      errorMessage: '',
-
-      // Form Data
-      formData: {
-        name: '',
-        email: '',
-        phone: '',
-      },
-
-      passwordForm: {
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      },
-
-      // Errors
+      isEditingPersonal: false, showChangePassword: false, showDeleteModal: false,
+      savingPersonal: false, changingPassword: false, deletingAccount: false,
+      successMessage: '', errorMessage: '',
+      formData: { name: '', email: '', phone: '', bio: '' },
+      passwordForm: { currentPassword: '', newPassword: '', confirmPassword: '' },
       errors: {},
-
-      // Security Data
       lastPasswordChange: 'January 15, 2025',
       deleteConfirmEmail: '',
-
       loginHistory: [
-        {
-          id: 1,
-          device: 'Chrome on MacOS',
-          location: 'Cebu City, Philippines',
-          time: 'Today at 2:30 PM',
-        },
-        {
-          id: 2,
-          device: 'Safari on iPhone',
-          location: 'Cebu City, Philippines',
-          time: 'Yesterday at 10:15 AM',
-        },
-        {
-          id: 3,
-          device: 'Chrome on Windows',
-          location: 'Manila, Philippines',
-          time: '3 days ago at 8:45 PM',
-        },
+        { id: 1, device: 'Chrome on Windows', location: 'Manila, Philippines', time: 'Today at 2:30 PM' },
+        { id: 2, device: 'Safari on iPhone',  location: 'Cebu City, Philippines', time: 'Yesterday at 10:15 AM' },
+        { id: 3, device: 'Chrome on MacOS',   location: 'Davao, Philippines', time: '3 days ago at 8:45 PM' },
       ],
-
       profileTabs: [
-        { id: 'personal', label: 'Personal Info', icon: '👤' },
-        { id: 'security', label: 'Security', icon: '🔐' },
-        { id: 'account', label: 'Account', icon: '📋' },
+        { id: 'personal', label: 'Personal Info', svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
+        { id: 'security', label: 'Security',      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+        { id: 'account',  label: 'Account',       svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
       ],
     };
   },
 
   computed: {
-    visibleTabs() {
-      return this.profileTabs.filter((tab) => !tab.visible || tab.visible === this.userRole);
+    dashboardRoute() {
+      if (this.userRole === 'agent') return '/agent/dashboard';
+      if (this.userRole === 'admin') return '/admin/dashboard';
+      return '/dashboard';
+    },
+    profileCompletion() {
+      let pct = 25; // account always exists
+      if (this.profilePhotoUrl) pct += 25;
+      if (this.formData.bio)   pct += 25;
+      if (this.formData.phone) pct += 25;
+      return pct;
+    },
+    journeySteps() {
+      return [
+        { key: 'account', label: 'Account Created',  done: true },
+        { key: 'profile', label: 'Profile Complete',  done: this.profileCompletion >= 100 },
+        { key: 'browse',  label: 'Browse Properties', done: this.viewings.length > 0 || this.recentConversations.length > 0 },
+        { key: 'viewing', label: 'Schedule Viewing',  done: this.viewings.length > 0 },
+        { key: 'agent',   label: 'Contact Agent',     done: this.recentConversations.length > 0 },
+        { key: 'sign',    label: 'Sign Documents',    done: false },
+      ];
+    },
+    currentJourneyStep() {
+      const i = this.journeySteps.findIndex(s => !s.done);
+      return i === -1 ? this.journeySteps.length : i;
+    },
+    journeyProgress() {
+      return Math.round((this.journeySteps.filter(s => s.done).length / this.journeySteps.length) * 100);
     },
   },
 
   methods: {
-    toggleUserMenu() {
-      this.showUserMenu = !this.showUserMenu;
+    capitalizeRole(role) { return role ? role.charAt(0).toUpperCase() + role.slice(1) : ''; },
+
+    triggerPhotoUpload() { this.$refs.photoInput.click(); },
+
+    async handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { this.showError('Please select a valid image file'); return; }
+      if (file.size > 2 * 1024 * 1024) { this.showError('Image must be less than 2MB'); return; }
+      try {
+        const formData = new FormData();
+        formData.append('photo', file);
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(window.__API_URL__ + '/api/user/upload-profile-photo', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          const reader = new FileReader();
+          reader.onload = (e) => { this.profilePhotoUrl = e.target.result; };
+          reader.readAsDataURL(file);
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.profile_photo_path = data.data.photo_path;
+          localStorage.setItem('user', JSON.stringify(user));
+          this.showSuccess('Profile photo updated successfully!');
+        } else {
+          this.showError(data.message || 'Failed to upload photo');
+        }
+      } catch { this.showError('Failed to upload photo'); }
     },
-
-    capitalizeRole(role) {
-      return role.charAt(0).toUpperCase() + role.slice(1);
-    },
-
-    triggerPhotoUpload() {
-      this.$refs.photoInput.click();
-    },
-
-    
-async handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // Validate file
-  if (!file.type.startsWith('image/')) {
-    this.showError('Please select a valid image file');
-    return;
-  }
-
-  if (file.size > 2 * 1024 * 1024) {
-    // 2MB limit
-    this.showError('Image must be less than 2MB');
-    return;
-  }
-
-  try {
-    // Create FormData
-    const formData = new FormData();
-    formData.append('photo', file);
-
-    // Upload to API
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(window.__API_URL__ + '/api/user/upload-profile-photo', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.profilePhotoUrl = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      
-      // ✅ FIXED: Update localStorage with photo path
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      user.profile_photo_path = data.data.photo_path;
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      this.showSuccess('Profile photo updated successfully!');
-    } else {
-      this.showError(data.message || 'Failed to upload photo');
-    }
-  } catch (error) {
-    console.error('Upload error:', error);
-    this.showError('Failed to upload photo');
-  }
-},
 
     async savePersonalInfo() {
-      // Validate
       this.errors = {};
-      if (!this.formData.name.trim()) {
-        this.errors.name = 'Name is required';
-      }
-      if (!this.formData.email.trim()) {
-        this.errors.email = 'Email is required';
-      }
-
+      if (!this.formData.name.trim()) this.errors.name = 'Name is required';
+      if (!this.formData.email.trim()) this.errors.email = 'Email is required';
       if (Object.keys(this.errors).length > 0) return;
-
       try {
         this.savingPersonal = true;
-
         const token = localStorage.getItem('auth_token');
         const response = await fetch(window.__API_URL__ + '/api/user/profile', {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: this.formData.name,
-            email: this.formData.email,
-            phone: this.formData.phone,
-          }),
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ name: this.formData.name, email: this.formData.email, phone: this.formData.phone, bio: this.formData.bio }),
         });
-
         const data = await response.json();
-
         if (data.success) {
           this.isEditingPersonal = false;
-          // Update localStorage
           const user = JSON.parse(localStorage.getItem('user') || '{}');
-          user.name = this.formData.name;
-          user.email = this.formData.email;
+          user.name = this.formData.name; user.email = this.formData.email;
+          user.phone = this.formData.phone; user.bio = this.formData.bio;
           localStorage.setItem('user', JSON.stringify(user));
-          this.userName = this.formData.name;
-          this.userEmail = this.formData.email;
+          this.userName = this.formData.name; this.userEmail = this.formData.email;
           this.showSuccess('Personal information updated successfully!');
         } else {
-          if (data.errors) {
-            this.errors = data.errors;
-          } else {
-            this.showError(data.message || 'Failed to save personal information');
-          }
+          if (data.errors) this.errors = data.errors;
+          else this.showError(data.message || 'Failed to save personal information');
         }
-      } catch (error) {
-        console.error('Save error:', error);
-        this.showError('Failed to save personal information');
-      } finally {
-        this.savingPersonal = false;
-      }
+      } catch { this.showError('Failed to save personal information'); }
+      finally { this.savingPersonal = false; }
     },
 
-    cancelEditPersonal() {
-      this.isEditingPersonal = false;
-      this.loadUserData();
-    },
+    cancelEditPersonal() { this.isEditingPersonal = false; this.loadUserData(); },
 
     async changePassword() {
-      // Validate
       this.errors = {};
-      if (!this.passwordForm.currentPassword) {
-        this.errors.currentPassword = 'Current password is required';
-      }
-      if (!this.passwordForm.newPassword) {
-        this.errors.password = 'New password is required';
-      }
-      if (this.passwordForm.newPassword.length < 8) {
-        this.errors.password = 'Password must be at least 8 characters';
-      }
-      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-        this.errors.passwordConfirmation = 'Passwords do not match';
-      }
-
+      if (!this.passwordForm.currentPassword) this.errors.currentPassword = 'Current password is required';
+      if (!this.passwordForm.newPassword) this.errors.password = 'New password is required';
+      if (this.passwordForm.newPassword.length < 8) this.errors.password = 'Password must be at least 8 characters';
+      if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) this.errors.passwordConfirmation = 'Passwords do not match';
       if (Object.keys(this.errors).length > 0) return;
-
       try {
         this.changingPassword = true;
-
         const token = localStorage.getItem('auth_token');
         const response = await fetch(window.__API_URL__ + '/api/user/change-password', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            current_password: this.passwordForm.currentPassword,
-            password: this.passwordForm.newPassword,
-            password_confirmation: this.passwordForm.confirmPassword,
-          }),
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ current_password: this.passwordForm.currentPassword, password: this.passwordForm.newPassword, password_confirmation: this.passwordForm.confirmPassword }),
         });
-
         const data = await response.json();
-
         if (data.success) {
-          this.passwordForm = {
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-          };
+          this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
           this.showChangePassword = false;
           this.lastPasswordChange = 'Just now';
           this.showSuccess('Password changed successfully!');
-        } else {
-          this.showError(data.message || 'Failed to change password');
-        }
-      } catch (error) {
-        console.error('Password change error:', error);
-        this.showError('Failed to change password');
-      } finally {
-        this.changingPassword = false;
-      }
+        } else { this.showError(data.message || 'Failed to change password'); }
+      } catch { this.showError('Failed to change password'); }
+      finally { this.changingPassword = false; }
     },
 
-    openDeleteModal() {
-      this.showDeleteModal = true;
-    },
+    openDeleteModal() { this.showDeleteModal = true; },
 
     async confirmDeleteAccount() {
-      if (this.deleteConfirmEmail !== this.userEmail) {
-        this.errors.deleteConfirm = 'Email does not match';
-        return;
-      }
-
+      if (this.deleteConfirmEmail !== this.userEmail) { this.errors.deleteConfirm = 'Email does not match'; return; }
       try {
         this.deletingAccount = true;
-        // TODO: Implement delete account API endpoint
-        // For now, just show a message
         this.showError('Account deletion API not yet implemented');
-      } catch (error) {
-        this.showError('Failed to delete account');
-      } finally {
-        this.deletingAccount = false;
-      }
+      } catch { this.showError('Failed to delete account'); }
+      finally { this.deletingAccount = false; }
     },
 
-    showSuccess(message) {
-      this.successMessage = message;
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
-    },
-
-    showError(message) {
-      this.errorMessage = message;
-      setTimeout(() => {
-        this.errorMessage = '';
-      }, 3000);
-    },
+    showSuccess(msg) { this.successMessage = msg; setTimeout(() => { this.successMessage = ''; }, 3000); },
+    showError(msg)   { this.errorMessage   = msg; setTimeout(() => { this.errorMessage   = ''; }, 3000); },
 
     loadUserData() {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        this.userName = user.name || 'User';
+        this.userName  = user.name  || 'User';
         this.userEmail = user.email || '';
-        this.userRole = user.role || 'buyer';
-
-        this.formData.name = this.userName;
+        this.userRole  = user.role  || 'buyer';
+        this.formData.name  = this.userName;
         this.formData.email = this.userEmail;
         this.formData.phone = user.phone || '';
-
-        const createdDate = new Date();
-        this.memberSince = createdDate.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        });
-
-        // Load profile photo if exists
+        this.formData.bio   = user.bio || user.about || '';
+        const d = user.created_at ? new Date(user.created_at) : new Date();
+        this.memberSince = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         if (user.profile_photo_path) {
           this.profilePhotoUrl = `${window.__API_URL__}/storage/${user.profile_photo_path}`;
         }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
+      } catch { /* ignore */ }
     },
 
+    navigateToStep(step) {
+      const routes = {
+        account: '/profile', profile: '/profile', browse: '/properties',
+        viewing: '/viewings', agent: '/conversations', sign: '/documents',
+      };
+      if (routes[step.key]) this.$router.push(routes[step.key]);
+    },
+    getStepTooltip(step) {
+      if (step.key === 'account') return 'Account created — you\'re in!';
+      if (step.key === 'profile') return step.done ? 'Profile complete!' : 'Add a photo, bio, and phone number to complete your profile';
+      if (step.key === 'browse')  return step.done ? 'You\'ve browsed or contacted agents — great!' : 'Browse available properties — click to explore';
+      if (step.key === 'viewing') return step.done ? `${this.viewings.length} viewing${this.viewings.length > 1 ? 's' : ''} scheduled` : 'No viewings yet — schedule a property visit';
+      if (step.key === 'agent')   return step.done ? 'You\'ve contacted an agent' : 'Message an agent to get started';
+      if (step.key === 'sign')    return 'Sign documents electronically — click to open Documents';
+      return step.label;
+    },
+    async loadViewings() {
+      try {
+        const res = await fetch(`${window.__API_URL__}/api/buyer/viewings`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) this.viewings = data.viewings || data.data || [];
+      } catch { /* silent */ }
+    },
+    async loadConversations() {
+      try {
+        const res = await fetch(`${window.__API_URL__}/api/buyer/conversations`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) this.recentConversations = data.data || [];
+      } catch { /* silent */ }
+    },
     async logout() {
       try {
         const token = localStorage.getItem('auth_token');
-        await fetch(window.__API_URL__ + '/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        this.$router.push('/');
-      } catch (error) {
-        console.error('Logout error:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        this.$router.push('/');
-      }
+        await fetch(window.__API_URL__ + '/api/auth/logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+      } catch { /* ignore */ }
+      localStorage.removeItem('auth_token'); localStorage.removeItem('user');
+      this.$router.push('/');
     },
   },
 
   mounted() {
     const token = localStorage.getItem('auth_token');
-    if (!token) {
-      this.$router.push('/');
-      return;
-    }
+    if (!token) { this.$router.push('/'); return; }
     this.loadUserData();
-  },
-
-  beforeUnmount() {
-    this.showUserMenu = false;
+    if (this.userRole === 'buyer') {
+      this.loadViewings();
+      this.loadConversations();
+    }
   },
 };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ── TOKENS (defined on wrapper so scoped vars cascade correctly) ── */
+.profile-layout {
+  --navy:  #0B1C39; --navy2: #102445; --navy3: #1a3158;
+  --gold:  #D89B0F; --gold2: #E5B332; --gold3: #B07A08;
+  --s50: #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s900: #1C1917;
+  --white: #FFFFFF; --bg: #F2F0EB;
+  --sw: 242px; --th: 56px;
+  --fd: 'Outfit','Inter',-apple-system,sans-serif;
+  --fb: 'Inter',-apple-system,sans-serif;
+  min-height: 100vh; display: flex; font-family: var(--fb);
+  -webkit-font-smoothing: antialiased; background: var(--bg);
 }
 
-:root {
-  --smoky-black: #100c08;
-  --white-smoke: #f5f5f5;
-  --palace-gold: #FFD700;
-  --palace-gold-dark: #DAB600;
-  --charcoal-smoke: #2a2420;
-  --light-gray: #e0e0e0;
-  --border-gray: #ddd;
-  --dark-navbar: #1a1a1a;
-
-  --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.dashboard-wrapper {
-  display: flex;
-  min-height: 100vh;
-  background: var(--white-smoke);
-  font-family: var(--font-body);
-}
-
-/* ============================================================================
-   SIDEBAR
-   ============================================================================ */
-
+/* ══ SIDEBAR ══ */
 .sidebar {
-  width: 280px;
-  background: white;
-  border-right: 1px solid var(--light-gray);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
+  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
 }
-
-.sidebar-header {
-  padding: 24px 16px;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.sidebar-logo {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-}
-
-.logo-realty {
-  color: var(--smoky-black);
-}
-
-.logo-ph {
-  color: var(--palace-gold);
-  margin-left: 2px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 20px 0;
-  overflow-y: auto;
-}
-
-.nav-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #999;
-  padding: 8px 16px;
-  margin: 0;
-  letter-spacing: 1.2px;
-}
+.sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; }
+.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  margin: 0 8px;
-  color: var(--smoky-black);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 14px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  width: calc(100% - 16px);
-  text-align: left;
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px;
+  border-radius: 9px; color: rgba(255,255,255,0.45); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: all 0.18s; margin-bottom: 2px;
+  cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+  font-family: var(--fb); position: relative;
 }
-
-.nav-item:hover {
-  background: var(--white-smoke);
-  color: var(--palace-gold);
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
+.nav-item.router-link-exact-active { background: rgba(216,155,15,0.12); color: var(--gold2); }
+.nav-item.router-link-exact-active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
 }
-
-.nav-item.active {
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  font-weight: 600;
+.nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 10px 8px; }
+.sidebar-bottom { flex-shrink: 0; padding: 0 10px 14px; }
+.nav-user { gap: 10px; padding: 8px 10px; }
+.nav-av {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
 }
+.nav-av img { width: 100%; height: 100%; object-fit: cover; }
+.nav-user-info { flex: 1; min-width: 0; }
+.nav-user-name { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-user-role  { display: block; font-size: 10.5px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; }
 
-.nav-icon {
-  font-size: 18px;
-  min-width: 24px;
-  text-align: center;
-}
+/* ══ MAIN ══ */
+.main-wrapper { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-.nav-label {
-  flex: 1;
-}
-
-.sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid var(--light-gray);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.user-card {
-  background: var(--white-smoke);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
-
-.user-avatar-lg {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.user-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-name-card {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-role-card {
-  font-size: 11px;
-  color: #999;
-  margin: 4px 0 0 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn-options {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.3s;
-  color: #999;
-}
-
-.btn-options:hover {
-  color: var(--palace-gold);
-}
-
-.user-dropdown {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid var(--light-gray);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  z-index: 1001;
-}
-
-.dropdown-item {
-  display: block;
-  padding: 12px 16px;
-  color: var(--smoky-black);
-  text-decoration: none;
-  font-size: 14px;
-  transition: all 0.3s;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background: var(--white-smoke);
-  color: var(--palace-gold);
-}
-
-.dropdown-item.logout {
-  color: #d32f2f;
-  border-top: 1px solid var(--light-gray);
-}
-
-.dropdown-item.logout:hover {
-  background: #ffebee;
-}
-
-/* ============================================================================
-   MAIN CONTENT
-   ============================================================================ */
-
-.main-content {
-  flex: 1;
-  margin-left: 280px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
+/* TOPBAR */
 .topbar {
-  background: linear-gradient(135deg,rgb(253, 252, 252) 0%,rgb(255, 255, 255) 100%);
-  border-bottom: 3px solid var(--palace-gold);
-  padding: 16px 32px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: var(--white); position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: var(--th); border-bottom: 1px solid var(--s200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
-.topbar-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.hamburger { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.tb-settings {
+  display: flex; align-items: center; gap: 6px; padding: 7px 15px;
+  border: 1.5px solid var(--s200); border-radius: 8px; font-size: 12.5px;
+  font-weight: 600; color: var(--s600); text-decoration: none; transition: all .2s;
 }
+.tb-settings:hover { border-color: var(--gold); color: var(--gold3); }
 
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  flex: 1;
+/* CONTENT */
+.content-area { flex: 1; background: var(--bg); }
+.content-inner { max-width: 860px; margin: 0 auto; padding: 28px 30px 48px; }
+
+/* ── PROFILE HERO ── */
+.profile-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%);
+  border-radius: 20px; overflow: hidden; position: relative; margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(11,28,57,0.28);
 }
+.hero-deco { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.deco-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(216,155,15,0.10); }
+.dr1 { width: 350px; height: 350px; top: -120px; right: -60px; }
+.dr2 { width: 220px; height: 220px; top: -60px; right: -10px; border-style: dashed; }
+.dr3 { width: 120px; height: 120px; top: -10px; right: 60px; }
+.hero-body { display: flex; align-items: center; gap: 28px; padding: 36px 40px; position: relative; }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font-display);
-  white-space: nowrap;
-  letter-spacing: -0.5px;
-  color: var(--smoky-black);
+/* Avatar */
+.hero-av-wrap { position: relative; flex-shrink: 0; }
+.hero-av {
+  width: 96px; height: 96px; border-radius: 50%; overflow: hidden; cursor: pointer;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center; position: relative;
 }
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.hero-av img { width: 100%; height: 100%; object-fit: cover; }
+.av-init { font-family: var(--fd); font-size: 36px; font-weight: 800; color: #fff; }
+.av-overlay {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(11,28,57,0.65); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  color: #fff; opacity: 0; transition: opacity .22s;
+  font-size: 10px; font-weight: 600;
 }
-
-.btn-icon {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px;
-  transition: transform 0.3s;
-  position: relative;
+.hero-av:hover .av-overlay { opacity: 1; }
+.av-ring {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(216,155,15,0.35); pointer-events: none;
 }
+.hidden-input { display: none; }
 
-.btn-icon:hover {
-  transform: scale(1.1);
+/* Hero info */
+.hero-info { flex: 1; min-width: 0; }
+.hi-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.hero-name { font-family: var(--fd); font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.role-pill {
+  padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.3px; text-transform: uppercase;
 }
-
-.search-input {
-  padding: 10px 16px;
-  border: 1px solid rgba(5, 5, 5, 0.2);
-  border-radius: 8px;
-  font-size: 14px;
-  width: 220px;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.05);
-  color: black;
+.rp-buyer { background: rgba(216,155,15,0.18); color: var(--gold2); border: 1px solid rgba(216,155,15,0.3); }
+.rp-agent { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+.rp-admin { background: rgba(168,85,247,0.18); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); }
+.hero-email, .hero-since {
+  display: flex; align-items: center; gap: 7px; font-size: 13px;
+  color: rgba(255,255,255,0.55); margin-bottom: 5px;
 }
+.hero-progress { margin-top: 14px; }
+.hp-labels { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
+.hp-pct { color: var(--gold2) !important; font-weight: 700; }
+.hp-track { height: 5px; background: rgba(255,255,255,0.10); border-radius: 99px; overflow: hidden; }
+.hp-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 99px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
 
-.search-input::placeholder {
-  color: rgba(8, 8, 8, 0.5);
+/* ── TABS ── */
+.tab-nav {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--white); border-radius: 12px; padding: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--palace-gold);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-}
-
-/* Page Wrapper */
-.page-wrapper {
-  flex: 1;
-  padding: 32px;
-  overflow-y: auto;
-}
-
-.main-panel {
-  max-width: 1000px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* ============================================================================
-   PROFILE HEADER
-   ============================================================================ */
-
-.profile-header {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.profile-photo-section {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.profile-photo-container {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.profile-photo {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid var(--palace-gold);
-}
-
-.profile-photo-placeholder {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 64px;
-  font-weight: 800;
-  border: 4px solid var(--palace-gold);
-}
-
-.btn-upload-photo {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--palace-gold);
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-upload-photo:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
-}
-
-.hidden-input {
-  display: none;
-}
-
-.profile-basic-info h2 {
-  font-size: 32px;
-  font-weight: 800;
-  margin: 0 0 8px 0;
-  color: var(--smoky-black);
-  font-family: var(--font-display);
-  letter-spacing: -0.5px;
-}
-
-.user-email {
-  font-size: 16px;
-  color: #999;
-  margin: 0 0 12px 0;
-}
-
-.user-role-badge {
-  margin: 0 0 12px 0;
-}
-
-.role-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.role-buyer {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-
-.role-agent {
-  background: #f3e5f5;
-  color: #6a1b9a;
-}
-
-.role-admin {
-  background: #fff3e0;
-  color: #e65100;
-}
-
-.member-since {
-  font-size: 14px;
-  color: #999;
-  margin: 0;
-}
-
-/* ============================================================================
-   PROFILE TABS
-   ============================================================================ */
-
-.profile-tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-  border-bottom: 2px solid var(--light-gray);
-  background: white;
-  padding: 0 32px;
-  border-radius: 12px 12px 0 0;
-  overflow-x: auto;
-}
-
 .tab-btn {
-  padding: 16px 24px;
-  border: none;
-  background: none;
-  color: #999;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.3s;
-  white-space: nowrap;
-  font-family: var(--font-display);
+  display: flex; align-items: center; gap: 7px; padding: 9px 18px;
+  border-radius: 9px; border: none; background: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--s500); transition: all .18s;
+  font-family: var(--fb); flex: 1; justify-content: center;
 }
+.tab-btn:hover { background: var(--s100); color: var(--s700); }
+.tab-btn.active { background: var(--navy); color: #fff; box-shadow: 0 2px 8px rgba(11,28,57,0.20); }
+.tab-ic { display: flex; align-items: center; }
+.tab-ic svg { transition: stroke .18s; }
 
-.tab-btn:hover {
-  color: var(--smoky-black);
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--white); border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden; margin-bottom: 20px;
 }
-
-.tab-btn.active {
-  color: var(--palace-gold);
-  border-bottom-color: var(--palace-gold);
+.sc-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 22px 26px 20px; border-bottom: 1px solid var(--s100); gap: 12px;
 }
-
-/* ============================================================================
-   TAB CONTENT
-   ============================================================================ */
-
-.tab-content-section {
-  background: white;
-  border-radius: 0 12px 12px 12px;
-  padding: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 32px;
+.sc-title-row { display: flex; align-items: flex-start; gap: 13px; }
+.sc-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
+.si-blue  { background: rgba(59,130,246,0.09); color: #3b82f6; }
+.si-gold  { background: rgba(216,155,15,0.10); color: var(--gold); }
+.si-green { background: rgba(22,163,74,0.09);  color: #16a34a; }
+.sc-title { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--navy); }
+.sc-sub   { font-size: 12px; color: var(--s400); margin-top: 2px; }
+.sc-actions { flex-shrink: 0; display: flex; align-items: center; }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.section-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-  color: var(--smoky-black);
-  font-family: var(--font-display);
-}
-
-.edit-actions {
-  display: flex;
-  gap: 12px;
-}
-
+/* Buttons */
 .btn-edit {
-  padding: 8px 16px;
-  background: var(--palace-gold);
-  color: var(--smoky-black);
-  border: none;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border: 1.5px solid var(--s200); border-radius: 8px; background: var(--white);
+  font-size: 12.5px; font-weight: 600; color: var(--s600); cursor: pointer; transition: all .18s;
 }
-
-.btn-edit:hover {
-  background: var(--palace-gold-dark);
-  transform: translateY(-2px);
-}
-
+.btn-edit:hover { border-color: var(--gold); color: var(--gold3); background: rgba(216,155,15,0.05); }
+.edit-btns { display: flex; gap: 8px; }
 .btn-cancel {
-  padding: 8px 16px;
-  background: var(--white-smoke);
-  color: var(--smoky-black);
-  border: 1px solid var(--light-gray);
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 13px;
+  padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--s200);
+  background: var(--white); font-size: 12.5px; font-weight: 600; color: var(--s500); cursor: pointer; transition: all .18s;
 }
-
-.btn-cancel:hover {
-  background: var(--light-gray);
-}
-
+.btn-cancel:hover { border-color: var(--s300); color: var(--s700); }
 .btn-save {
-  padding: 8px 16px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 13px;
+  padding: 7px 16px; border-radius: 8px; border: none;
+  background: linear-gradient(135deg, var(--navy), var(--navy3));
+  color: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all .18s;
+  box-shadow: 0 2px 8px rgba(11,28,57,0.22);
 }
-
-.btn-save:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-2px);
-}
-
-.btn-save:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Forms */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.form-group small {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.form-input {
-  padding: 12px;
-  border: 1px solid var(--light-gray);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: var(--font-body);
-  transition: all 0.3s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--palace-gold);
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-}
-
-.error-text {
-  font-size: 12px;
-  color: #d32f2f;
-  margin-top: 4px;
-}
-
-/* Info Grid (Read Mode) */
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.info-item {
-  padding: 16px;
-  background: var(--white-smoke);
-  border-radius: 6px;
-}
-
-.info-item.full-width {
-  grid-column: 1 / -1;
-}
-
-.info-item label {
-  font-size: 12px;
-  color: #999;
-  text-transform: uppercase;
-  font-weight: 700;
-  margin-bottom: 8px;
-  display: block;
-  letter-spacing: 0.5px;
-}
-
-.info-item p {
-  font-size: 15px;
-  color: var(--smoky-black);
-  margin: 0;
-  font-weight: 500;
-}
-
-/* ============================================================================
-   SECURITY SECTION
-   ============================================================================ */
-
-.security-card {
-  background: var(--white-smoke);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid var(--light-gray);
-}
-
-.security-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.security-header h4 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
-  color: var(--smoky-black);
-}
-
-.security-info {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
+.btn-save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(11,28,57,0.30); }
+.btn-save:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-danger {
-  padding: 12px 24px;
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+  border-radius: 9px; border: 1.5px solid #fecaca; background: #fef2f2;
+  color: #991b1b; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .18s;
+}
+.btn-danger:hover:not(:disabled) { background: #dc2626; border-color: #dc2626; color: #fff; }
+.btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+.form-actions { display: flex; gap: 10px; }
+
+/* Info grid (view mode) */
+.info-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0;
+  padding: 4px 0;
+}
+.info-item {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 18px 26px; border-bottom: 1px solid var(--s100);
+}
+.info-item:nth-last-child(-n+2) { border-bottom: none; }
+.ii-full { grid-column: 1 / -1; border-bottom: none !important; }
+.ii-label { font-size: 11px; font-weight: 700; color: var(--s400); text-transform: uppercase; letter-spacing: 0.5px; }
+.ii-value { font-size: 14px; font-weight: 500; color: var(--s900); }
+.ii-bio { color: var(--s600); font-style: italic; line-height: 1.55; white-space: pre-wrap; }
+.ii-bio:not([data-empty]) { color: var(--s900); font-style: normal; }
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+.pass-dots { letter-spacing: 3px; }
+.status-active {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+  font-weight: 600; color: #16a34a;
 }
 
-.btn-danger:hover:not(:disabled) {
-  background: #da190b;
-  transform: translateY(-2px);
+/* Form grid (edit mode) */
+.form-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  padding: 22px 26px;
 }
-
-.btn-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.fg-full { grid-column: 1 / -1; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--s600); text-transform: uppercase; letter-spacing: 0.4px; }
+.form-input {
+  padding: 10px 13px; border: 1.5px solid var(--s200); border-radius: 9px;
+  font-size: 13.5px; font-family: var(--fb); color: var(--s900); background: var(--s50);
+  transition: border-color .18s, box-shadow .18s;
 }
+.form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(216,155,15,0.12); background: var(--white); }
+.form-input::placeholder { color: var(--s300); }
+.err-text { font-size: 11.5px; color: #dc2626; font-weight: 500; }
 
-.btn-secondary {
-  padding: 12px 24px;
-  background: white;
-  color: var(--smoky-black);
-  border: 1px solid var(--light-gray);
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-
-.btn-secondary:hover {
-  background: var(--white-smoke);
-  border-color: var(--palace-gold);
-}
-
-.full-width {
-  width: 100%;
-}
-
-.login-history {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
+/* Security sub-section */
+.sub-section { padding: 20px 26px; border-top: 1px solid var(--s100); }
+.sub-title { font-size: 13px; font-weight: 700; color: var(--s700); margin-bottom: 14px; }
+.login-list { display: flex; flex-direction: column; gap: 2px; }
 .login-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid var(--light-gray);
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 13px; border-radius: 10px; transition: background .15s;
 }
-
-.login-info p {
-  margin: 0;
-  font-size: 14px;
+.login-item:hover { background: var(--s50); }
+.li-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: var(--s100); color: var(--s400);
+  display: flex; align-items: center; justify-content: center;
 }
+.li-info { flex: 1; }
+.li-device { font-size: 13px; font-weight: 600; color: var(--s800); margin: 0; }
+.li-loc    { font-size: 11.5px; color: var(--s400); margin: 1px 0 0; }
+.li-time   { font-size: 11.5px; color: var(--s400); white-space: nowrap; flex-shrink: 0; }
 
-.device {
-  font-weight: 700;
-  color: var(--smoky-black);
-}
-
-.location {
-  color: #999;
-  font-size: 13px;
-}
-
-.login-time {
-  font-size: 12px;
-  color: #999;
-  white-space: nowrap;
-}
-
-/* ============================================================================
-   ACCOUNT SECTION
-   ============================================================================ */
-
-.account-card {
-  background: var(--white-smoke);
-  border: 1px solid var(--light-gray);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.account-card h4 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-  color: var(--smoky-black);
-}
-
-.status-info {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.status-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin: 0;
-}
-
-.status-value {
-  margin: 0;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.status-badge.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.account-details {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-}
-
+/* Danger zone */
 .danger-zone {
-  border: 2px solid #f44336;
-  background: #ffebee;
+  margin: 0 26px 26px; border: 1.5px solid #fecaca; border-radius: 12px;
+  padding: 20px 22px; background: #fffafa;
 }
+.dz-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.dz-warn-icon { width: 36px; height: 36px; border-radius: 9px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dz-title { font-size: 14px; font-weight: 700; color: #7f1d1d; margin-bottom: 2px; }
+.dz-desc  { font-size: 12.5px; color: #b91c1c; }
 
-.danger-description {
-  font-size: 14px;
-  color: #666;
-  margin: 0 0 16px 0;
+/* FOOTER */
+.footer { padding: 16px 30px; background: var(--white); border-top: 1px solid var(--s100); font-size: 12px; color: var(--s400); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; padding: 13px 22px;
+  border-radius: 11px; font-size: 13.5px; font-weight: 600; z-index: 9999;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.14);
 }
+.toast-ok  { background: #15803d; color: #fff; }
+.toast-err { background: #dc2626; color: #fff; }
+.fade-enter-active, .fade-leave-active { transition: opacity .25s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* ============================================================================
-   MODAL
-   ============================================================================ */
-
+/* MODAL */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.50);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+  backdrop-filter: blur(3px); padding: 20px;
 }
-
 .modal-box {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: var(--white); border-radius: 18px; width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.20); overflow: hidden;
+}
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px; border-bottom: 1px solid var(--s100);
+}
+.modal-head h3 { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); }
+.modal-close { width: 30px; height: 30px; border-radius: 7px; border: 1.5px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s500); display: flex; align-items: center; justify-content: center; transition: all .18s; }
+.modal-close:hover { border-color: var(--s300); color: var(--s800); }
+.modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.modal-alert {
+  display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px;
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; color: #991b1b; font-size: 13px;
+}
+.warn-list { padding-left: 18px; color: var(--s600); font-size: 13px; line-height: 1.8; }
+.modal-foot {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--s100); background: var(--s50);
 }
 
-.modal-header {
-  padding: 24px;
-  border-bottom: 1px solid var(--light-gray);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ══ JOURNEY TRACKER ══ */
+.journey-section {
+  background: var(--white); border-radius: 16px; padding: 22px 26px;
+  margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
-
-.modal-header h3 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0;
-  color: var(--smoky-black);
+.journey-top {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
 }
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  transition: color 0.3s;
+.journey-title { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--navy); }
+.journey-sub   { font-size: 12px; color: var(--s400); margin-top: 2px; }
+.journey-pct-badge {
+  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  color: var(--gold3); background: rgba(216,155,15,0.10); border: 1px solid rgba(216,155,15,0.20);
+  white-space: nowrap; flex-shrink: 0;
 }
-
-.btn-close:hover {
-  color: var(--smoky-black);
+.journey-track {
+  display: flex; align-items: flex-start; gap: 0; overflow-x: auto; scrollbar-width: none;
 }
-
-.modal-body {
-  padding: 24px;
+.journey-track::-webkit-scrollbar { display: none; }
+.journey-step {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 8px; position: relative; min-width: 72px; cursor: pointer; transition: transform 0.18s;
 }
-
-.warning-text {
-  color: #d32f2f;
-  margin-bottom: 16px;
-  font-size: 14px;
+.journey-step:hover { transform: translateY(-2px); }
+.journey-step:hover .step-node { box-shadow: 0 4px 16px rgba(216,155,15,0.30); }
+.journey-step:not(.last)::after {
+  content: ''; position: absolute; top: 16px; left: 50%; right: -50%;
+  height: 2px; background: var(--s200); z-index: 0; transition: background .4s;
 }
-
-.warning-list {
-  margin: 16px 0 24px 0;
-  padding-left: 20px;
-  color: #666;
+.journey-step.done:not(.last)::after { background: var(--gold); }
+.step-node {
+  width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--s200);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--s400); background: var(--white);
+  position: relative; z-index: 1; transition: all .3s;
 }
+.journey-step.done  .step-node { background: var(--gold); border-color: var(--gold); color: #fff; box-shadow: 0 2px 10px rgba(216,155,15,0.35); }
+.journey-step.active .step-node { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 4px rgba(216,155,15,0.15); }
+.step-lbl { font-size: 11px; font-weight: 600; color: var(--s400); text-align: center; white-space: nowrap; }
+.journey-step.done  .step-lbl { color: var(--gold3); }
+.journey-step.active .step-lbl { color: var(--gold); }
 
-.warning-list li {
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 24px;
-  border-top: 1px solid var(--light-gray);
-}
-
-.modal-footer .btn-secondary,
-.modal-footer .btn-danger {
-  flex: 1;
-}
-
-/* ============================================================================
-   MESSAGES
-   ============================================================================ */
-
-.success-message {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #4caf50;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 3000;
-  animation: slideIn 0.3s ease;
-}
-
-.error-message {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #f44336;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 3000;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* ============================================================================
-   RESPONSIVE
-   ============================================================================ */
-
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 240px;
-  }
-
-  .main-content {
-    margin-left: 240px;
-  }
-
-  .profile-photo-section {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .page-wrapper {
-    padding: 24px;
-  }
-}
-
+/* ══ RESPONSIVE ══ */
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -280px;
-    transition: left 0.3s ease;
-    width: 280px;
-    z-index: 1001;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .topbar {
-    padding: 16px;
-  }
-
-  .topbar-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .page-title {
-    font-size: 24px;
-  }
-
-  .topbar-right {
-    width: 100%;
-  }
-
-  .search-input {
-    width: 100%;
-  }
-
-  .page-wrapper {
-    padding: 16px;
-  }
-
-  .profile-header {
-    padding: 24px;
-  }
-
-  .profile-photo-section {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-tabs {
-    padding: 0 24px;
-    margin-bottom: 24px;
-  }
-
-  .tab-content-section {
-    padding: 24px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .edit-actions {
-    width: 100%;
-  }
-
-  .edit-actions button {
-    flex: 1;
-  }
-
-  .modal-box {
-    width: 95%;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-title {
-    font-size: 20px;
-  }
-
-  .profile-header {
-    padding: 16px;
-  }
-
-  .profile-photo-container {
-    margin: 0 auto;
-  }
-
-  .profile-basic-info h2 {
-    font-size: 24px;
-  }
-
-  .profile-tabs {
-    padding: 0 16px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .tab-btn {
-    padding: 12px 16px;
-    font-size: 13px;
-  }
-
-  .tab-content-section {
-    padding: 16px;
-  }
-
-  .section-header {
-    margin-bottom: 16px;
-  }
-
-  .form-grid {
-    gap: 16px;
-  }
-
-  .modal-header {
-    padding: 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .modal-footer {
-    flex-direction: column;
-  }
-
-  .modal-footer button {
-    width: 100%;
-  }
+  .sidebar { left: -100%; transition: left .3s ease; }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay { display: block; }
+  .main-wrapper { margin-left: 0; }
+  .hamburger { display: flex; }
+  .content-inner { padding: 16px; }
+  .hero-body { flex-direction: column; align-items: flex-start; padding: 24px 20px; gap: 18px; }
+  .hero-name { font-size: 22px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .info-item:last-child { border-bottom: none; }
+  .info-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--s100); }
+  .info-item:last-child { border-bottom: none; }
+  .form-grid { grid-template-columns: 1fr; padding: 16px; }
+  .sc-head { flex-direction: column; padding: 18px 18px 16px; }
+  .tab-btn { font-size: 12px; padding: 8px 10px; }
 }
 </style>

@@ -146,4 +146,14 @@ export default {
   margin-top: 8px; transition: background 0.2s;
 }
 .btn-secondary:hover { background: #e5e7eb; }
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .verify-wrapper { padding: 16px; }
+  .verify-card { padding: 28px 20px; border-radius: 14px; }
+  .logo { font-size: 20px; }
+  .state-box h2 { font-size: 1.1rem; }
+  .state-box p { font-size: 0.82rem; }
+  .state-icon { width: 52px; height: 52px; font-size: 22px; }
+}
 </style>

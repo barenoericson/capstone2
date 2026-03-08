@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Agent Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -62,6 +63,7 @@
     <main class="main-content">
       <nav class="topbar">
         <div class="topbar-content">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
           <button @click="$router.back()" class="btn-back">← Back</button>
           <div class="topbar-right">
             <router-link
@@ -174,6 +176,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       apiUrl: '',
       token: '',
       myName: '',
@@ -395,4 +398,30 @@ export default {
 .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
 .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--black); margin: 0 0 8px; }
 .empty-state p { color: #666; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .content-area { padding: 16px; max-width: 100%; }
+  .topbar { padding: 0 16px; }
+  .profile-cover { height: 120px; padding: 0 20px; }
+  .buyer-avatar { width: 80px; height: 80px; font-size: 30px; }
+  .buyer-avatar-wrap { margin-bottom: -36px; }
+  .profile-body { padding: 44px 20px 24px; }
+  .buyer-name { font-size: 22px; }
+  .action-row { flex-direction: column; }
+  .action-row .btn-chat { width: 100%; text-align: center; }
+  .note-box { flex-direction: column; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .profile-cover { height: 100px; padding: 0 14px; }
+  .buyer-avatar { width: 64px; height: 64px; font-size: 24px; border-width: 3px; }
+  .buyer-avatar-wrap { margin-bottom: -28px; }
+  .profile-body { padding: 36px 14px 18px; }
+  .buyer-name { font-size: 18px; }
+  .info-item { padding: 10px 12px; }
+  .content-area { padding: 12px; }
+}
 </style>

@@ -349,4 +349,13 @@ export default {
 /* Slide-down transition */
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s ease; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .reset-page { padding: 16px; }
+  .reset-card { padding: 28px 20px; border-radius: 16px; }
+  .brand-mark { font-size: 1.3rem; }
+  .reset-title { font-size: 1.2rem; }
+  .btn-submit { padding: 12px; font-size: 0.88rem; }
+}
 </style>

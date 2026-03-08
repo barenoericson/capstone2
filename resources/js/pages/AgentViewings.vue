@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -78,6 +79,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">Viewing Requests</h1>
           </div>
           <div class="topbar-right">
@@ -368,6 +370,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       loading: true,
       viewings: [],
       activeTab: 'requested',
@@ -906,4 +909,44 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .topbar-content { flex-direction: column; align-items: flex-start; height: auto; padding: 12px 16px; gap: 10px; }
+  .topbar-right { flex-wrap: wrap; width: 100%; }
+  .filter-tabs { flex-wrap: wrap; gap: 4px; }
+  .filter-tab { padding: 5px 10px; font-size: 0.75rem; }
+  .btn-calendar { font-size: 0.78rem; padding: 6px 12px; }
+  .page-wrapper { padding: 14px; }
+  .viewing-row { flex-direction: column; padding: 14px; }
+  .row-thumb { width: 100%; height: 160px; border-radius: 10px; }
+  .row-actions { flex-direction: row; flex-wrap: wrap; align-items: center; min-width: unset; width: 100%; gap: 6px; }
+  .row-actions .btn-approve,
+  .row-actions .btn-reject,
+  .row-actions .btn-complete,
+  .row-actions .btn-edit-schedule { width: auto; flex: 1; min-width: 100px; }
+  .meta-row { flex-direction: column; gap: 4px; }
+  .modal-box { max-width: 95vw; }
+  .modal-wide { max-width: 95vw; }
+  .form-row { flex-direction: column; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 0.95rem; }
+  .topbar-content { padding: 10px 12px; }
+  .page-wrapper { padding: 10px; }
+  .viewing-row { padding: 12px; gap: 10px; }
+  .row-thumb { height: 120px; }
+  .prop-title { font-size: 0.88rem; }
+  .notes-box { font-size: 0.75rem; padding: 6px 10px; }
+  .negotiation-box { padding: 8px 10px; }
+  .state-box { padding: 40px 16px; }
+  .state-icon { font-size: 40px; }
+  .modal-body { padding: 14px 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; }
+}
 </style>

@@ -1,7 +1,8 @@
 <template>
   <div class="form-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -42,6 +43,7 @@
     <!-- Main Content -->
     <main class="form-main">
       <div class="form-header">
+        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
         <router-link to="/agent/properties" class="btn-back">← Back to Properties</router-link>
         <h1 class="form-title">{{ isEditMode ? '✏️ Edit Property' : '➕ Create New Property' }}</h1>
         <p class="form-subtitle">{{ isEditMode ? 'Update your property details and photos' : 'List a new property for sale or rent' }}</p>
@@ -457,6 +459,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       // ✅ Dynamic API URL
       apiUrl: window.__API_URL__,
 

@@ -1,7 +1,8 @@
 <template>
   <div class="messages-wrapper">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -60,6 +61,7 @@
     <main class="main-content">
       <div class="conversations-container">
         <div class="conversations-header">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
           <h1>💬 Messages</h1>
           <div class="search-box">
             <input
@@ -149,6 +151,7 @@ export default {
   },
   data() {
     return {
+      sidebarOpen: false,
       conversations: [],
       loading: true,
       currentUserId: null,

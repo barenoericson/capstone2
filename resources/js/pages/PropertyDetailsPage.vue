@@ -11,47 +11,54 @@
       <!-- Back Button -->
       <button @click="goBack" class="btn-back">← Back</button>
 
-      <!-- Property Gallery Section -->
+      <!-- Mosaic Hero Gallery -->
       <div class="gallery-section">
-        <!-- Main Photo -->
-        <div class="main-photo-container">
-          <img 
-            v-if="currentPhoto" 
-            :src="currentPhoto" 
-            :alt="property.title"
-            class="main-photo"
-          />
-          <div v-else class="photo-placeholder">📷</div>
-
-          <!-- Photo Navigation -->
-          <button 
-            v-if="property.photos && property.photos.length > 1"
-            @click="prevPhoto" 
-            class="btn-nav prev"
-          >
-            ‹
-          </button>
-          <button 
-            v-if="property.photos && property.photos.length > 1"
-            @click="nextPhoto" 
-            class="btn-nav next"
-          >
-            ›
-          </button>
-
-          <!-- Photo Counter -->
-          <div v-if="property.photos && property.photos.length > 1" class="photo-counter">
-            {{ currentPhotoIndex + 1 }} / {{ property.photos.length }}
+        <div :class="['mosaic-hero', { 'mosaic-single': !property.photos || property.photos.length < 2 }]">
+          <!-- Large primary image -->
+          <div class="mosaic-main" @click="currentPhotoIndex = 0">
+            <img
+              v-if="property.photos && property.photos.length > 0"
+              :src="property.photos[0].photo_url"
+              :alt="property.title"
+              class="mosaic-img"
+            />
+            <div v-else class="mosaic-placeholder">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>No photos available</span>
+            </div>
+            <div v-if="property.featured" class="featured-badge">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Featured
+            </div>
           </div>
 
-          <!-- Featured Badge -->
-          <div v-if="property.featured" class="featured-badge">⭐ Featured</div>
+          <!-- Side column: 2 stacked thumbnails -->
+          <div v-if="property.photos && property.photos.length > 1" class="mosaic-side">
+            <div class="mosaic-thumb" @click="currentPhotoIndex = 1">
+              <img :src="property.photos[1].photo_url" alt="Photo 2" class="mosaic-img" />
+            </div>
+            <div
+              v-if="property.photos.length > 2"
+              class="mosaic-thumb"
+              @click="currentPhotoIndex = 2"
+            >
+              <img :src="property.photos[2].photo_url" alt="Photo 3" class="mosaic-img" />
+              <div v-if="property.photos.length > 3" class="mosaic-more-overlay">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>+{{ property.photos.length - 3 }} more</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Thumbnail Gallery -->
+        <!-- Thumbnail strip -->
         <div v-if="property.photos && property.photos.length > 1" class="thumbnail-gallery">
-          <div 
-            v-for="(photo, index) in property.photos" 
+          <div
+            v-for="(photo, index) in property.photos"
             :key="index"
             @click="currentPhotoIndex = index"
             :class="['thumbnail', { active: index === currentPhotoIndex }]"
@@ -93,11 +100,11 @@
                 <p class="spec-value">{{ property.bathrooms }}</p>
               </div>
             </div>
-            <div class="spec-item">
+            <div v-if="property.area && property.area !== 'N/A'" class="spec-item">
               <span class="spec-icon">📐</span>
               <div>
                 <p class="spec-label">Area</p>
-                <p class="spec-value">{{ property.area || 'N/A' }} sqm</p>
+                <p class="spec-value">{{ property.area }} sqm</p>
               </div>
             </div>
             <div class="spec-item">
@@ -135,24 +142,28 @@
           <!-- Location Info -->
           <div class="location-info-section">
             <h3>Location Information</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <label>City</label>
-                <p>{{ property.city }}</p>
+            <dl class="loc-grid">
+              <div v-if="property.address" class="loc-row">
+                <dt class="loc-label">Address</dt>
+                <dd class="loc-value">{{ property.address }}</dd>
               </div>
-              <div class="info-item">
-                <label>Province</label>
-                <p>{{ property.province }}</p>
+              <div class="loc-row">
+                <dt class="loc-label">City</dt>
+                <dd class="loc-value">{{ property.city }}</dd>
               </div>
-              <div class="info-item">
-                <label>Country</label>
-                <p>{{ property.country }}</p>
+              <div class="loc-row">
+                <dt class="loc-label">Province</dt>
+                <dd class="loc-value">{{ property.province }}</dd>
               </div>
-              <div class="info-item">
-                <label>Postal Code</label>
-                <p>{{ property.postal_code || 'N/A' }}</p>
+              <div class="loc-row">
+                <dt class="loc-label">Country</dt>
+                <dd class="loc-value">{{ property.country }}</dd>
               </div>
-            </div>
+              <div v-if="property.postal_code" class="loc-row">
+                <dt class="loc-label">Postal Code</dt>
+                <dd class="loc-value">{{ property.postal_code }}</dd>
+              </div>
+            </dl>
           </div>
 
           <!-- Property Map -->
@@ -166,6 +177,24 @@
               <span>📍</span> {{ mapError }}
             </div>
             <div id="property-map" ref="mapContainer" class="map-container"></div>
+
+            <!-- Nearby Landmarks -->
+            <div class="landmarks-section">
+              <h4 class="landmarks-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Nearby Landmarks
+              </h4>
+              <ul class="landmarks-list">
+                <li v-for="place in nearbyLandmarks" :key="place.name" class="landmark-item">
+                  <span class="landmark-pin-dot" :style="{ background: place.color || '#001F3F' }"></span>
+                  <div class="landmark-info">
+                    <span class="landmark-name">{{ place.name }}</span>
+                    <span class="landmark-type">{{ place.type }}</span>
+                  </div>
+                  <span class="landmark-dist">{{ place.dist }}</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -203,38 +232,57 @@
               <p class="no-agent-text">Agent information not available</p>
             </div>
 
-            <!-- Agent Actions -->
-            <div class="agent-actions">
-              <button @click="callAgent" class="btn-action btn-call">
-                📞 Call Agent
+            <!-- PRIMARY CTA: Schedule Viewing -->
+            <div class="property-actions">
+              <button @click="scheduleViewing" class="btn-schedule">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Schedule a Viewing
               </button>
-              <router-link
-                v-if="property.agent && property.agent.user"
-                :to="`/conversations/${property.agent.user.id}?property_id=${property.id}`"
-                class="btn-action btn-message"
+
+              <!-- DISTINCT: Virtual Tour = navy filled -->
+              <button
+                v-if="property.panoramas && property.panoramas.length > 0"
+                @click="showTourModal = true"
+                class="btn-tour-navy"
               >
-                💬 Message
-              </router-link>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+                Virtual 360° Tour
+              </button>
             </div>
 
             <hr class="divider" />
 
-            <!-- Property Actions -->
-            <div class="property-actions">
-              <button @click="scheduleViewing" class="btn-primary">
-                📅 Schedule Viewing
-              </button>
-              <button @click="saveProperty" class="btn-secondary">
-                ❤️ Save Property
-              </button>
+            <!-- SECONDARY: Message + Call (navy outline) -->
+            <div class="agent-actions">
               <button
-                v-if="property.panoramas && property.panoramas.length > 0"
-                @click="showTourModal = true"
-                class="btn-tour"
+                v-if="property.agent && property.agent.user"
+                @click="messageAgent"
+                class="btn-outline-navy"
               >
-                🔄 Virtual 360° Tour
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Message
+              </button>
+              <button @click="callAgent" class="btn-outline-navy">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.75-.75a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.28 16.5z"/>
+                </svg>
+                Call
               </button>
             </div>
+
+            <!-- TERTIARY: Save Property (text link) -->
+            <button @click="saveProperty" class="btn-save-link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              Save Property
+            </button>
           </div>
 
           <!-- Quick Info Box -->
@@ -323,6 +371,53 @@
       </div>
     </div>
 
+    <!-- LOGIN MODAL (for unauthenticated visitors) -->
+    <transition name="fade">
+      <div v-if="showLoginModal" class="login-modal-overlay" @click.self="showLoginModal = false">
+        <div class="login-modal-box" @click.stop>
+          <button @click="showLoginModal = false" class="login-modal-close">✕</button>
+
+          <div class="login-modal-brand">
+            <span class="lm-brand">RealtyLink</span><span class="lm-brand-gold">PH</span>
+            <p class="lm-tagline">Sign in to continue</p>
+          </div>
+
+          <transition name="fade">
+            <div v-if="loginAlert.show" :class="['lm-alert', `lm-alert-${loginAlert.type}`]">
+              {{ loginAlert.message }}
+            </div>
+          </transition>
+
+          <form @submit.prevent="handleLogin" class="lm-form">
+            <div class="lm-field">
+              <label>Email Address</label>
+              <input v-model="loginForm.email" type="email" placeholder="juan@example.com" class="lm-input" />
+              <span v-if="loginErrors.email" class="lm-error">{{ loginErrors.email }}</span>
+            </div>
+
+            <div class="lm-field">
+              <label>Password</label>
+              <div class="lm-password-wrap">
+                <input v-model="loginForm.password" :type="showLoginPassword ? 'text' : 'password'" placeholder="Enter your password" class="lm-input" />
+                <button type="button" class="lm-eye" @click="showLoginPassword = !showLoginPassword">
+                  {{ showLoginPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
+              <span v-if="loginErrors.password" class="lm-error">{{ loginErrors.password }}</span>
+            </div>
+
+            <button type="submit" class="lm-btn-login" :disabled="loginLoading">
+              <span v-if="!loginLoading">Sign In</span>
+              <span v-else>Signing in...</span>
+            </button>
+          </form>
+
+          <div class="lm-divider"><span>Don't have an account?</span></div>
+          <button @click="goToRegister" class="lm-btn-register">Create Account</button>
+        </div>
+      </div>
+    </transition>
+
     <!-- Success Message -->
     <transition name="fade">
       <div v-if="successMessage" class="success-message">
@@ -342,6 +437,7 @@
 <script>
 import ViewingCalendar from '../components/ViewingCalendar.vue';
 import PanoramaViewer from '../components/PanoramaViewer.vue';
+import { authAPI } from '../src/services/api';
 
 export default {
   name: 'PropertyDetailsPage',
@@ -376,6 +472,14 @@ export default {
         message: '',
       },
 
+      // Login modal (for unauthenticated visitors)
+      showLoginModal: false,
+      loginLoading: false,
+      showLoginPassword: false,
+      loginForm: { email: '', password: '' },
+      loginErrors: { email: '', password: '' },
+      loginAlert: { show: false, type: 'success', message: '' },
+
       // Messages
       successMessage: '',
       errorMessage: '',
@@ -385,6 +489,16 @@ export default {
       mapError: '',
       mapInstance: null,
       geoapifyKey: import.meta.env.VITE_GEOAPIFY_API_KEY || '',
+
+      // Nearby landmarks (UI placeholder — wired to real API in backend phase)
+      nearbyLandmarks: [
+        { name: 'SM City Mall',         type: 'Shopping',    dist: '1.2 km', color: '#001F3F' },
+        { name: 'Puregold Supermarket', type: 'Grocery',     dist: '0.4 km', color: '#2c7a3a' },
+        { name: 'Barangay Health Center', type: 'Healthcare', dist: '0.6 km', color: '#c0392b' },
+        { name: 'Elementary School',    type: 'Education',   dist: '0.9 km', color: '#e67e22' },
+        { name: 'Jollibee',             type: 'Restaurant',  dist: '0.3 km', color: '#cc0000' },
+        { name: 'LRT/MRT Station',      type: 'Transport',   dist: '1.8 km', color: '#2980b9' },
+      ],
     };
   },
 
@@ -525,7 +639,49 @@ export default {
       });
     },
 
+    requireAuth() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        this.showLoginModal = true;
+        return false;
+      }
+      return true;
+    },
+
+    async handleLogin() {
+      this.loginErrors = { email: '', password: '' };
+      if (!this.loginForm.email) this.loginErrors.email = 'Email is required';
+      if (!this.loginForm.password) this.loginErrors.password = 'Password is required';
+      if (this.loginErrors.email || this.loginErrors.password) return;
+
+      this.loginLoading = true;
+      try {
+        const res = await authAPI.login(this.loginForm);
+        localStorage.setItem('auth_token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        if (window.reconnectEcho) window.reconnectEcho();
+
+        this.loginAlert = { show: true, type: 'success', message: 'Login successful!' };
+        setTimeout(() => {
+          this.showLoginModal = false;
+          this.loginAlert.show = false;
+          // Reload property to get full auth context
+          this.loadProperty();
+        }, 800);
+      } catch (e) {
+        this.loginAlert = { show: true, type: 'error', message: 'Invalid credentials. Please try again.' };
+        setTimeout(() => { this.loginAlert.show = false; }, 3000);
+      } finally {
+        this.loginLoading = false;
+      }
+    },
+
+    goToRegister() {
+      this.$router.push('/register');
+    },
+
     async scheduleViewing() {
+      if (!this.requireAuth()) return;
       this.showViewingModal = true;
       this.dateBlocked = false;
       this.viewingForm = { date: '', time: '', message: '' };
@@ -595,12 +751,23 @@ export default {
       }
     },
 
-    callAgent() {
-      this.showSuccess('Call feature coming soon!');
+    saveProperty() {
+      if (!this.requireAuth()) return;
+      this.showSuccess('Property saved to your wishlist!');
     },
 
-    saveProperty() {
-      this.showSuccess('Property saved to your wishlist!');
+    callAgent() {
+      if (!this.requireAuth()) return;
+      if (this.property?.agent?.phone) {
+        window.open(`tel:${this.property.agent.phone}`);
+      }
+    },
+
+    messageAgent() {
+      if (!this.requireAuth()) return;
+      if (this.property?.agent?.user) {
+        this.$router.push(`/conversations/${this.property.agent.user.id}?property_id=${this.property.id}`);
+      }
     },
 
     goBack() {
@@ -676,6 +843,8 @@ export default {
         this.mapLoading = false;
         // Wait for DOM to render
         await this.$nextTick();
+        // Guard: component may have been unmounted during async operations
+        if (!this.$refs.mapContainer) return;
         const L = window.L;
         if (this.mapInstance) {
           this.mapInstance.remove();
@@ -710,11 +879,6 @@ export default {
   },
 
   mounted() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      this.$router.push('/');
-      return;
-    }
     this.loadProperty();
   },
 };
@@ -857,120 +1021,147 @@ export default {
 }
 
 /* ============================================================================
-   GALLERY SECTION
+   GALLERY SECTION — MOSAIC HERO
    ============================================================================ */
 
 .gallery-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   margin-bottom: 32px;
 }
 
-.main-photo-container {
-  position: relative;
-  width: 100%;
-  height: 500px;
-  background: #f0f0f0;
-  border-radius: 12px;
+/* Mosaic grid: large left + 2 stacked right */
+.mosaic-hero {
+  display: grid;
+  grid-template-columns: 1fr 0.48fr;
+  grid-template-rows: 480px;
+  gap: 8px;
+  border-radius: 14px;
   overflow: hidden;
 }
 
-.main-photo {
+.mosaic-hero.mosaic-single {
+  grid-template-columns: 1fr;
+}
+
+.mosaic-main {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f0f0f0;
+}
+
+.mosaic-main:hover .mosaic-img {
+  transform: scale(1.02);
+}
+
+.mosaic-side {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+}
+
+.mosaic-thumb {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f0f0f0;
+}
+
+.mosaic-thumb:hover .mosaic-img {
+  transform: scale(1.04);
+}
+
+.mosaic-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.35s ease;
+  display: block;
 }
 
-.photo-placeholder {
+.mosaic-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 100px;
-  color: #ddd;
-}
-
-.btn-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 28px;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.btn-nav:hover {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.btn-nav.prev {
-  left: 20px;
-}
-
-.btn-nav.next {
-  right: 20px;
-}
-
-.photo-counter {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
+  gap: 12px;
+  background: #f5f5f5;
+  color: #bbb;
   font-size: 14px;
-  font-weight: 700;
 }
 
+/* +N more overlay on 3rd thumbnail */
+.mosaic-more-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 31, 63, 0.62);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: white;
+}
+
+.mosaic-more-overlay span {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.mosaic-more-overlay small {
+  font-size: 11px;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+/* Featured badge */
 .featured-badge {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 16px;
+  left: 16px;
   background: var(--palace-gold);
   color: var(--smoky-black);
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Thumbnail Gallery */
+/* Thumbnail strip */
 .thumbnail-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
 }
 
 .thumbnail {
   position: relative;
-  height: 80px;
+  height: 72px;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.3s;
+  transition: all 0.25s;
 }
 
 .thumbnail:hover {
   border-color: var(--palace-gold);
+  opacity: 0.9;
 }
 
 .thumbnail.active {
   border-color: var(--palace-gold);
-  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.35);
 }
 
 .thumbnail img {
@@ -1031,10 +1222,12 @@ export default {
 }
 
 .price {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 800;
   color: var(--palace-gold);
   font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: -0.5px;
 }
 
 .property-type {
@@ -1190,31 +1383,41 @@ export default {
   font-family: var(--font-display);
 }
 
-.info-grid {
+/* Clean location label/value grid */
+.loc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.loc-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: 110px 1fr;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.info-item {
-  padding: 12px;
-  background: var(--white-smoke);
-  border-radius: 8px;
+.loc-row:last-child {
+  border-bottom: none;
 }
 
-.info-item label {
+.loc-label {
   font-size: 11px;
-  color: #999;
+  color: #aaa;
   text-transform: uppercase;
   font-weight: 700;
-  display: block;
-  margin-bottom: 4px;
+  letter-spacing: 0.6px;
 }
 
-.info-item p {
+.loc-value {
   font-size: 15px;
   color: var(--smoky-black);
-  font-weight: 700;
+  font-weight: 600;
+  margin: 0;
 }
 
 /* ============================================================================
@@ -1324,6 +1527,86 @@ export default {
 }
 
 /* ============================================================================
+   NEARBY LANDMARKS
+   ============================================================================ */
+
+.landmarks-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.landmarks-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--smoky-black);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-display);
+  color: #555;
+}
+
+.landmarks-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.landmark-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.landmark-item:last-child {
+  border-bottom: none;
+}
+
+.landmark-pin-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.landmark-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.landmark-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--smoky-black);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landmark-type {
+  display: block;
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 1px;
+}
+
+.landmark-dist {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
    SIDEBAR COLUMN
    ============================================================================ */
 
@@ -1422,43 +1705,127 @@ export default {
   padding: 12px 0;
 }
 
-/* Agent Actions */
-.agent-actions {
+/* ============================================================================
+   BUTTON HIERARCHY
+   ============================================================================ */
+
+/* PRIMARY: Schedule Viewing — solid gold, dark navy text */
+.btn-schedule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--palace-gold);
+  color: #001F3F;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.22s, transform 0.18s, box-shadow 0.22s;
+  font-family: var(--font-display);
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.35);
+  letter-spacing: 0.2px;
+}
+
+.btn-schedule:hover {
+  background: var(--palace-gold-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.45);
+}
+
+.btn-schedule:active {
+  transform: translateY(0);
+}
+
+/* DISTINCT: Virtual 360° Tour — dark navy filled */
+.btn-tour-navy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  background: #001F3F;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.22s, transform 0.18s;
+  font-family: var(--font-display);
+}
+
+.btn-tour-navy:hover {
+  background: #002d5a;
+  transform: translateY(-1px);
+}
+
+/* Property actions container */
+.property-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
 }
 
-.btn-action {
-  padding: 12px 16px;
-  border: none;
+/* SECONDARY: Message + Call — navy outline */
+.agent-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.btn-outline-navy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  color: #001F3F;
+  border: 1.5px solid #001F3F;
   border-radius: 8px;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
   font-size: 13px;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: var(--font-display);
+}
+
+.btn-outline-navy:hover {
+  background: #001F3F;
+  color: white;
+}
+
+/* TERTIARY: Save Property — text link style */
+.btn-save-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: var(--font-body);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: transparent;
 }
 
-.btn-call {
-  background: var(--white-smoke);
-  color: var(--smoky-black);
-  border: 1px solid var(--light-gray);
-}
-
-.btn-call:hover {
-  background: var(--palace-gold);
-  border-color: var(--palace-gold);
-}
-
-.btn-message {
-  background: var(--palace-gold);
-  color: var(--smoky-black);
-}
-
-.btn-message:hover {
-  background: var(--palace-gold-dark);
+.btn-save-link:hover {
+  color: #c0392b;
+  text-decoration-color: #c0392b;
 }
 
 .divider {
@@ -1467,13 +1834,7 @@ export default {
   margin: 0;
 }
 
-/* Property Actions */
-.property-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
+/* Modal action buttons (used in viewing modal footer) */
 .btn-primary {
   padding: 12px 16px;
   background: var(--palace-gold);
@@ -1780,27 +2141,98 @@ export default {
    RESPONSIVE
    ============================================================================ */
 
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - TABLET (max 1024px)
+   ═══════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   .content-grid {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 
   .sidebar-column {
     position: static;
   }
 
-  .main-photo-container {
-    height: 400px;
+  .mosaic-hero {
+    grid-template-rows: 340px;
+  }
+
+  /* Agent card: horizontal layout when sidebar drops below */
+  .agent-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0 20px;
+    align-items: start;
+  }
+
+  .agent-card .card-title {
+    grid-column: 1 / -1;
+  }
+
+  .agent-card .agent-photo-container {
+    grid-row: 2;
+    grid-column: 1;
+    margin-bottom: 0;
+  }
+
+  .agent-card .agent-info {
+    grid-row: 2;
+    grid-column: 2;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .agent-card .agent-actions {
+    grid-column: 1 / -1;
+  }
+
+  .agent-card .divider {
+    grid-column: 1 / -1;
+  }
+
+  .agent-card .property-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .agent-card .property-actions .btn-schedule,
+  .agent-card .property-actions .btn-tour-navy {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .agent-card .agent-actions .btn-outline-navy {
+    flex: 1;
+  }
+
+  .specs-section {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - MOBILE (max 768px)
+   ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .property-container {
     padding: 12px;
   }
 
+  .btn-back {
+    padding: 8px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
   .property-title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .property-location {
+    font-size: 13px;
   }
 
   .price {
@@ -1808,23 +2240,105 @@ export default {
   }
 
   .specs-section {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .mosaic-hero {
     grid-template-columns: 1fr;
+    grid-template-rows: 260px;
+    border-radius: 10px;
   }
 
-  .main-photo-container {
-    height: 300px;
-  }
-
-  .btn-nav {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+  .mosaic-side {
+    display: none;
   }
 
   .thumbnail-gallery {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    gap: 5px;
   }
 
+  /* Agent card: back to vertical on mobile */
+  .agent-card {
+    display: block;
+    padding: 20px;
+  }
+
+  .agent-card .agent-actions {
+    flex-direction: column;
+  }
+
+  .agent-card .property-actions {
+    flex-direction: column;
+  }
+
+  .agent-photo, .agent-photo-placeholder {
+    width: 80px;
+    height: 80px;
+  }
+
+  .agent-photo-placeholder {
+    font-size: 32px;
+  }
+
+  .agent-card .agent-info {
+    text-align: center;
+  }
+
+  /* Description, features, location sections */
+  .description-section,
+  .features-section,
+  .location-info-section,
+  .map-section {
+    padding: 16px;
+  }
+
+  .description-section h3,
+  .features-section h3,
+  .location-info-section h3,
+  .map-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .map-container {
+    height: 260px;
+  }
+
+  /* Viewing modal - fullscreen */
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-box {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 16px;
+  }
+
+  /* Info box */
+  .info-box {
+    padding: 16px;
+  }
+
+  /* Message modal */
   .message-modal-overlay {
     padding: 0;
   }
@@ -1838,35 +2352,55 @@ export default {
     top: 10px;
     right: 10px;
   }
+
+  /* Login modal on mobile */
+  .login-modal-overlay {
+    padding: 12px;
+  }
+
+  .login-modal-box {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
 }
 
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - SMALL MOBILE (max 480px)
+   ═══════════════════════════════════════════════ */
 @media (max-width: 480px) {
+  .property-container {
+    padding: 8px;
+  }
+
   .property-title {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .price {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .price-type {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-start;
   }
 
-  .main-photo-container {
-    height: 250px;
+  .price-section {
+    padding: 16px;
   }
 
-  .btn-nav {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
+  .mosaic-hero {
+    grid-template-rows: 200px;
   }
 
   .specs-section {
     grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .spec-item {
+    padding: 10px;
   }
 
   .info-grid {
@@ -1874,13 +2408,111 @@ export default {
   }
 
   .featured-badge {
-    font-size: 12px;
-    padding: 6px 12px;
+    font-size: 11px;
+    padding: 4px 10px;
   }
 
   .photo-counter {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .gallery-section {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .content-grid {
+    gap: 16px;
+  }
+
+  /* Agent card compact */
+  .agent-card {
+    padding: 16px;
+  }
+
+  .agent-photo, .agent-photo-placeholder {
+    width: 64px;
+    height: 64px;
+  }
+
+  .agent-photo-placeholder {
+    font-size: 26px;
+  }
+
+  .agent-name {
+    font-size: 15px;
+  }
+
+  .btn-action, .btn-primary, .btn-secondary, .btn-tour {
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+
+  /* Map reduced */
+  .map-container {
+    height: 200px;
+  }
+
+  /* Viewing modal fullscreen */
+  .modal-overlay {
+    padding: 0;
+  }
+
+  .modal-box {
+    border-radius: 0;
+    max-height: 100vh;
+    height: 100%;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+  }
+
+  /* Login modal fullscreen-ish */
+  .login-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .login-modal-box {
+    border-radius: 16px 16px 0 0;
+    padding: 28px 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Descriptions */
+  .description-section p,
+  .features-section li {
+    font-size: 13px;
+  }
+
+  .features-list li {
+    padding: 6px 0;
+  }
+
+  /* Quick info */
+  .info-box h4 {
+    font-size: 13px;
+  }
+
+  .info-row span {
     font-size: 12px;
-    padding: 6px 12px;
+  }
+
+  .info-row strong {
+    font-size: 13px;
+  }
+
+  .btn-back {
+    padding: 8px 12px;
+    font-size: 12px;
+    margin-bottom: 12px;
   }
 }
 
@@ -2001,5 +2633,217 @@ export default {
   .tour-property-name {
     display: none;
   }
+}
+
+/* ─── LOGIN MODAL ─── */
+.login-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3100;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.login-modal-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 32px;
+  position: relative;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f3f3;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  transition: all 0.2s;
+}
+
+.login-modal-close:hover {
+  background: #d1d1d1;
+  color: #1A1A1A;
+}
+
+.login-modal-brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.lm-brand {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1A1A1A;
+}
+
+.lm-brand-gold {
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFD700;
+}
+
+.lm-tagline {
+  font-size: 14px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.lm-alert {
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.lm-alert-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.lm-alert-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.lm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lm-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 6px;
+}
+
+.lm-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #eee;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: #f9f9f9;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.lm-input:focus {
+  border-color: #FFD700;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.lm-password-wrap {
+  position: relative;
+}
+
+.lm-password-wrap .lm-input {
+  padding-right: 42px;
+}
+
+.lm-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.lm-error {
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.lm-btn-login {
+  width: 100%;
+  padding: 12px;
+  background: #FFD700;
+  color: #1A1A1A;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-top: 4px;
+}
+
+.lm-btn-login:hover {
+  background: #DAB600;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.lm-btn-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lm-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: #888;
+  font-size: 13px;
+}
+
+.lm-divider::before,
+.lm-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+
+.lm-btn-register {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #1A1A1A;
+  border: 1.5px solid #eee;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.lm-btn-register:hover {
+  background: #f3f3f3;
+  border-color: #d1d1d1;
 }
 </style>

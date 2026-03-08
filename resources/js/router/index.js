@@ -1,7 +1,6 @@
 // resources/js/router/index.js
 
 import { createRouter, createWebHistory } from 'vue-router';
-import Profile from '../pages/Profile.vue';
 
 const routes = [
     {
@@ -49,13 +48,13 @@ const routes = [
         },
     },
 
-    // ✅ Property Details Page
+    // ✅ Property Details Page (public - visitors can browse)
     {
         path: '/property/:id',
         component: () => import('../pages/PropertyDetailsPage.vue'),
         name: 'PropertyDetails',
         meta: {
-            requiresAuth: true,
+            requiresAuth: false,
             transition: 'fade',
         },
     },
@@ -133,7 +132,7 @@ const routes = [
     // User Profile
     {
         path: '/profile',
-        component: Profile,
+        component: () => import('../pages/Profile.vue'),
         name: 'Profile',
         meta: { 
             requiresAuth: true,

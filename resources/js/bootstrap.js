@@ -21,7 +21,7 @@ function createEchoInstance() {
         wssPort: import.meta.env.VITE_REVERB_PORT ?? 8080,
         forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
         enabledTransports: ['ws', 'wss'],
-        authEndpoint: window.__API_URL__ + '/broadcasting/auth',
+        authEndpoint: window.__API_URL__ + '/api/broadcasting/auth',
         auth: {
             headers: {
                 Authorization: 'Bearer ' + localStorage.getItem('auth_token'),

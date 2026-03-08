@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\AgentReviewController;
 use App\Http\Controllers\Api\AgentApplicationController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\GoogleCalendarController;
+use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,9 @@ use App\Http\Controllers\Api\GoogleCalendarController;
 |--------------------------------------------------------------------------
 | Register all API endpoints for the Real Estate Platform
 */
+
+// Broadcasting auth endpoint using Sanctum token auth (not session-based web middleware)
+Broadcast::routes(['middleware' => ['api', 'auth:sanctum']]);
 
 // ============================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -61,6 +65,18 @@ Route::prefix('agents')->group(function () {
 // Public profile endpoints (by user_id)
 Route::get('/users/{userId}/profile', [AgentReviewController::class, 'buyerProfile']);
 Route::get('/users/{userId}/agent-profile', [AgentReviewController::class, 'agentProfile']);
+
+// Landing page stats (real counts)
+Route::get('/landing-stats', function () {
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'properties' => \App\Models\Property::where('status', 'available')->count(),
+            'agents'     => \App\Models\Agent::where('verification_status', 'verified')->count(),
+            'buyers'     => \App\Models\User::where('role', 'buyer')->count(),
+        ],
+    ]);
+});
 
 Route::prefix('search')->group(function () {
     Route::get('/properties/suggestions', [PropertyController::class, 'suggestions']);

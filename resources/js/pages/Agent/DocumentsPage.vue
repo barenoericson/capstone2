@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -80,6 +81,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">Documents</h1>
           </div>
           <div class="topbar-right">
@@ -512,6 +514,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       loading: true,
       documents: [],
       buyers: [],
@@ -1372,4 +1375,33 @@ export default {
 .upload-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .btn-edit-doc { background: #fff3e0; color: #e65100; }
 .btn-edit-doc:hover { background: #e65100; color: #fff; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .topbar-content { flex-direction: column; align-items: flex-start; height: auto; padding: 12px 16px; gap: 10px; }
+  .topbar-right { flex-wrap: wrap; width: 100%; gap: 8px; }
+  .filter-tabs { flex-wrap: wrap; gap: 4px; }
+  .filter-tab { padding: 5px 10px; font-size: 0.75rem; }
+  .docs-grid { grid-template-columns: 1fr; gap: 14px; }
+  .content-area { padding: 16px; }
+  .my-uploads-section { margin: 0 16px 16px; }
+  .upload-card { flex-wrap: wrap; padding: 12px; }
+  .modal-box { max-width: 95vw; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 18px; }
+  .content-area { padding: 10px; }
+  .my-uploads-section { margin: 0 10px 10px; }
+  .doc-card { border-radius: 12px; }
+  .doc-body { padding: 14px; }
+  .doc-actions { flex-direction: column; }
+  .doc-actions button,
+  .doc-actions a { width: 100%; justify-content: center; }
+  .personal-upload-zone { padding: 20px; }
+  .empty-state { padding: 40px 16px; }
+}
 </style>

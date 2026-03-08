@@ -1,7 +1,8 @@
 <template>
   <div class="agent-message-wrapper">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -52,6 +53,9 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <div class="mobile-header" style="display:none">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
+        </div>
       <Message
         :property-id="propertyId"
         :agent-id="currentUserId"
@@ -72,6 +76,7 @@ export default {
   },
   data() {
     return {
+      sidebarOpen: false,
       currentUserId: null,
       buyerId: null,
       propertyId: null,
@@ -242,6 +247,8 @@ export default {
    ============================================================================ */
 
 @media (max-width: 768px) {
+  .mobile-header { display: flex !important; padding: 12px 16px; }
+
   .sidebar {
     width: 80px;
   }

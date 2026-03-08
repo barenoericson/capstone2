@@ -828,4 +828,28 @@ export default {
 .toast-slide-enter-active { transition: all 0.3s ease; }
 .toast-slide-leave-active { transition: all 0.25s ease; }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateY(12px); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .editor-toolbar { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .editor-doc-name { font-size: 12px; flex: unset; width: 100%; order: -1; }
+  .toolbar-tools { flex-wrap: wrap; gap: 4px; }
+  .tool-btn { padding: 6px 8px; font-size: 12px; }
+  .editor-canvas-area { padding: 12px; }
+  .modal-box { max-width: 95vw; }
+  .sig-canvas-wrap { overflow-x: auto; }
+  .toast { left: 12px; right: 12px; bottom: 12px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .editor-toolbar { padding: 6px 8px; gap: 6px; }
+  .btn-back-editor { font-size: 12px; padding: 4px 10px; }
+  .tool-btn { padding: 5px 6px; font-size: 11px; }
+  .toolbar-divider { display: none; }
+  .editor-canvas-area { padding: 8px; }
+  .page-nav { padding: 8px; font-size: 12px; gap: 8px; }
+  .modal-body { padding: 14px 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; }
+}
 </style>

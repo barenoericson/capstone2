@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -72,6 +73,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">My Documents</h1>
           </div>
           <div class="topbar-right">
@@ -413,6 +415,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       userName: '',
       showUserMenu: false,
       apiUrl: '',
@@ -1210,4 +1213,39 @@ export default {
 .toast-error   { background: #e74c3c; }
 .toast-info    { background: #0f3460; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0; }
+  .topbar { padding: 0 16px; height: auto; }
+  .topbar-content { flex-direction: column; align-items: flex-start; padding: 12px 0; gap: 10px; height: auto; }
+  .topbar-right { flex-wrap: wrap; gap: 8px; }
+  .filter-tabs { flex-wrap: wrap; gap: 4px; }
+  .filter-tab { padding: 5px 10px; font-size: 0.75rem; }
+  .content-area { padding: 16px; }
+  .docs-grid { grid-template-columns: 1fr; gap: 14px; }
+  .doc-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .modal-box { max-width: 95vw; }
+  .sign-modal-wide { max-width: 95vw; }
+  .sign-tabs { padding: 14px 16px 0; }
+  .sign-tab-content { padding: 14px 16px; }
+  .modal-header { padding: 16px 16px 0; }
+  .modal-footer { padding: 14px 16px 18px; }
+  .sign-phases { padding: 14px 16px 8px; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 18px; }
+  .content-area { padding: 10px; }
+  .doc-card { border-radius: 12px; }
+  .doc-body { padding: 14px; }
+  .doc-actions { flex-direction: column; }
+  .doc-actions button,
+  .doc-actions a { width: 100%; justify-content: center; }
+  .empty-state { padding: 40px 16px; }
+  .sign-phases { flex-wrap: wrap; gap: 4px; }
+  .phase-connector { width: 16px; }
+}
 </style>

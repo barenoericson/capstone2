@@ -1,7 +1,8 @@
 <template>
   <div class="chat-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -74,6 +75,7 @@
     <main class="chat-main">
       <!-- Chat Header -->
       <div class="chat-header">
+        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
         <router-link to="/conversations" class="btn-back">
           <span class="back-arrow">←</span>
           <span class="back-text">Back</span>
@@ -215,6 +217,7 @@ export default {
   name: 'MessageConversation',
   data() {
     return {
+      sidebarOpen: false,
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       myId: null,
       myName: '',

@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -72,6 +73,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">My Viewings</h1>
           </div>
           <div class="topbar-right">
@@ -230,6 +232,7 @@ export default {
 
   data() {
     return {
+      sidebarOpen: false,
       loading: true,
       viewings: [],
       activeTab: 'all',
@@ -602,4 +605,203 @@ export default {
 
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s ease; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(20px); }
+
+/* ---- Responsive: 768px ---- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    width: 280px;
+    z-index: 1001;
+    transition: left 0.3s ease;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .topbar-content {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .page-title {
+    font-size: 1rem;
+  }
+
+  .topbar-right {
+    width: 100%;
+  }
+
+  .filter-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .filter-tab {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .page-wrapper {
+    padding: 16px;
+  }
+
+  .viewings-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-body {
+    padding: 12px;
+  }
+
+  .card-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-action {
+    padding: 7px 12px;
+    font-size: 0.78rem;
+  }
+
+  .state-box {
+    padding: 40px 16px;
+  }
+
+  .modal-box {
+    width: 95%;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ---- Responsive: 480px ---- */
+@media (max-width: 480px) {
+  .topbar-content {
+    padding: 10px 12px;
+  }
+
+  .page-title {
+    font-size: 0.92rem;
+  }
+
+  .filter-tab {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+
+  .page-wrapper {
+    padding: 12px;
+  }
+
+  .viewings-grid {
+    gap: 12px;
+  }
+
+  .card-thumb {
+    height: 130px;
+  }
+
+  .card-body {
+    padding: 10px;
+  }
+
+  .prop-title {
+    font-size: 0.88rem;
+  }
+
+  .prop-city {
+    font-size: 0.75rem;
+  }
+
+  .meta-row {
+    gap: 10px;
+  }
+
+  .meta-item {
+    font-size: 0.75rem;
+  }
+
+  .notes-box {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .card-actions {
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  .btn-action {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .state-box {
+    padding: 30px 12px;
+  }
+
+  .state-icon {
+    font-size: 40px;
+  }
+
+  .state-box h3 {
+    font-size: 1rem;
+  }
+
+  .state-box p {
+    font-size: 0.82rem;
+  }
+
+  .modal-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .modal-body {
+    padding: 12px;
+  }
+
+  .form-group label {
+    font-size: 0.78rem;
+  }
+
+  .form-input,
+  .form-textarea {
+    font-size: 0.82rem;
+    padding: 8px 10px;
+  }
+
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    font-size: 0.82rem;
+    padding: 12px 14px;
+  }
+}
 </style>

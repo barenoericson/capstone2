@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -82,6 +83,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">My Properties</h1>
           </div>
           <div class="topbar-right">
@@ -275,6 +277,7 @@ export default {
   name: 'MyProperties',
   data() {
     return {
+      sidebarOpen: false,
       // User
       userName: '',
       userRole: '',

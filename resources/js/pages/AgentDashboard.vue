@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+    <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
         <h2 class="sidebar-logo">
           <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
@@ -88,6 +89,7 @@
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
+            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
             <h1 class="page-title">Agent Overview</h1>
           </div>
           <div class="topbar-right">
@@ -358,6 +360,7 @@ export default {
   name: 'AgentDashboard',
   data() {
     return {
+      sidebarOpen: false,
       // User
       userName: '',
       userRole: '',
@@ -721,22 +724,26 @@ export default {
       return;
     }
 
-    this.loadUserData();
     this.myId = JSON.parse(localStorage.getItem('user') || '{}').id || null;
-    this.loadProfilePhoto();
-    this.loadProperties();
-    this.loadConversations();
-    this.loadPendingViewingsCount();
-    this.loadNotifications();
+
+    // Fire all independent API calls in parallel for faster loading
+    Promise.all([
+      this.loadUserData(),
+      this.loadProfilePhoto(),
+      this.loadProperties(),
+      this.loadConversations(),
+      this.loadPendingViewingsCount(),
+      this.loadNotifications(),
+    ]).catch(() => {});
     this.subscribeToEcho();
 
-    // Watch for photo changes every 500ms
+    // Watch for photo changes every 2s (was 500ms — too frequent)
     this.photoWatcher = setInterval(() => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.profile_photo_path && user.profile_photo_path !== this.profilePhotoUrl?.split('/storage/')[1]) {
         this.loadProfilePhoto();
       }
-    }, 500);
+    }, 2000);
   },
 
   beforeUnmount() {
