@@ -18,7 +18,7 @@ class GeminiService
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key', '');
-        $this->model = config('services.gemini.model', 'gemini-2.0-flash');
+        $this->model = config('services.gemini.model', 'gemini-2.5-flash-preview-04-17');
         $this->endpoint = config('services.gemini.endpoint', 'https://generativelanguage.googleapis.com/v1beta/models');
 
         $this->deepseekApiKey = config('services.deepseek.api_key', '');
@@ -39,7 +39,7 @@ class GeminiService
      * @param array  $applicantData ['name', 'license_number', 'prc_id', 'expiry_date']
      * @return array ['decision' => string, 'approved' => bool, 'extracted' => [...], 'reasoning' => string, 'confidence' => float]
      */
-    public function verifyPrcLicense(string $base64Image, string $mimeType, array $applicantData): array
+    public function verifyPrcLicense(string $base64Image, string $mimeType, array $applicantData, ?string $selfieBase64 = null, string $selfieType = 'image/jpeg'): array
     {
         if (empty($this->apiKey)) {
             Log::warning('Gemini API key not configured. Falling back to admin review.');
@@ -55,7 +55,7 @@ class GeminiService
         // ═══════════════════════════════════════════════════
         // STEP 1: Gemini Vision Analysis (primary — sees the image)
         // ═══════════════════════════════════════════════════
-        $geminiResult = $this->callGeminiVision($base64Image, $mimeType, $applicantData);
+        $geminiResult = $this->callGeminiVision($base64Image, $mimeType, $applicantData, $selfieBase64, $selfieType);
 
         // If Gemini completely failed, fall back to admin review
         if ($geminiResult === null) {
@@ -66,6 +66,55 @@ class GeminiService
                 'reasoning' => 'AI verification service temporarily unavailable. Application will be reviewed by an admin.',
                 'confidence' => 0,
             ];
+        }
+
+        // ═══════════════════════════════════════════════════
+        // FACE CHECK: If selfie provided, enforce face comparison
+        // ═══════════════════════════════════════════════════
+        if ($selfieBase64 !== null) {
+            $faceMatch = $geminiResult['face_match'] ?? null;
+            $faceConfidence = (float)($geminiResult['face_confidence'] ?? 0);
+
+            Log::info('Face verification result', [
+                'face_match' => $faceMatch,
+                'face_confidence' => $faceConfidence,
+                'face_reasoning' => $geminiResult['face_reasoning'] ?? 'N/A',
+            ]);
+
+            // CASE A: Face explicitly does NOT match → immediate rejection
+            if ($faceMatch === false) {
+                return [
+                    'decision'               => 'rejected',
+                    'approved'               => false,
+                    'face_match'             => false,
+                    'face_confidence'        => $faceConfidence,
+                    'face_reasoning'         => $geminiResult['face_reasoning'] ?? 'Face in selfie does not match the PRC license photo.',
+                    'extracted'              => $geminiResult['extracted'] ?? [],
+                    'reasoning'              => '[Face Verification Failed] The selfie you submitted does not match the face on the PRC license. Please ensure you are submitting your own license. You may reapply after 12 hours.',
+                    'confidence'             => 0,
+                    'authenticity_score'     => $geminiResult['authenticity_score'] ?? 0,
+                    'security_features_found'=> $geminiResult['security_features_found'] ?? [],
+                    'security_features_missing'=> $geminiResult['security_features_missing'] ?? [],
+                    'red_flags_detected'     => array_merge($geminiResult['red_flags_detected'] ?? [], ['Face mismatch: selfie does not match PRC license photo']),
+                    'verification_method'    => 'face_rejected',
+                ];
+            }
+
+            // CASE B: Face match is null/not determined → force admin review (never auto-approve)
+            if ($faceMatch === null) {
+                $geminiResult['decision'] = 'unclear';
+                $geminiResult['approved'] = false;
+                $geminiResult['reasoning'] = '[Face comparison inconclusive — sent for admin review] ' . ($geminiResult['reasoning'] ?? '');
+                $geminiResult['face_match'] = null;
+                $geminiResult['face_reasoning'] = 'Face comparison could not be completed. The AI was unable to extract or compare faces.';
+            }
+
+            // CASE C: Face matches but low confidence → force admin review
+            if ($faceMatch === true && $faceConfidence < 0.5) {
+                $geminiResult['decision'] = 'unclear';
+                $geminiResult['approved'] = false;
+                $geminiResult['reasoning'] = '[Low face match confidence (' . round($faceConfidence * 100) . '%) — sent for admin review] ' . ($geminiResult['reasoning'] ?? '');
+            }
         }
 
         // ═══════════════════════════════════════════════════
@@ -82,7 +131,7 @@ class GeminiService
     /**
      * Call Gemini Vision API to analyze the PRC license image.
      */
-    private function callGeminiVision(string $base64Image, string $mimeType, array $applicantData): ?array
+    private function callGeminiVision(string $base64Image, string $mimeType, array $applicantData, ?string $selfieBase64 = null, string $selfieType = 'image/jpeg'): ?array
     {
         try {
             $url = "{$this->endpoint}/{$this->model}:generateContent?key={$this->apiKey}";
@@ -97,22 +146,28 @@ class GeminiService
             $response = Http::timeout(60)->post($url, [
                 'contents' => [
                     [
-                        'parts' => [
+                        'parts' => array_values(array_filter([
                             [
-                                'inlineData' => [
-                                    'mimeType' => $mimeType,
-                                    'data' => $base64Image,
+                                'text' => $this->buildPrompt($applicantData, $selfieBase64 !== null),
+                            ],
+                            [
+                                'inline_data' => [
+                                    'mime_type' => $mimeType,
+                                    'data'      => $base64Image,
                                 ],
                             ],
-                            [
-                                'text' => $this->buildPrompt($applicantData),
-                            ],
-                        ],
+                            $selfieBase64 ? [
+                                'inline_data' => [
+                                    'mime_type' => $selfieType,
+                                    'data'      => $selfieBase64,
+                                ],
+                            ] : null,
+                        ])),
                     ],
                 ],
                 'generationConfig' => [
-                    'temperature' => 0.1,
-                    'maxOutputTokens' => 1024,
+                    'temperature'    => 0.1,
+                    'maxOutputTokens'=> 2048,
                 ],
             ]);
 
@@ -550,7 +605,7 @@ PROMPT;
     private function buildChatSystemPrompt(): string
     {
         return <<<PROMPT
-You are **RealtyLinkPH Buddy**, the friendly AI assistant for RealtyLinkPH — a Philippine real estate platform.
+You are **RealtyLinkPH Buddy**, the friendly AI assistant for RealtyLinkPH — a Philippine real estate platform. You are also the AI verification expert for agent applications and have deep knowledge of PRC licensing, RESA law (RA 9646), and the complete process of becoming a licensed real estate professional in the Philippines.
 
 ABOUT REALTYLINKPH:
 - RealtyLinkPH is an online platform connecting property buyers with verified real estate agents in the Philippines.
@@ -560,13 +615,132 @@ ABOUT REALTYLINKPH:
 - Agents can list properties, manage viewings, handle documents, and communicate with potential buyers.
 
 PLATFORM WORKFLOWS (how things work on RealtyLinkPH):
-- **Becoming an Agent:** Users apply via the "Become an Agent" page, upload their PRC real estate broker/salesperson license, and our AI verifies the document. An admin reviews AI results and makes the final decision. Once approved, the account upgrades to agent status.
+- **Becoming an Agent on RealtyLinkPH:** Buyers apply via the "Become an Agent" page, fill in professional details, upload their PRC real estate license photo, and I (RealtyLinkPH Buddy) verify it using dual AI (Gemini Vision + DeepSeek). See the full rules below.
 - **Viewing Scheduling:** Buyers request a property viewing from the listing page. The agent can confirm, reschedule, or decline. Both parties see updates in their Viewings page.
 - **Document Management:** Agents upload contracts/documents (e.g., Deed of Absolute Sale, Reservation Agreement). Both buyer and agent can view, download, and digitally sign documents.
 - **Digital Signing:** Documents are signed electronically through the platform. Users preview the PDF, click where to place their signature, draw or upload it, and the signed PDF is generated. Remind users that some transactions still require notarized hard copies under Philippine law.
 - **Messaging:** Buyers and agents communicate through in-app messaging with file sharing support (PDF, Word, Excel).
 
-PHILIPPINE REAL ESTATE KNOWLEDGE:
+═══════════════════════════════════════════════════════
+BECOMING AN AGENT ON REALTYLINKPH — FULL RULES
+═══════════════════════════════════════════════════════
+
+**Who can apply?**
+Only registered buyers on RealtyLinkPH can apply to become an agent. The applicant must already hold a valid PRC license or accreditation as a real estate professional in the Philippines.
+
+**Required documents (one of the following):**
+1. PRC Professional Identification Card — Real Estate Broker (REB), Real Estate Salesperson (RES), or Real Estate Appraiser (REA)
+2. PRC Certification/Accreditation Letter — an official letter from a PRC Regional Office certifying accreditation as a real estate professional
+
+**Information required in the application form:**
+- Full legal name (must match the PRC license exactly)
+- PRC License Number (registration number on the card or certification)
+- PRC ID Number (accreditation/PRC ID number)
+- License Expiry Date (must be a future date — expired licenses are not accepted)
+- Accreditation type: REIN, PAMI, or Other
+- Company Name and Address
+- Professional Bio (optional)
+- Clear photo or scan of the PRC license (JPG or PNG, max 5MB)
+
+**How I verify applications (3 possible outcomes):**
+
+✅ AUTOMATICALLY APPROVED — when ALL of these are true:
+- The image is clearly an authentic PRC license (ID card or certification letter)
+- The document has required security features (PRC seal, barcode/documentary stamp, signature, etc.)
+- Name on the document matches the applicant's name AND their RealtyLinkPH account name
+- License number, PRC ID, and expiry date match the form submission
+- Profession is Real Estate Broker, Salesperson, or Appraiser
+- AI confidence is 70% or higher, and both Gemini and DeepSeek agree it is authentic
+→ The buyer's account is instantly upgraded to agent status in real time. No waiting required.
+
+⏳ SENT TO ADMIN FOR REVIEW — when any of these apply:
+- Image quality is too poor to read security features clearly
+- Document looks like a PRC license but cannot be fully confirmed
+- Name partially matches but there is uncertainty
+- The two AIs disagree on the decision
+- Some required information is partially readable but not fully confirmable
+→ An admin will personally review within 12 hours and make the final decision.
+
+🚫 AUTOMATICALLY REJECTED — when any of these apply:
+- The uploaded file is clearly NOT a PRC license (resume/CV, diploma, school ID, driver's license, company ID, NBI clearance, barangay certificate, birth certificate, TIN card, selfie, random photo, meme, screenshot, or any non-PRC document)
+- The document appears fake or digitally forged (Canva template, Photoshop artifacts, pasted text, missing security features)
+- Name on the document clearly does NOT match the applicant's RealtyLinkPH account (identity fraud indicator)
+- The PRC license is for a profession other than real estate (nursing, engineering, medicine, accounting, law, teaching, etc.)
+- Both AIs agree the document is fraudulent or invalid
+→ After rejection, the applicant must wait 12 hours before reapplying with the correct documents.
+
+**Why applications get rejected — common reasons:**
+1. Incomplete or incorrect information in the form (name, license number, expiry date don't match the document)
+2. Blurry or unclear photo — AI cannot read the security features
+3. Uploading the wrong document (CV, diploma, other non-PRC files)
+4. Submitting a fake or edited PRC template downloaded from the internet
+5. Name mismatch — name on PRC document differs significantly from RealtyLinkPH account name
+6. PRC license is for a profession other than real estate
+7. Lack of eligibility under RESA (RA 9646) — does not meet minimum requirements
+8. Moral character issues — conviction of crimes involving moral turpitude (verified via NBI clearance in the original PRC process)
+9. Failure to complete the required Real Estate Brokerage Seminar (REBS) training
+10. Violation of PRC rules and regulations
+
+**Tips for a successful application:**
+- Photograph the ENTIRE PRC card or certification letter — no cropping
+- Use good lighting — no glare, shadows, or reflections on the card
+- Make sure ALL text is clearly readable, especially name, license number, and expiry date
+- For certification letters, ensure the documentary stamp and handwritten signature are clearly visible
+- Your PRC name must match your RealtyLinkPH registered name (minor middle name differences are acceptable)
+- Only JPG and PNG files accepted, maximum 5MB
+
+═══════════════════════════════════════════════════════
+PHILIPPINE REAL ESTATE LICENSING — RESA LAW (RA 9646)
+═══════════════════════════════════════════════════════
+
+**Minimum Requirements to Become a Real Estate Salesperson (under RESA):**
+1. Must be a Filipino citizen — foreign nationals cannot be accredited as real estate salespersons
+2. Must have at least 72 college units OR 2 years of college education (no specific course required — any 72 units count)
+3. Must have good moral character — verified through a clean NBI clearance; must not have been convicted of any crime involving moral turpitude
+4. Must complete 12 credit units of Real Estate Brokerage Seminar (REBS) — offered by REBAP chapters and PRC-accredited training providers, typically 2–3 days, costs ₱750–₱2,000, also available via Zoom
+
+**Step-by-Step PRC Accreditation Process:**
+
+Step 1 — Find a licensed broker to sponsor you
+Under RESA, a licensed broker can register up to 20 salespersons. You need a broker to "accredit" you — you cannot legally practice without one. Choose wisely: this person is your supervisor and mentor.
+
+Step 2 — Complete the 12-unit REBS training
+Attend and complete the Real Estate Brokerage Seminar. You will receive a Certificate of Completion — keep this safe, it is a required document.
+
+Step 3 — Gather your documents
+- PSA Birth Certificate (original + photocopy)
+- PSA Marriage Certificate, if applicable (original + photocopy)
+- Transcript of Records OR Diploma showing at least 72 college units (original + notarized photocopy)
+- NBI Clearance (valid, original)
+- REBS Certificate of Completion (original + notarized photocopy)
+- 1x1 ID photo with white background and name tag
+- Community Tax Certificate / Cedula (current year)
+- Accomplished PRC Salesperson Accreditation Form (signed by sponsoring broker)
+
+Step 4 — Submit to PRC and pay fees
+- Bring documents to any PRC office (main office or regional branch)
+- Have documents verified by PRC Legal Division
+- Pay accreditation fee: ₱450
+- Pay documentary stamps: ~₱100–200
+- Submit to Customer Service Center
+- Processing time: typically 2–4 weeks
+
+Step 5 — DHSUD registration (if selling developer projects)
+If you plan to sell properties from developers (DMCI, Ayala, Federal Land, etc.), register with the Department of Human Settlements and Urban Development (DHSUD):
+- DHSUD Salesperson Engagement Form
+- Photocopy of PRC accreditation
+- Photocopy of broker's PRC license and DHSUD registration
+- Surety bond of ₱1,000
+- Processing fee of ₱288
+
+**PRC License Renewal:** Every 3 years. Continuing Professional Development (CPD) units are required for renewal.
+
+**Total cost of accreditation:** Usually under ₱5,000 and can be completed in under a month.
+
+═══════════════════════════════════════════════════════
+PHILIPPINE REAL ESTATE KNOWLEDGE
+═══════════════════════════════════════════════════════
+
 - **PRC Licensing:** Real estate agents must hold a valid PRC license — either Real Estate Broker (REB) or Real Estate Salesperson (RES). Salespersons must work under a licensed broker. PRC licenses are renewed every 3 years.
 - **Typical Costs & Fees:**
   - Agent commission: 3%–5% of selling price, usually paid by the seller.
@@ -582,10 +756,11 @@ YOUR PERSONALITY:
 - Friendly, professional, and helpful — like a knowledgeable real estate advisor friend.
 - Warm, conversational tone with simple language. Use occasional Filipino expressions (like "po", "naman") to feel relatable, but respond mostly in English.
 - Keep responses concise: 2–4 sentences for simple questions, more detail only when asked.
+- When users ask about becoming an agent or PRC licensing, give them clear and complete guidance — what is needed, what gets approved/rejected, and next steps.
 - If asked something outside your scope, be honest and suggest contacting support or an agent.
 
 WHAT YOU SHOULD NOT DO:
-- Never provide specific legal advice — always suggest consulting a lawyer.
+- Never provide specific legal advice — always suggest consulting a lawyer or the PRC directly.
 - Never guarantee property values or investment returns.
 - Never share personal data about other users.
 - Never pretend to execute platform actions (booking viewings, signing documents) — explain how the user can do it themselves.
@@ -700,17 +875,17 @@ PROMPT;
 
     private function parsePropertyAnalysisResponse(string $responseText): array
     {
-        $jsonText = $responseText;
+        $jsonText = trim($responseText);
 
-        // Remove markdown code blocks if present
-        if (preg_match('/```(?:json)?\s*([\s\S]*?)```/', $responseText, $matches)) {
-            $jsonText = trim($matches[1]);
-        }
+        // Strip markdown code block wrappers
+        $jsonText = preg_replace('/^```(?:json)?\s*/s', '', $jsonText);
+        $jsonText = preg_replace('/\s*```\s*$/s', '', $jsonText);
+        $jsonText = trim($jsonText);
 
         $parsed = json_decode($jsonText, true);
 
         if (!$parsed || !is_array($parsed)) {
-            if (preg_match('/\{[\s\S]*\}/', $responseText, $matches)) {
+            if (preg_match('/\{[\s\S]*\}/s', $responseText, $matches)) {
                 $parsed = json_decode($matches[0], true);
             }
         }
@@ -737,7 +912,7 @@ PROMPT;
         ];
     }
 
-    private function buildPrompt(array $applicantData): string
+    private function buildPrompt(array $applicantData, bool $withFaceScan = false): string
     {
         $name = $applicantData['name'] ?? '';
         $accountName = $applicantData['account_name'] ?? '';
@@ -745,6 +920,42 @@ PROMPT;
         $licenseNumber = $applicantData['license_number'] ?? '';
         $prcId = $applicantData['prc_id'] ?? '';
         $expiryDate = $applicantData['expiry_date'] ?? '';
+
+        $faceSection = $withFaceScan ? '
+═══════════════════════════════════════════════════════════
+STEP 4 — FACE VERIFICATION (SECOND IMAGE IS A SELFIE)
+═══════════════════════════════════════════════════════════
+
+A second image has been provided — this is a LIVE SELFIE taken by the applicant right now.
+You must compare the face in the selfie with the face/photo on the PRC license document.
+
+FACE COMPARISON RULES:
+- Compare facial geometry: eye spacing, nose shape, jaw line, face shape
+- Account for: different lighting, different angles (within ±30°), aging (within reasonable range), different hairstyles
+- MATCH if you are reasonably confident (≥ 60%) it is the same person
+- NO MATCH if clearly different people or too blurry to compare
+
+BLUR DETECTION:
+- Check if the selfie image is blurry (out of focus, too dark, or obscured)
+- Check if the PRC license photo is blurry or unreadable
+
+Add these fields to your JSON response:
+{
+  "face_comparison_performed": true,
+  "face_match": true or false (is the selfie the same person as the PRC photo?),
+  "face_confidence": 0.0 to 1.0 (how confident are you in the face match decision?),
+  "face_reasoning": "Brief explanation of what you compared and why you decided match or no-match",
+  "selfie_quality": "clear" or "blurry" or "too_dark" or "obscured",
+  "prc_photo_quality": "clear" or "blurry" or "low_resolution"
+}
+
+IMPORTANT: If face_match is false, use a strong explanation in face_reasoning describing the specific facial differences you observed.
+' : '
+Add this to your JSON response:
+{
+  "face_comparison_performed": false
+}
+';
 
         return <<<PROMPT
 You are RealtyLinkPH Buddy, an expert PRC license verification assistant for the Philippine real estate platform RealtyLinkPH. You have been trained to identify authentic PRC (Professional Regulation Commission) documents and detect fakes, forgeries, and fraudulent submissions.
@@ -945,25 +1156,27 @@ ADDITIONAL RULES:
 - If image quality is poor but the document LOOKS real, use "unclear" — let an admin see it
 - Provide DETAILED reasoning that specifically mentions which security features you found or didn't find
 - The reasoning should help an admin understand exactly why you made your decision
+{$faceSection}
 PROMPT;
     }
 
     private function parseVerificationResponse(string $responseText): array
     {
-        // Try to extract JSON from the response (Gemini might wrap it in markdown code blocks)
-        $jsonText = $responseText;
+        // Try to extract JSON from the response (Gemini often wraps it in markdown code blocks)
+        $jsonText = trim($responseText);
 
-        // Remove markdown code blocks if present
-        if (preg_match('/```(?:json)?\s*([\s\S]*?)```/', $responseText, $matches)) {
-            $jsonText = trim($matches[1]);
-        }
+        // Strip opening ```json or ``` marker from the beginning
+        $jsonText = preg_replace('/^```(?:json)?\s*/s', '', $jsonText);
+        // Strip closing ``` marker from the end (may be absent if response was truncated)
+        $jsonText = preg_replace('/\s*```\s*$/s', '', $jsonText);
+        $jsonText = trim($jsonText);
 
         // Try direct JSON parse
         $parsed = json_decode($jsonText, true);
 
         if (!$parsed || !is_array($parsed)) {
-            // Try to find JSON object in the text
-            if (preg_match('/\{[\s\S]*\}/', $responseText, $matches)) {
+            // Fallback: Try to find the largest JSON object in the text
+            if (preg_match('/\{[\s\S]*\}/s', $responseText, $matches)) {
                 $parsed = json_decode($matches[0], true);
             }
         }
@@ -1049,6 +1262,12 @@ PROMPT;
             'security_features_found' => $securityFound,
             'security_features_missing' => $securityMissing,
             'red_flags_detected' => $redFlags,
+            'face_match'             => $parsed['face_match'] ?? null,
+            'face_confidence'        => isset($parsed['face_confidence']) ? (float)$parsed['face_confidence'] : null,
+            'face_reasoning'         => $parsed['face_reasoning'] ?? null,
+            'face_comparison_performed' => $parsed['face_comparison_performed'] ?? false,
+            'selfie_quality'         => $parsed['selfie_quality'] ?? null,
+            'prc_photo_quality'      => $parsed['prc_photo_quality'] ?? null,
         ];
     }
 }

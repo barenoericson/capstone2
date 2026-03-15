@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'bio',
         'profile_photo_path',
         'address',                 // ← ADD
         'city',                    // ← ADD

@@ -1,354 +1,345 @@
 <template>
-  <div class="dashboard-wrapper">
-    <!-- Sidebar Navigation -->
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+  <div class="ad-layout">
+
+    <!-- ═══════════════════════════════════
+         SIDEBAR
+    ═══════════════════════════════════ -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link to="/dashboard" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+        <router-link to="/agent/dashboard" exact class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          <span>Overview</span>
         </router-link>
 
-        <div v-if="userRole === 'agent'" class="nav-section">
-          <h3 class="section-title">Management</h3>
-          <router-link to="/agent/dashboard" class="nav-item active">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Overview</span>
-          </router-link>
-          <router-link to="/agent/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">My Properties</span>
-          </router-link>
-          <router-link to="/agent/saved-properties" class="nav-item">
-            <span class="nav-icon">❤️</span>
-            <span class="nav-label">My Wallet</span>
-          </router-link>
-          <router-link to="/agent/viewings" class="nav-item">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Viewings</span>
-            <span v-if="pendingViewingsCount > 0" class="badge-dot">{{ pendingViewingsCount }}</span>
-          </router-link>
-          <router-link to="/agent/calendar" class="nav-item">
-            <span class="nav-icon">📆</span>
-            <span class="nav-label">My Calendar</span>
-          </router-link>
-          <router-link to="/agent/documents" class="nav-item">
-            <span class="nav-icon">📄</span>
-            <span class="nav-label">Documents</span>
-          </router-link>
-          <router-link to="/conversations" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Messages</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Properties</div>
+        <router-link to="/agent/properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span>My Properties</span>
+        </router-link>
+        <router-link to="/agent/saved-properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span>My Wallet</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Settings</h3>
-          <router-link to="/profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
-          </router-link>
-          <router-link to="/settings" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Settings</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Schedule</div>
+        <router-link to="/agent/viewings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <span>Viewings</span>
+          <span v-if="pendingViewingsCount > 0" class="nav-badge">{{ pendingViewingsCount }}</span>
+        </router-link>
+        <router-link to="/agent/calendar" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+          </span>
+          <span>Calendar</span>
+        </router-link>
+
+        <div class="nav-group-label">Communicate</div>
+        <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Messages</span>
+          <span v-if="unreadMessagesCount > 0" class="nav-badge">{{ unreadMessagesCount }}</span>
+        </router-link>
+        <router-link to="/agent/documents" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span>Documents</span>
+        </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <!-- ✅ UPDATED: Profile Photo Display -->
-          <div v-if="profilePhotoUrl" class="user-avatar-lg">
-            <img :src="profilePhotoUrl" :alt="userName" class="avatar-photo" />
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
-          <div v-else class="user-avatar-lg">{{ userName.charAt(0).toUpperCase() }}</div>
-          
-          <div class="user-info">
-            <p class="user-name-card">{{ userName }}</p>
-            <p class="user-role-card">{{ capitalizeRole(userRole) }}</p>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">{{ capitalizeRole(userRole) }}</span>
           </div>
-          <button @click="toggleUserMenu" class="btn-options">⋮</button>
-
-          <div v-if="showUserMenu" class="user-dropdown">
-            <router-link to="/profile" class="dropdown-item">👤 My Profile</router-link>
-            <a href="#" @click.prevent="logout" class="dropdown-item logout">🚪 Logout</a>
-          </div>
-        </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          </span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Top Navbar -->
-      <nav class="topbar">
-        <div class="topbar-content">
-          <div class="topbar-left">
-            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
-            <h1 class="page-title">Agent Overview</h1>
-          </div>
-          <div class="topbar-right">
-            <!-- Notification Bell -->
-            <div class="notif-bell-wrapper">
-              <button class="btn-icon notif-btn" @click="toggleNotifBell">
-                🔔
-                <span v-if="totalNotifCount > 0" class="notif-badge">{{ totalNotifCount > 99 ? '99+' : totalNotifCount }}</span>
-              </button>
-              <div v-if="showNotifBell" class="notif-dropdown">
-                <div class="notif-header">
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+
+    <!-- ═══════════════════════════════════
+         MAIN WRAPPER
+    ═══════════════════════════════════ -->
+    <div class="main-wrapper">
+
+      <!-- ── TOPBAR ── -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" @click="sidebarOpen = !sidebarOpen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="topbar-title">Agent Overview</span>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="tb-icon-btn" @click="toggleNotifBell">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span v-if="totalNotifCount > 0" class="tb-badge">{{ totalNotifCount > 99 ? '99+' : totalNotifCount }}</span>
+            </button>
+            <transition name="drop">
+              <div v-if="showNotifBell" class="notif-panel">
+                <div class="np-head">
                   <span>Notifications</span>
-                  <button v-if="notifications.length > 0" class="notif-mark-all" @click="markAllNotificationsRead">Mark all read</button>
+                  <button v-if="notifications.length > 0" class="np-read-all" @click="markAllNotificationsRead">Mark all read</button>
                 </div>
-
-                <!-- Notifications list -->
-                <div v-if="notifications.length === 0 && recentConversations.length === 0" class="notif-empty">
-                  No notifications yet
+                <div v-if="notifications.length === 0 && recentConversations.length === 0" class="np-empty">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D6D3D1" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                  <p>No notifications yet</p>
                 </div>
-
-                <div
-                  v-for="notif in notifications.slice(0, 6)"
-                  :key="'notif-' + notif.id"
-                  class="notif-item"
-                  :class="{ 'notif-unread-bg': !notif.is_read }"
-                  @click="handleNotifClick(notif)"
-                >
-                  <div class="notif-avatar notif-icon-avatar">{{ notif.icon || '🔔' }}</div>
-                  <div class="notif-body">
-                    <p class="notif-name">{{ notif.title }}</p>
-                    <p class="notif-preview">{{ notif.message }}</p>
-                    <p class="notif-time">{{ notif.relative_time }}</p>
+                <div v-for="n in notifications.slice(0,6)" :key="'n'+n.id"
+                  class="np-item" :class="{'np-unread': !n.is_read}" @click="handleNotifClick(n)">
+                  <div class="np-dot-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+                  <div class="np-body"><p class="np-title">{{ n.title }}</p><p class="np-msg">{{ n.message }}</p><p class="np-time">{{ n.relative_time }}</p></div>
+                  <span v-if="!n.is_read" class="np-unread-dot"></span>
+                </div>
+                <template v-if="recentConversations.length > 0">
+                  <div class="np-head np-sub-head"><span>Messages</span><router-link to="/conversations" @click="showNotifBell=false" class="np-link">View All</router-link></div>
+                  <div v-for="c in recentConversations.slice(0,3)" :key="'c'+convOtherId(c)" class="np-item" @click="goToConversation(c)">
+                    <div class="np-av">{{ convOtherName(c).charAt(0).toUpperCase() }}</div>
+                    <div class="np-body"><p class="np-title">{{ convOtherName(c) }}</p><p class="np-msg">{{ c.last_message?.message_content || 'Attachment' }}</p></div>
+                    <span v-if="c.unread_count > 0" class="np-cnt">{{ c.unread_count }}</span>
                   </div>
-                  <span v-if="!notif.is_read" class="notif-dot"></span>
-                </div>
+                </template>
+              </div>
+            </transition>
+          </div>
+          <router-link to="/agent/properties/create" class="tb-cta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Add Property</span>
+          </router-link>
+        </div>
+      </header>
 
-                <!-- Messages section -->
-                <div v-if="recentConversations.length > 0" class="notif-header notif-header-sub">
-                  <span>💬 Messages</span>
-                  <router-link to="/conversations" @click="showNotifBell = false" class="notif-view-all">View All</router-link>
-                </div>
-                <div
-                  v-for="conv in recentConversations.slice(0, 3)"
-                  :key="'conv-' + convOtherId(conv)"
-                  class="notif-item"
-                  @click="goToConversation(conv)"
-                >
-                  <div class="notif-avatar">{{ convOtherName(conv).charAt(0).toUpperCase() }}</div>
-                  <div class="notif-body">
-                    <p class="notif-name">{{ convOtherName(conv) }}</p>
-                    <p class="notif-preview">{{ conv.last_message?.message_content || '📎 Attachment' }}</p>
-                  </div>
-                  <span v-if="conv.unread_count > 0" class="notif-unread">{{ conv.unread_count }}</span>
-                </div>
+      <!-- ═══════════════════════════════════
+           CONTENT
+      ═══════════════════════════════════ -->
+      <main class="content-area">
+        <div class="content-inner">
+
+          <!-- Stats Cards -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Total Properties</span>
+                <span class="stat-number">{{ stats.totalProperties }}</span>
               </div>
             </div>
-            <router-link to="/agent/properties/create" class="btn-primary">
-              ➕ Add Property
-            </router-link>
-          </div>
-        </div>
-      </nav>
-
-      <!-- Page Content -->
-      <div class="page-wrapper">
-        <!-- Stats Cards -->
-        <div class="stats-section">
-          <div class="stat-card">
-            <div class="stat-icon">🏠</div>
-            <div class="stat-info">
-              <h4>Total Properties</h4>
-              <p class="stat-number">{{ stats.totalProperties }}</p>
+            <div class="stat-card">
+              <div class="stat-icon-wrap si-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Active Listings</span>
+                <span class="stat-number">{{ stats.activeListings }}</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrap si-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Total Views</span>
+                <span class="stat-number">{{ stats.totalViews }}</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrap si-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div class="stat-body">
+                <span class="stat-label">Total Photos</span>
+                <span class="stat-number">{{ stats.totalPhotos }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-info">
-              <h4>Active Listings</h4>
-              <p class="stat-number">{{ stats.activeListings }}</p>
+          <!-- Recent Properties -->
+          <div class="section-card">
+            <div class="section-head">
+              <div>
+                <h3 class="section-title">Recent Properties</h3>
+                <p class="section-sub">Your latest listings</p>
+              </div>
+              <router-link to="/agent/properties" class="see-all">View all
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </router-link>
             </div>
-          </div>
 
-          <div class="stat-card">
-            <div class="stat-icon">👁️</div>
-            <div class="stat-info">
-              <h4>Total Views</h4>
-              <p class="stat-number">{{ stats.totalViews }}</p>
+            <!-- Loading -->
+            <div v-if="loading" class="state-center">
+              <div class="spinner"></div>
+              <p>Loading properties...</p>
             </div>
-          </div>
 
-          <div class="stat-card">
-            <div class="stat-icon">📸</div>
-            <div class="stat-info">
-              <h4>Total Photos</h4>
-              <p class="stat-number">{{ stats.totalPhotos }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Properties -->
-        <div class="card-section">
-          <div class="section-header">
-            <div>
-              <h3>Recent Properties</h3>
-              <p class="section-subtitle">Your latest listings</p>
-            </div>
-            <router-link to="/agent/properties" class="see-all-link">View all →</router-link>
-          </div>
-
-          <!-- Loading State -->
-          <div v-if="loading" class="loading-state">
-            <p>⏳ Loading properties...</p>
-          </div>
-
-          <!-- Empty State: no properties at all -->
-          <div v-else-if="properties.length === 0" class="empty-state">
-            <div class="empty-content">
-              <h3>📭 No Properties Yet</h3>
+            <!-- Empty: no properties -->
+            <div v-else-if="properties.length === 0" class="state-center">
+              <div class="state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <h4>No Properties Yet</h4>
               <p>Start by creating your first property listing</p>
-              <router-link to="/agent/properties/create" class="btn-primary">
-                Create First Property
-              </router-link>
+              <router-link to="/agent/properties/create" class="btn-gold">Create First Property</router-link>
             </div>
-          </div>
 
-          <!-- Empty State: all properties are sold -->
-          <div v-else-if="recentProperties.length === 0" class="empty-state">
-            <div class="empty-content">
-              <h3>🏷️ No Active Listings</h3>
+            <!-- Empty: all sold -->
+            <div v-else-if="recentProperties.length === 0" class="state-center">
+              <div class="state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </div>
+              <h4>No Active Listings</h4>
               <p>All your properties are marked as Sold. Change a status back to Available or add a new listing.</p>
-              <router-link to="/agent/properties" class="btn-primary">
-                Manage Properties
+              <router-link to="/agent/properties" class="btn-gold">Manage Properties</router-link>
+            </div>
+
+            <!-- Properties Grid -->
+            <div v-else class="prop-grid">
+              <div v-for="property in recentProperties" :key="property.id" class="prop-card">
+                <div class="prop-img-wrap">
+                  <img v-if="getCoverPhoto(property)" :src="getCoverPhoto(property)" :alt="property.title" class="prop-img" />
+                  <div v-else class="prop-img-ph">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D6D3D1" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </div>
+                  <span :class="['status-chip', 'sc-' + property.status]">{{ formatStatus(property.status) }}</span>
+                  <span v-if="property.photos && property.photos.length > 0" class="photo-chip">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    {{ property.photos.length }}
+                  </span>
+                </div>
+                <div class="prop-body">
+                  <h4 class="prop-title">{{ property.title }}</h4>
+                  <p class="prop-loc">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ property.city }}, {{ property.province }}
+                  </p>
+                  <div class="prop-specs">
+                    <span class="prop-spec">{{ property.bedrooms }} Beds</span>
+                    <span class="prop-spec">{{ property.bathrooms }} Baths</span>
+                    <span class="prop-spec">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      {{ property.view_count || 0 }}
+                    </span>
+                  </div>
+                  <div class="prop-price">&#8369;{{ formatPrice(property.price) }}</div>
+                </div>
+                <div class="prop-actions">
+                  <router-link :to="`/agent/properties/${property.id}/edit`" class="btn-action btn-edit">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                  </router-link>
+                  <button @click="deleteProperty(property.id)" class="btn-action btn-del">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Messages -->
+          <div class="section-card">
+            <div class="section-head">
+              <div>
+                <h3 class="section-title">Recent Messages</h3>
+                <p class="section-sub">Buyers contacting you about properties</p>
+              </div>
+              <router-link to="/conversations" class="see-all">View all
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </router-link>
             </div>
-          </div>
 
-          <!-- Properties Grid -->
-          <div v-else class="properties-grid">
-            <div v-for="property in recentProperties" :key="property.id" class="property-card">
-              <!-- Image -->
-              <div class="card-image-container">
-                <img 
-                  v-if="getCoverPhoto(property)" 
-                  :src="getCoverPhoto(property)" 
-                  :alt="property.title"
-                  class="card-image"
-                />
-                <div v-else class="card-image-placeholder">📷</div>
-                
-                <span :class="['status-badge', 'status-' + property.status]">
-                  {{ formatStatus(property.status) }}
-                </span>
+            <div v-if="recentConversations.length === 0" class="state-empty-sm">
+              No messages yet. Buyers will contact you through your property listings.
+            </div>
 
-                <span v-if="property.photos && property.photos.length > 0" class="photo-count">
-                  📸 {{ property.photos.length }}
-                </span>
-              </div>
-
-              <!-- Content -->
-              <div class="card-content">
-                <h4 class="property-title">{{ property.title }}</h4>
-                <p class="property-location">📍 {{ property.city }}, {{ property.province }}</p>
-
-                <div class="property-specs-row">
-                  <span class="spec">🛏️ {{ property.bedrooms }}</span>
-                  <span class="spec">🚿 {{ property.bathrooms }}</span>
-                  <span class="spec">👁️ {{ property.view_count || 0 }}</span>
+            <div v-else class="conv-list">
+              <div v-for="conv in recentConversations.slice(0, 5)" :key="convOtherId(conv)" class="conv-item" @click="goToConversation(conv)">
+                <div class="conv-av">{{ convOtherName(conv).charAt(0).toUpperCase() }}</div>
+                <div class="conv-body">
+                  <div class="conv-top">
+                    <span class="conv-name">{{ convOtherName(conv) }}</span>
+                    <span class="conv-time">{{ formatConvTime(conv.last_message?.created_at) }}</span>
+                  </div>
+                  <p class="conv-preview">{{ conv.last_message?.message_content || 'Attachment' }}</p>
+                  <div v-if="conv.last_message?.property" class="conv-prop-tag">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    {{ conv.last_message.property.title }}
+                  </div>
                 </div>
-
-                <div class="property-price">₱{{ formatPrice(property.price) }}</div>
-              </div>
-
-              <!-- Actions -->
-              <div class="card-footer">
-                <router-link
-                  :to="`/agent/properties/${property.id}/edit`"
-                  class="btn-card btn-edit"
-                >
-                  ✏️ Edit
-                </router-link>
-                <button
-                  @click="deleteProperty(property.id)"
-                  class="btn-card btn-delete"
-                >
-                  🗑️ Delete
-                </button>
+                <span v-if="conv.unread_count > 0" class="conv-badge">{{ conv.unread_count }}</span>
               </div>
             </div>
           </div>
+
+          <!-- Summary -->
+          <div v-if="properties.length > 0" class="summary-row">
+            <div class="summary-item">
+              <span class="summary-label">Total Properties</span>
+              <span class="summary-value">{{ properties.length }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Active Listings</span>
+              <span class="summary-value">{{ stats.activeListings }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Total Views</span>
+              <span class="summary-value">{{ stats.totalViews }}</span>
+            </div>
+          </div>
+
         </div>
+      </main>
+    </div>
 
-        <!-- Recent Messages -->
-        <div class="card-section messages-section">
-          <div class="section-header">
-            <div>
-              <h3>Recent Messages</h3>
-              <p class="section-subtitle">Buyers contacting you about properties</p>
-            </div>
-            <router-link to="/conversations" class="see-all-link">View all →</router-link>
-          </div>
-
-          <div v-if="recentConversations.length === 0" class="empty-state-sm">
-            No messages yet. Buyers will contact you through your property listings.
-          </div>
-
-          <div v-else class="conv-list-widget">
-            <div
-              v-for="conv in recentConversations.slice(0, 5)"
-              :key="convOtherId(conv)"
-              class="conv-widget-item"
-              @click="goToConversation(conv)"
-            >
-              <div class="conv-widget-avatar">{{ convOtherName(conv).charAt(0).toUpperCase() }}</div>
-              <div class="conv-widget-body">
-                <div class="conv-widget-top">
-                  <span class="conv-widget-name">{{ convOtherName(conv) }}</span>
-                  <span class="conv-widget-time">{{ formatConvTime(conv.last_message?.created_at) }}</span>
-                </div>
-                <p class="conv-widget-preview">{{ conv.last_message?.message_content || '📎 Attachment' }}</p>
-                <div v-if="conv.last_message?.property" class="conv-widget-prop">
-                  🏠 {{ conv.last_message.property.title }}
-                </div>
-              </div>
-              <span v-if="conv.unread_count > 0" class="conv-widget-badge">{{ conv.unread_count }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Summary -->
-        <div v-if="properties.length > 0" class="summary-stats">
-          <div class="stats-grid">
-            <div class="stat">
-              <span class="stat-label">Total Properties</span>
-              <span class="stat-value">{{ properties.length }}</span>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Active Listings</span>
-              <span class="stat-value">{{ stats.activeListings }}</span>
-            </div>
-            <div class="stat">
-              <span class="stat-label">Total Views</span>
-              <span class="stat-value">{{ stats.totalViews }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Success/Error Messages -->
-    <transition name="fade">
-      <div v-if="successMessage" class="success-message">
-        ✓ {{ successMessage }}
+    <!-- Toast Messages -->
+    <transition name="toast">
+      <div v-if="successMessage" class="toast toast-success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ successMessage }}
       </div>
     </transition>
-
-    <transition name="fade">
-      <div v-if="errorMessage" class="error-message">
-        ✗ {{ errorMessage }}
+    <transition name="toast">
+      <div v-if="errorMessage" class="toast toast-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        {{ errorMessage }}
       </div>
     </transition>
 
@@ -365,7 +356,7 @@ export default {
       userName: '',
       userRole: '',
       showUserMenu: false,
-      profilePhotoUrl: null, // ✅ ADDED: Profile photo URL
+      profilePhotoUrl: null,
 
       // Properties
       properties: [],
@@ -497,7 +488,6 @@ export default {
       }
     },
 
-    // ✅ UPDATED: Load profile photo from localStorage
     loadProfilePhoto() {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -737,7 +727,7 @@ export default {
     ]).catch(() => {});
     this.subscribeToEcho();
 
-    // Watch for photo changes every 2s (was 500ms — too frequent)
+    // Watch for photo changes every 2s
     this.photoWatcher = setInterval(() => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.profile_photo_path && user.profile_photo_path !== this.profilePhotoUrl?.split('/storage/')[1]) {
@@ -757,921 +747,363 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ── TOKENS ── */
+.ad-layout {
+  --navy:      #0B1C39;
+  --navy2:     #102445;
+  --navy3:     #1a3158;
+  --gold:      #D89B0F;
+  --gold2:     #E5B332;
+  --gold3:     #B07A08;
+  --gold-glow: rgba(216,155,15,0.12);
+  --s50:  #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s800: #292524; --s900: #1C1917;
+  --white: #FFFFFF;
+  --bg:   #F2F0EB;
+  --sw:   242px;
+  --th:   56px;
+  --r:    12px;
+  --fd:   'Outfit','Inter',-apple-system,sans-serif;
+  --fb:   'Inter',-apple-system,sans-serif;
+  min-height: 100vh; display: flex; font-family: var(--fb); -webkit-font-smoothing: antialiased; background: var(--bg);
 }
 
-:root {
-  --smoky-black: #100c08;
-  --white-smoke: #f5f5f5;
-  --palace-gold: #FFD700;
-  --palace-gold-dark: #DAB600;
-  --light-gray: #e0e0e0;
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
-}
-
-.dashboard-wrapper {
-  display: flex;
-  min-height: 100vh;
-  background: var(--white-smoke);
-  font-family: var(--font-body);
-}
-
-/* ============================================================================
+/* ══════════════════════════════════
    SIDEBAR
-   ============================================================================ */
-
+══════════════════════════════════ */
 .sidebar {
-  width: 280px;
-  background: white;
-  border-right: 1px solid var(--light-gray);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
+  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
 }
-
-.sidebar-header {
-  padding: 24px 16px;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.sidebar-logo {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-}
-
-.logo-realty {
-  color: var(--smoky-black);
-}
-
-.logo-ph {
-  color: var(--palace-gold);
-  margin-left: 2px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 20px 0;
-  overflow-y: auto;
-}
-
-.nav-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #999;
-  padding: 8px 16px;
-  margin: 0;
-  letter-spacing: 1.2px;
-}
+.sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; }
+.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  margin: 0 8px;
-  color: var(--smoky-black);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 14px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  width: calc(100% - 16px);
-  text-align: left;
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px;
+  border-radius: 9px; color: rgba(255,255,255,0.45); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: all 0.18s ease; margin-bottom: 2px;
+  cursor: pointer; border: none; background: none; width: 100%;
+  text-align: left; font-family: var(--fb); position: relative;
 }
-
-.nav-item:hover {
-  background: var(--white-smoke);
-  color: var(--palace-gold);
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
+.nav-item.router-link-exact-active {
+  background: linear-gradient(90deg, rgba(216,155,15,0.14) 0%, rgba(216,155,15,0.03) 100%);
+  color: var(--gold2);
 }
-
-.nav-item.active {
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  font-weight: 600;
+.nav-item.router-link-exact-active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
 }
-
-.nav-icon {
-  font-size: 18px;
-  min-width: 24px;
-  text-align: center;
+.nav-item.router-link-exact-active .nav-icon-wrap { color: var(--gold); }
+.nav-group-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.22); padding: 14px 12px 5px; margin: 0;
 }
-
-.nav-label {
-  flex: 1;
+.nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
+.nav-badge {
+  margin-left: auto; background: rgba(216,155,15,0.18); color: var(--gold2);
+  border-radius: 99px; padding: 2px 7px; font-size: 10.5px; font-weight: 700;
 }
-
-.badge-dot {
-  background: #ff4444;
-  color: white;
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 10px 8px; }
+.sidebar-bottom { flex-shrink: 0; padding: 0 10px 14px; }
+.nav-user { gap: 10px; padding: 8px 10px; }
+.nav-user:hover, .nav-user.router-link-exact-active { background: rgba(216,155,15,0.10); color: var(--gold2); }
+.nav-av {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
 }
+.nav-av img { width: 100%; height: 100%; object-fit: cover; }
+.nav-user-info { flex: 1; min-width: 0; }
+.nav-user-name { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-user-role  { display: block; font-size: 10.5px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; backdrop-filter: blur(2px); }
 
-.sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid var(--light-gray);
-}
+/* ══════════════════════════════════
+   MAIN
+══════════════════════════════════ */
+.main-wrapper { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-.user-card {
-  background: var(--white-smoke);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
-
-.user-avatar-lg {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-  overflow: hidden; /* ✅ ADDED: For image clipping */
-}
-
-/* ✅ ADDED: Profile photo styles */
-.avatar-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.user-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.user-name-card {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-role-card {
-  font-size: 11px;
-  color: #999;
-  margin: 4px 0 0 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn-options {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  color: #999;
-  transition: color 0.3s;
-}
-
-.btn-options:hover {
-  color: var(--palace-gold);
-}
-
-.user-dropdown {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid var(--light-gray);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  z-index: 1001;
-}
-
-.dropdown-item {
-  display: block;
-  padding: 12px 16px;
-  color: var(--smoky-black);
-  text-decoration: none;
-  font-size: 14px;
-  transition: all 0.3s;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background: var(--white-smoke);
-  color: var(--palace-gold);
-}
-
-.dropdown-item.logout {
-  color: #d32f2f;
-  border-top: 1px solid var(--light-gray);
-}
-
-/* ============================================================================
-   MAIN CONTENT
-   ============================================================================ */
-
-.main-content {
-  flex: 1;
-  margin-left: 280px;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
+/* ── TOPBAR ── */
 .topbar {
-  background: white;
-  border-bottom: 2px solid var(--light-gray);
-  padding: 16px 32px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--white); position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: var(--th); border-bottom: 1px solid var(--s200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
-.topbar-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.hamburger { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.tb-icon-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--s500); position: relative; transition: all 0.18s; }
+.tb-icon-btn:hover { background: var(--s100); color: var(--navy); }
+.tb-badge {
+  position: absolute; top: -2px; right: -2px; background: #ef4444; color: #fff;
+  border-radius: 99px; padding: 1px 4.5px; font-size: 9.5px; font-weight: 700;
+  min-width: 16px; text-align: center; border: 2px solid var(--white);
+  animation: pop .3s cubic-bezier(.34,1.56,.64,1);
 }
-
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  flex: 1;
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+.tb-cta {
+  display: flex; align-items: center; gap: 6px; padding: 7px 15px;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: var(--white); border-radius: 8px; font-size: 12.5px; font-weight: 600;
+  text-decoration: none; transition: all .22s; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(216,155,15,0.30);
 }
+.tb-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(216,155,15,0.40); }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.5px;
-  color: var(--smoky-black);
+/* ── NOTIF PANEL ── */
+.notif-wrap { position: relative; }
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 330px;
+  background: var(--white); border: 1px solid var(--s100); border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12); z-index: 200; overflow: hidden; max-height: 420px; overflow-y: auto;
 }
+.np-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--s100); font-weight: 700; font-size: 12.5px; color: var(--s900); }
+.np-sub-head { border-top: 1px solid var(--s100); margin-top: 4px; }
+.np-read-all { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--gold); font-weight: 600; }
+.np-link { font-size: 11.5px; color: var(--gold); text-decoration: none; font-weight: 600; }
+.np-empty { padding: 26px 16px; text-align: center; color: var(--s400); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.np-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background .15s; }
+.np-item:hover { background: rgba(216,155,15,0.04); }
+.np-unread { background: rgba(216,155,15,0.03); }
+.np-dot-icon { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: rgba(216,155,15,0.08); color: var(--gold); display: flex; align-items: center; justify-content: center; }
+.np-av { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, var(--navy), var(--navy3)); color: var(--gold2); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+.np-body { flex: 1; min-width: 0; }
+.np-title { font-size: 12.5px; font-weight: 600; color: var(--s900); margin: 0; }
+.np-msg   { font-size: 11.5px; color: var(--s500); margin: 1px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-time  { font-size: 10.5px; color: var(--s400); margin: 2px 0 0; }
+.np-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.np-cnt { background: rgba(216,155,15,0.12); color: var(--gold); border-radius: 99px; padding: 1px 7px; font-size: 10.5px; font-weight: 700; flex-shrink: 0; }
+.drop-enter-active { animation: dropIn .22s ease; }
+.drop-leave-active { animation: dropIn .18s ease reverse; }
+@keyframes dropIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* ══════════════════════════════════
+   CONTENT
+══════════════════════════════════ */
+.content-area { flex: 1; background: var(--bg); }
+.content-inner { max-width: 1080px; margin: 0 auto; padding: 28px 30px 48px; }
+
+/* ── STAT CARDS ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
 }
-
-.btn-icon {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px;
-  transition: transform 0.3s;
-  color: var(--smoky-black);
-}
-
-.btn-icon:hover {
-  transform: scale(1.1);
-  color: var(--palace-gold);
-}
-
-.btn-primary {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-}
-
-.page-wrapper {
-  flex: 1;
-  padding: 32px;
-  overflow-y: auto;
-}
-
-/* Stats Section */
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
 .stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-  border: 1px solid var(--light-gray);
+  background: var(--white); border-radius: var(--r); padding: 20px;
+  display: flex; align-items: center; gap: 14px;
+  border: 1px solid var(--s200); transition: all .22s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); border-color: var(--s300); }
+.stat-icon-wrap {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(216,155,15,0.08); color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-icon-wrap svg { width: 20px; height: 20px; }
+.stat-icon-wrap.si-green { background: rgba(34,197,94,0.08); color: #16a34a; }
+.stat-icon-wrap.si-blue  { background: rgba(59,130,246,0.08); color: #2563eb; }
+.stat-icon-wrap.si-purple { background: rgba(139,92,246,0.08); color: #7c3aed; }
+.stat-body { flex: 1; min-width: 0; }
+.stat-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--s500); margin-bottom: 4px; }
+.stat-number { display: block; font-size: 26px; font-weight: 800; color: var(--navy); font-family: var(--fd); line-height: 1; }
+
+/* ── SECTION CARDS ── */
+.section-card {
+  background: var(--white); border-radius: var(--r); padding: 24px;
+  border: 1px solid var(--s200); margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.section-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--s100);
+}
+.section-title { font-size: 17px; font-weight: 700; color: var(--navy); font-family: var(--fd); margin: 0; }
+.section-sub { font-size: 12.5px; color: var(--s400); margin: 4px 0 0; }
+.see-all {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--gold); text-decoration: none; font-weight: 600; font-size: 13px;
+  transition: color .2s; white-space: nowrap;
+}
+.see-all:hover { color: var(--gold3); }
+
+/* ── LOADING / EMPTY STATES ── */
+.state-center {
+  padding: 48px 20px; text-align: center; color: var(--s500); font-size: 13px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.state-center h4 { font-size: 16px; font-weight: 700; color: var(--navy); }
+.state-center p { color: var(--s400); max-width: 360px; line-height: 1.5; }
+.state-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(216,155,15,0.08); color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+}
+.state-icon svg { width: 28px; height: 28px; }
+.spinner {
+  width: 28px; height: 28px; border: 3px solid var(--s200);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-gold {
+  display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: var(--white); border-radius: 8px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: all .22s;
+  box-shadow: 0 2px 8px rgba(216,155,15,0.30);
+}
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(216,155,15,0.40); }
+.state-empty-sm {
+  padding: 20px; text-align: center; color: var(--s400); font-size: 13px;
+  background: var(--s50); border-radius: 8px; border: 1px solid var(--s200);
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  border-color: var(--palace-gold);
+/* ── PROPERTY GRID ── */
+.prop-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px;
 }
+.prop-card {
+  background: var(--white); border-radius: var(--r); overflow: hidden;
+  border: 1px solid var(--s200); transition: all .22s; display: flex; flex-direction: column;
+}
+.prop-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.10); border-color: var(--s300); transform: translateY(-3px); }
+.prop-img-wrap { position: relative; width: 100%; height: 170px; background: var(--s50); overflow: hidden; }
+.prop-img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.prop-card:hover .prop-img { transform: scale(1.04); }
+.prop-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--s50); }
+.status-chip {
+  position: absolute; top: 10px; right: 10px;
+  padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+}
+.sc-available { background: rgba(34,197,94,0.12); color: #15803d; }
+.sc-sold { background: rgba(239,68,68,0.10); color: #b91c1c; }
+.sc-rented { background: rgba(59,130,246,0.10); color: #1d4ed8; }
+.sc-unlisted { background: var(--s100); color: var(--s600); }
+.photo-chip {
+  position: absolute; bottom: 10px; left: 10px;
+  background: rgba(0,0,0,0.65); color: #fff; padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;
+}
+.prop-body { padding: 14px; flex: 1; }
+.prop-title { font-size: 14.5px; font-weight: 700; color: var(--navy); margin: 0 0 6px; line-height: 1.3; }
+.prop-loc { font-size: 12px; color: var(--s400); margin: 0 0 10px; display: flex; align-items: center; gap: 4px; }
+.prop-specs { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.prop-spec {
+  font-size: 11px; color: var(--s600); font-weight: 600;
+  padding: 3px 8px; background: var(--s50); border-radius: 5px;
+  display: flex; align-items: center; gap: 3px;
+}
+.prop-price { font-size: 17px; font-weight: 800; color: var(--gold); font-family: var(--fd); }
+.prop-actions {
+  padding: 10px 14px; border-top: 1px solid var(--s100); display: flex; gap: 8px;
+}
+.btn-action {
+  flex: 1; padding: 8px 10px; border: none; border-radius: 7px;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s;
+  text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-edit { background: rgba(216,155,15,0.10); color: var(--gold3); }
+.btn-edit:hover { background: rgba(216,155,15,0.18); }
+.btn-del { background: rgba(239,68,68,0.08); color: #dc2626; }
+.btn-del:hover { background: rgba(239,68,68,0.14); }
 
-.stat-icon {
-  font-size: 32px;
-  min-width: 50px;
+/* ── CONVERSATION LIST ── */
+.conv-list { border: 1px solid var(--s200); border-radius: 10px; overflow: hidden; }
+.conv-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; cursor: pointer; transition: background .15s;
+  border-bottom: 1px solid var(--s50);
 }
-
-.stat-info h4 {
-  font-size: 12px;
-  color: #999;
-  text-transform: uppercase;
-  margin: 0 0 8px 0;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--palace-gold);
-  margin: 0;
-  font-family: var(--font-display);
-}
-
-/* Card Section */
-.card-section {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 40px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.section-header h3 {
-  font-size: 22px;
-  font-weight: 800;
-  margin: 0;
-  color: var(--smoky-black);
-  font-family: var(--font-display);
-}
-
-.section-subtitle {
-  font-size: 13px;
-  color: #999;
-  margin: 8px 0 0 0;
-  font-weight: 500;
-}
-
-.see-all-link {
-  color: var(--palace-gold);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 14px;
-  transition: color 0.3s;
-}
-
-.see-all-link:hover {
-  color: var(--palace-gold-dark);
-}
-
-/* Properties Grid */
-.properties-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.property-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s;
-  border: 1px solid var(--light-gray);
-  display: flex;
-  flex-direction: column;
-}
-
-.property-card:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  border-color: var(--palace-gold);
-  transform: translateY(-8px);
-}
-
-.card-image-container {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  background: #f0f0f0;
-  overflow: hidden;
-}
-
-.card-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.property-card:hover .card-image {
-  transform: scale(1.05);
-}
-
-.card-image-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 64px;
-  color: #ddd;
-}
-
-.status-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.status-available {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-sold {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.status-rented {
-  background: #cce5ff;
-  color: #004085;
-}
-
-.status-unlisted {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.photo-count {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.card-content {
-  padding: 16px;
-  flex: 1;
-}
-
-.property-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--smoky-black);
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-}
-
-.property-location {
-  font-size: 13px;
-  color: #999;
-  margin: 0 0 12px 0;
-}
-
-.property-specs-row {
-  display: flex;
-  gap: 12px;
-  margin: 12px 0;
-  flex-wrap: wrap;
-}
-
-.spec {
-  font-size: 12px;
-  color: #666;
-  font-weight: 600;
-  padding: 4px 8px;
-  background: var(--white-smoke);
-  border-radius: 4px;
-}
-
-.property-price {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--palace-gold);
-  margin: 12px 0 0 0;
-}
-
-.card-footer {
-  padding: 12px 16px;
-  border-top: 1px solid var(--light-gray);
-  display: flex;
-  gap: 8px;
-}
-
-.btn-card {
-  flex: 1;
-  padding: 10px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-edit {
-  background: var(--palace-gold);
-  color: var(--smoky-black);
-}
-
-.btn-edit:hover {
-  background: var(--palace-gold-dark);
-  transform: translateY(-1px);
-}
-
-.btn-delete {
-  background: #f44336;
-  color: white;
-}
-
-.btn-delete:hover {
-  background: #da190b;
-  transform: translateY(-1px);
-}
-
-/* Loading & Empty States */
-.loading-state,
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: #999;
-  font-size: 14px;
-}
-
-.empty-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.empty-content h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin: 0;
-}
-
-/* Summary Stats */
-.summary-stats {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-  padding: 16px;
-  background: var(--white-smoke);
-  border-radius: 8px;
-  border-left: 3px solid var(--palace-gold);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #999;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--palace-gold);
-  font-family: var(--font-display);
-}
-
-/* Notification Bell */
-.notif-bell-wrapper { position: relative; }
-.notif-btn { position: relative; }
-.notif-badge {
-  position: absolute; top: -4px; right: -4px;
-  background: #ef4444; color: white;
-  border-radius: 999px; padding: 1px 5px;
-  font-size: 10px; font-weight: 700;
-  min-width: 16px; text-align: center;
-  pointer-events: none;
-}
-.notif-dropdown {
-  position: absolute; top: calc(100% + 8px); right: 0;
-  width: 300px; background: white;
-  border-radius: 12px; border: 1px solid #e0e0e0;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
-  z-index: 999; overflow: hidden;
-}
-.notif-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
-  font-weight: 700; font-size: 13px; color: #100c08;
-}
-.notif-view-all { font-size: 12px; color: #FFD700; text-decoration: none; font-weight: 600; }
-.notif-empty { padding: 20px 16px; text-align: center; color: #999; font-size: 13px; }
-.notif-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; cursor: pointer; transition: background .15s;
-}
-.notif-item:hover { background: #faf9f5; }
-.notif-avatar {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #FFD700, #DAB600);
-  color: #100c08; display: flex; align-items: center; justify-content: center;
+.conv-item:last-child { border-bottom: none; }
+.conv-item:hover { background: rgba(216,155,15,0.03); }
+.conv-av {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--navy), var(--navy3));
+  color: var(--gold2); display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px;
 }
-.notif-body { flex: 1; min-width: 0; }
-.notif-name { font-size: 13px; font-weight: 700; color: #100c08; margin: 0; }
-.notif-preview {
-  font-size: 12px; color: #666; margin: 2px 0 0;
+.conv-body { flex: 1; min-width: 0; }
+.conv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.conv-name { font-weight: 700; font-size: 13px; color: var(--s900); }
+.conv-time { font-size: 11px; color: var(--s400); white-space: nowrap; flex-shrink: 0; }
+.conv-preview {
+  font-size: 12.5px; color: var(--s500); margin: 2px 0 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.notif-unread {
-  background: #FFD700; color: #100c08;
-  border-radius: 999px; padding: 1px 7px;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+.conv-prop-tag {
+  font-size: 11px; color: var(--gold3);
+  background: rgba(216,155,15,0.06); border: 1px solid rgba(216,155,15,0.18);
+  border-radius: 4px; padding: 2px 7px;
+  display: inline-flex; align-items: center; gap: 3px; margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;
 }
-.notif-mark-all {
-  background: none; border: none; cursor: pointer;
-  font-size: 11px; color: #FFD700; font-weight: 600;
-  transition: color .2s;
-}
-.notif-mark-all:hover { color: #DAB600; }
-.notif-unread-bg { background: #fffdf5; }
-.notif-icon-avatar { font-size: 18px; background: #f5f5f5; }
-.notif-time { font-size: 11px; color: #aaa; margin: 2px 0 0; }
-.notif-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: #FFD700; flex-shrink: 0;
-}
-.notif-header-sub { border-top: 1px solid #f0f0f0; margin-top: 4px; }
-.notif-dropdown { max-height: 420px; overflow-y: auto; }
-
-/* Recent Messages Section */
-.messages-section { margin-top: 24px; }
-.empty-state-sm {
-  padding: 24px; text-align: center; color: #999;
-  font-size: 13px; background: white;
-  border-radius: 10px; border: 1px solid #e0e0e0;
-}
-.conv-list-widget {
-  background: white; border-radius: 10px;
-  border: 1px solid #e0e0e0; overflow: hidden;
-}
-.conv-widget-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 20px; cursor: pointer; transition: background .2s;
-  border-bottom: 1px solid #f5f5f5;
-}
-.conv-widget-item:last-child { border-bottom: none; }
-.conv-widget-item:hover { background: #faf9f5; }
-.conv-widget-avatar {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #FFD700, #DAB600);
-  color: #100c08; display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 17px;
-}
-.conv-widget-body { flex: 1; min-width: 0; }
-.conv-widget-top {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
-}
-.conv-widget-name { font-weight: 700; font-size: 14px; color: #100c08; }
-.conv-widget-time { font-size: 11px; color: #999; white-space: nowrap; flex-shrink: 0; }
-.conv-widget-preview {
-  font-size: 13px; color: #666; margin: 2px 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.conv-widget-prop {
-  font-size: 11px; color: #7a5c00;
-  background: #fef9e7; border: 1px solid #FFD700;
-  border-radius: 4px; padding: 2px 8px;
-  display: inline-block; margin-top: 3px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 200px;
-}
-.conv-widget-badge {
-  background: #FFD700; color: #100c08;
-  border-radius: 999px; padding: 2px 8px;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+.conv-badge {
+  background: rgba(216,155,15,0.12); color: var(--gold);
+  border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 
-/* Messages */
-.success-message {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #4caf50;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 3000;
-  animation: slideIn 0.3s ease;
+/* ── SUMMARY ROW ── */
+.summary-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  background: var(--white); border-radius: var(--r); padding: 20px;
+  border: 1px solid var(--s200); box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
-.error-message {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #f44336;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 3000;
-  animation: slideIn 0.3s ease;
+.summary-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center; padding: 12px; background: var(--s50); border-radius: 8px;
+  border-left: 3px solid var(--gold);
 }
+.summary-label { font-size: 11px; color: var(--s500); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.summary-value { font-size: 24px; font-weight: 800; color: var(--navy); font-family: var(--fd); }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+  padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14);
 }
+.toast-success { background: #065f46; color: #d1fae5; }
+.toast-error   { background: #991b1b; color: #fee2e2; }
+.toast-enter-active { animation: slideUp .3s ease; }
+.toast-leave-active { animation: slideUp .25s ease reverse; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* ============================================================================
+/* ══════════════════════════════════
    RESPONSIVE
-   ============================================================================ */
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -280px;
-    transition: left 0.3s ease;
-    width: 280px;
-    z-index: 1001;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .topbar {
-    padding: 16px;
-  }
-
-  .topbar-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .page-title {
-    font-size: 24px;
-  }
-
-  .page-wrapper {
-    padding: 16px;
-  }
-
-  .stats-section {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .stat-card {
-    padding: 16px;
-  }
-
-  .stat-number {
-    font-size: 24px;
-  }
-
-  .properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-  }
+══════════════════════════════════ */
+@media (max-width: 1024px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
 }
-
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; }
+  .hamburger { display: flex; }
+  .main-wrapper { margin-left: 0; }
+  .topbar { padding: 0 16px; }
+  .content-inner { padding: 20px 16px 40px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .prop-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .summary-row { grid-template-columns: 1fr; }
+}
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 20px;
-  }
-
-  .stats-section {
-    grid-template-columns: 1fr;
-  }
-
-  .btn-primary {
-    padding: 10px 16px;
-    font-size: 12px;
-  }
-
-  .properties-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card-section {
-    padding: 16px;
-  }
+  .stats-row { grid-template-columns: 1fr; }
+  .prop-grid { grid-template-columns: 1fr; }
+  .tb-cta span { display: none; }
+  .tb-cta { padding: 7px 10px; }
 }
 </style>

@@ -60,6 +60,7 @@ class UserController extends Controller
             $validated = $request->validate([
                 'name' => 'sometimes|string|max:255',
                 'phone' => 'sometimes|string|max:20',
+                'bio' => 'sometimes|nullable|string|max:1000',
                 'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
                 'address' => 'sometimes|string|max:255',
                 'city' => 'sometimes|string|max:100',

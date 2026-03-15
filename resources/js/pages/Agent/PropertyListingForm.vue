@@ -1,62 +1,109 @@
 <template>
   <div class="form-wrapper">
-    <!-- Sidebar -->
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link to="/agent/dashboard" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/agent/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+        <router-link to="/agent/dashboard" exact class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          <span>Overview</span>
         </router-link>
-        <router-link to="/agent/properties" class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-label">My Properties</span>
+
+        <div class="nav-group-label">Properties</div>
+        <router-link to="/agent/properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span>My Properties</span>
         </router-link>
-        <router-link to="/agent/saved-properties" class="nav-item">
-          <span class="nav-icon">❤️</span>
-          <span class="nav-label">My Wallet</span>
+        <router-link to="/agent/saved-properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span>My Wallet</span>
         </router-link>
-        <router-link to="/agent/viewings" class="nav-item">
-          <span class="nav-icon">📅</span>
-          <span class="nav-label">Viewings</span>
+
+        <div class="nav-group-label">Schedule</div>
+        <router-link to="/agent/viewings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <span>Viewings</span>
         </router-link>
-        <router-link to="/agent/calendar" class="nav-item">
-          <span class="nav-icon">📆</span>
-          <span class="nav-label">My Calendar</span>
+        <router-link to="/agent/calendar" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+          </span>
+          <span>Calendar</span>
+        </router-link>
+
+        <div class="nav-group-label">Communicate</div>
+        <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Messages</span>
+        </router-link>
+        <router-link to="/agent/documents" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span>Documents</span>
         </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
-          <p class="user-name">{{ userName }}</p>
-        </div>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
+          </div>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">Agent</span>
+          </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          </span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
+
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
 
     <!-- Main Content -->
     <main class="form-main">
       <div class="form-header">
-        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
+        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         <router-link to="/agent/properties" class="btn-back">← Back to Properties</router-link>
-        <h1 class="form-title">{{ isEditMode ? '✏️ Edit Property' : '➕ Create New Property' }}</h1>
+        <h1 class="form-title">{{ isEditMode ? 'Edit Property' : 'Create New Property' }}</h1>
         <p class="form-subtitle">{{ isEditMode ? 'Update your property details and photos' : 'List a new property for sale or rent' }}</p>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="loading-state">
-        <p>⏳ Loading property...</p>
+        <p>Loading property...</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="loadError" class="error-banner">
-        <p>❌ {{ loadError }}</p>
+        <p>{{ loadError }}</p>
         <button @click="loadProperty" class="btn-retry">Retry</button>
         <router-link to="/agent/properties" class="btn-back">← Back to Properties</router-link>
       </div>
@@ -65,7 +112,7 @@
       <form v-else @submit.prevent="submitForm" class="property-form">
         <!-- Basic Information Section -->
         <div class="form-section">
-          <h2 class="section-title">📋 Basic Information</h2>
+          <h2 class="section-title">Basic Information</h2>
 
           <div class="form-group">
             <label for="title">Property Title *</label>
@@ -116,7 +163,7 @@
 
         <!-- Pricing Section -->
         <div class="form-section">
-          <h2 class="section-title">💰 Pricing</h2>
+          <h2 class="section-title">Pricing</h2>
 
           <div class="form-group">
             <label for="price">Price *</label>
@@ -135,7 +182,7 @@
 
         <!-- Location Section -->
         <div class="form-section">
-          <h2 class="section-title">📍 Location</h2>
+          <h2 class="section-title">Location</h2>
 
           <div class="form-group">
             <label for="address">Address *</label>
@@ -205,7 +252,7 @@
 
         <!-- Features Section -->
         <div class="form-section">
-          <h2 class="section-title">🏡 Features</h2>
+          <h2 class="section-title">Features</h2>
 
           <div class="form-row">
             <div class="form-group">
@@ -266,7 +313,7 @@
 
         <!-- ✅ PHOTOS SECTION -->
         <div class="form-section">
-          <h2 class="section-title">📸 Photos</h2>
+          <h2 class="section-title">Photos</h2>
 
           <!-- Existing Photos (Edit Mode) -->
           <div v-if="isEditMode && property && property.photos && property.photos.length > 0" class="existing-photos">
@@ -350,7 +397,7 @@
 
         <!-- 360° PANORAMAS SECTION -->
         <div class="form-section">
-          <h2 class="section-title">🔄 360° Virtual Tour</h2>
+          <h2 class="section-title">360° Virtual Tour</h2>
           <p class="section-description">
             Upload equirectangular panoramic images for an immersive 360° virtual tour.
             Each image represents a room that buyers can explore interactively.
@@ -431,7 +478,7 @@
             Cancel
           </router-link>
           <button type="submit" class="btn-primary" :disabled="submitting">
-            {{ submitting ? '⏳ Saving...' : (isEditMode ? '💾 Update Property' : '✅ Create Property') }}
+            {{ submitting ? 'Saving...' : (isEditMode ? 'Update Property' : 'Create Property') }}
           </button>
         </div>
       </form>
@@ -486,6 +533,7 @@ export default {
 
       // User Data
       userName: '',
+      profilePhotoUrl: null,
 
       // Form State
       isEditMode: false,
@@ -937,6 +985,30 @@ export default {
       }
     },
 
+    async loadProfilePhoto() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
+        else {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          if (user.profile_photo_path) {
+            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
+          }
+        }
+      } catch (e) { /* non-critical */ }
+    },
+
+    logout() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      this.$router.push('/');
+    },
+
     showSuccess(message) {
       this.successMessage = message;
       setTimeout(() => {
@@ -961,6 +1033,7 @@ export default {
 
     this.apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
     this.loadUserData();
+    this.loadProfilePhoto();
 
     this.isEditMode = !!this.$route.params.id;
     
@@ -981,140 +1054,84 @@ export default {
   box-sizing: border-box;
 }
 
-:root {
-  --smoky-black: #100c08;
-  --white-smoke: #f5f5f5;
-  --palace-gold: #FFD700;
-  --palace-gold-dark: #DAB600;
-  --light-gray: #e0e0e0;
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
-}
-
 .form-wrapper {
   display: flex;
   min-height: 100vh;
-  background: var(--white-smoke);
-  font-family: var(--font-body);
+  background: var(--bg);
+  font-family: var(--fb);
+  --navy:      #0B1C39;
+  --navy2:     #102445;
+  --navy3:     #1a3158;
+  --gold:      #D89B0F;
+  --gold2:     #E5B332;
+  --gold3:     #B07A08;
+  --gold-glow: rgba(216,155,15,0.12);
+  --s50:  #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s800: #292524; --s900: #1C1917;
+  --white: #FFFFFF;
+  --bg:   #F2F0EB;
+  --sw:   242px;
+  --th:   56px;
+  --r:    12px;
+  --fd:   'Outfit','Inter',-apple-system,sans-serif;
+  --fb:   'Inter',-apple-system,sans-serif;
 }
 
-/* ============================================================================
-   SIDEBAR
-   ============================================================================ */
-
+/* ── SIDEBAR ── */
 .sidebar {
-  width: 280px;
-  background: white;
-  border-right: 1px solid var(--light-gray);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
+  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
 }
-
-.sidebar-header {
-  padding: 24px 16px;
-  border-bottom: 1px solid var(--light-gray);
-}
-
-.sidebar-logo {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-}
-
-.logo-realty {
-  color: var(--smoky-black);
-}
-
-.logo-ph {
-  color: var(--palace-gold);
-  margin-left: 2px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 20px 0;
-}
-
+.sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; display: block; }
+.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  margin: 0 8px;
-  color: var(--smoky-black);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 14px;
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px;
+  border-radius: 9px; color: rgba(255,255,255,0.45); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: all 0.18s ease; margin-bottom: 2px;
+  cursor: pointer; border: none; background: none; width: 100%;
+  text-align: left; font-family: var(--fb); position: relative;
 }
-
-.nav-item:hover {
-  background: var(--white-smoke);
-  color: var(--palace-gold);
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
+.nav-item.router-link-active:not(.router-link-exact-active) { color: rgba(255,255,255,0.65); }
+.nav-item.router-link-exact-active {
+  background: linear-gradient(90deg, rgba(216,155,15,0.14) 0%, rgba(216,155,15,0.03) 100%);
+  color: var(--gold2);
 }
-
-.nav-item.active {
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  font-weight: 600;
+.nav-item.router-link-exact-active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
 }
-
-.nav-icon {
-  font-size: 18px;
-  min-width: 24px;
-  text-align: center;
+.nav-item.router-link-exact-active .nav-icon-wrap { color: var(--gold); }
+.nav-group-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.22); padding: 14px 12px 5px; margin: 0;
 }
-
-.nav-label {
-  flex: 1;
+.nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
+.nav-badge {
+  margin-left: auto; background: rgba(216,155,15,0.18); color: var(--gold2);
+  border-radius: 99px; padding: 2px 7px; font-size: 10.5px; font-weight: 700;
 }
-
-.sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid var(--light-gray);
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 10px 8px; }
+.sidebar-bottom { flex-shrink: 0; padding: 0 10px 14px; }
+.nav-user { gap: 10px; padding: 8px 10px; }
+.nav-user:hover, .nav-user.router-link-exact-active { background: rgba(216,155,15,0.10); color: var(--gold2); }
+.nav-av {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
 }
-
-.user-card {
-  background: var(--white-smoke);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.user-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--smoky-black);
-  margin: 0;
-}
+.nav-av img { width: 100%; height: 100%; object-fit: cover; }
+.nav-user-info { flex: 1; min-width: 0; }
+.nav-user-name { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-user-role  { display: block; font-size: 10.5px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; backdrop-filter: blur(2px); }
 
 /* ============================================================================
    MAIN CONTENT
@@ -1122,7 +1139,7 @@ export default {
 
 .form-main {
   flex: 1;
-  margin-left: 280px;
+  margin-left: var(--sw);
   padding: 40px;
   overflow-y: auto;
 }
@@ -1137,9 +1154,9 @@ export default {
   gap: 8px;
   padding: 10px 16px;
   background: white;
-  border: 1px solid var(--light-gray);
-  border-radius: 8px;
-  color: var(--smoky-black);
+  border: 1px solid var(--s200);
+  border-radius: 50px;
+  color: var(--navy);
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -1149,15 +1166,15 @@ export default {
 }
 
 .btn-back:hover {
-  background: var(--white-smoke);
-  border-color: var(--palace-gold);
+  background: var(--s100);
+  border-color: var(--gold);
 }
 
 .form-title {
   font-size: 32px;
   font-weight: 800;
-  color: var(--smoky-black);
-  font-family: var(--font-display);
+  color: var(--navy);
+  font-family: var(--fd);
   margin: 0 0 8px 0;
 }
 
@@ -1219,7 +1236,7 @@ export default {
 .form-section {
   margin-bottom: 32px;
   padding-bottom: 32px;
-  border-bottom: 1px solid var(--light-gray);
+  border-bottom: 1px solid var(--s200);
 }
 
 .form-section:last-of-type {
@@ -1231,15 +1248,15 @@ export default {
 .section-title {
   font-size: 18px;
   font-weight: 800;
-  color: var(--smoky-black);
-  font-family: var(--font-display);
+  color: var(--navy);
+  font-family: var(--fd);
   margin: 0 0 20px 0;
 }
 
 .subsection-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--smoky-black);
+  color: var(--navy);
   margin: 0 0 12px 0;
 }
 
@@ -1252,7 +1269,7 @@ export default {
   display: block;
   font-size: 13px;
   font-weight: 700;
-  color: var(--smoky-black);
+  color: var(--navy);
   text-transform: uppercase;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
@@ -1262,17 +1279,17 @@ export default {
 .form-textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid var(--light-gray);
+  border: 1px solid var(--s200);
   border-radius: 6px;
   font-size: 14px;
-  font-family: var(--font-body);
+  font-family: var(--fb);
   transition: all 0.3s;
 }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--palace-gold);
+  border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
@@ -1299,7 +1316,7 @@ export default {
 .existing-photos {
   margin-bottom: 32px;
   padding-bottom: 32px;
-  border-bottom: 1px solid var(--light-gray);
+  border-bottom: 1px solid var(--s200);
 }
 
 .photos-info {
@@ -1307,7 +1324,7 @@ export default {
   color: #999;
   margin: 0 0 16px 0;
   padding: 12px;
-  background: var(--white-smoke);
+  background: var(--s100);
   border-radius: 6px;
 }
 
@@ -1319,7 +1336,7 @@ export default {
 }
 
 .photo-item {
-  border: 1px solid var(--light-gray);
+  border: 1px solid var(--s200);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -1343,8 +1360,8 @@ export default {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: var(--palace-gold);
-  color: var(--smoky-black);
+  background: var(--gold);
+  color: var(--navy);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;
@@ -1355,8 +1372,8 @@ export default {
   position: absolute;
   bottom: 8px;
   left: 8px;
-  background: var(--palace-gold);
-  color: var(--smoky-black);
+  background: var(--gold);
+  color: var(--navy);
   border: none;
   border-radius: 4px;
   padding: 6px 10px;
@@ -1372,7 +1389,7 @@ export default {
 }
 
 .btn-set-cover:hover {
-  background: var(--palace-gold-dark);
+  background: var(--gold3);
 }
 
 .btn-delete-photo {
@@ -1415,7 +1432,7 @@ export default {
 }
 
 .upload-area {
-  border: 2px dashed var(--palace-gold);
+  border: 2px dashed var(--gold);
   border-radius: 8px;
   padding: 40px;
   text-align: center;
@@ -1425,8 +1442,8 @@ export default {
 }
 
 .upload-area:hover {
-  background: var(--white-smoke);
-  border-color: var(--palace-gold-dark);
+  background: var(--s100);
+  border-color: var(--gold3);
 }
 
 .photo-input {
@@ -1441,7 +1458,7 @@ export default {
 .upload-text {
   font-size: 14px;
   font-weight: 700;
-  color: var(--smoky-black);
+  color: var(--navy);
   margin: 0;
 }
 
@@ -1455,7 +1472,7 @@ export default {
 .selected-photos {
   margin-top: 20px;
   padding: 16px;
-  background: var(--white-smoke);
+  background: var(--s100);
   border-radius: 8px;
 }
 
@@ -1463,7 +1480,7 @@ export default {
   margin: 0 0 12px 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--smoky-black);
+  color: var(--navy);
 }
 
 .preview-grid {
@@ -1517,7 +1534,7 @@ export default {
   justify-content: flex-end;
   margin-top: 40px;
   padding-top: 24px;
-  border-top: 1px solid var(--light-gray);
+  border-top: 1px solid var(--s200);
 }
 
 .btn-primary,
@@ -1532,8 +1549,8 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--palace-gold), var(--palace-gold-dark));
-  color: var(--smoky-black);
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: var(--navy);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -1548,8 +1565,8 @@ export default {
 
 .btn-secondary {
   background: white;
-  color: var(--smoky-black);
-  border: 1px solid var(--light-gray);
+  color: var(--navy);
+  border: 1px solid var(--s200);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -1557,8 +1574,8 @@ export default {
 }
 
 .btn-secondary:hover {
-  background: var(--white-smoke);
-  border-color: var(--palace-gold);
+  background: var(--s100);
+  border-color: var(--gold);
 }
 
 /* Messages */
@@ -1618,14 +1635,14 @@ export default {
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    left: -280px;
+    left: calc(-1 * var(--sw));
     transition: left 0.3s ease;
-    width: 280px;
+    width: var(--sw);
     z-index: 1001;
   }
 
   .form-main {
-    margin-left: 0;
+    margin-left: 0 !important;
     padding: 20px;
   }
 
@@ -1722,7 +1739,7 @@ export default {
 }
 
 .panorama-item {
-  border: 1px solid var(--light-gray, #e0e0e0);
+  border: 1px solid var(--s200);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -1776,7 +1793,7 @@ export default {
 .selected-panoramas {
   margin-top: 20px;
   padding: 16px;
-  background: var(--white-smoke, #f5f5f5);
+  background: var(--s100);
   border-radius: 8px;
 }
 
@@ -1784,7 +1801,7 @@ export default {
   margin: 0 0 16px 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--smoky-black, #100c08);
+  color: var(--navy);
 }
 
 .panorama-upload-item {
@@ -1793,7 +1810,7 @@ export default {
   gap: 16px;
   padding: 12px;
   background: white;
-  border: 1px solid var(--light-gray, #e0e0e0);
+  border: 1px solid var(--s200);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -1814,7 +1831,7 @@ export default {
   display: block;
   font-size: 11px;
   font-weight: 700;
-  color: var(--smoky-black, #100c08);
+  color: var(--navy);
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -1822,6 +1839,6 @@ export default {
 .existing-panoramas {
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--light-gray, #e0e0e0);
+  border-bottom: 1px solid var(--s200);
 }
 </style>

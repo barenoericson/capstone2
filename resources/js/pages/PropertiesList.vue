@@ -78,7 +78,10 @@
 
       <div class="sidebar-footer">
         <div class="user-card">
-          <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
+          <div class="user-avatar">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
+          </div>
           <div class="user-info">
             <p class="user-name">{{ userName }}</p>
             <p class="user-role">Buyer</p>
@@ -321,6 +324,7 @@ export default {
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       token: localStorage.getItem('auth_token') || '',
       userName: '',
+      profilePhotoUrl: null,
 
       // Properties
       allProperties: [],
@@ -500,6 +504,9 @@ export default {
   mounted() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userName = user.name || 'Buyer';
+    if (user.profile_photo_path) {
+      this.profilePhotoUrl = `${this.apiUrl}/storage/${user.profile_photo_path}`;
+    }
     this.loadProperties();
     this.loadSavedIds();
   },

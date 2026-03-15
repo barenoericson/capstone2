@@ -1,87 +1,98 @@
 <template>
   <div class="dashboard-wrapper">
-    <!-- Sidebar -->
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link to="/agent/dashboard" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+        <router-link to="/agent/dashboard" exact class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          <span>Overview</span>
         </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Management</h3>
-          <router-link to="/agent/dashboard" class="nav-item">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Overview</span>
-          </router-link>
-          <router-link to="/agent/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">My Properties</span>
-          </router-link>
-          <router-link to="/agent/saved-properties" class="nav-item">
-            <span class="nav-icon">❤️</span>
-            <span class="nav-label">My Wallet</span>
-          </router-link>
-          <router-link to="/agent/viewings" class="nav-item">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Viewings</span>
-          </router-link>
-          <router-link to="/agent/calendar" class="nav-item">
-            <span class="nav-icon">📆</span>
-            <span class="nav-label">My Calendar</span>
-          </router-link>
-          <router-link to="/agent/documents" class="nav-item active">
-            <span class="nav-icon">📄</span>
-            <span class="nav-label">Documents</span>
-          </router-link>
-          <router-link to="/conversations" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Messages</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Properties</div>
+        <router-link to="/agent/properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span>My Properties</span>
+        </router-link>
+        <router-link to="/agent/saved-properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span>My Wallet</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Settings</h3>
-          <router-link to="/profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
-          </router-link>
-          <router-link to="/settings" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Settings</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Schedule</div>
+        <router-link to="/agent/viewings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <span>Viewings</span>
+        </router-link>
+        <router-link to="/agent/calendar" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+          </span>
+          <span>Calendar</span>
+        </router-link>
+
+        <div class="nav-group-label">Communicate</div>
+        <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Messages</span>
+        </router-link>
+        <router-link to="/agent/documents" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span>Documents</span>
+        </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar-lg">{{ userName.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <p class="user-name-card">{{ userName }}</p>
-            <p class="user-role-card">Agent</p>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
-          <button @click="showUserMenu = !showUserMenu" class="btn-options">⋮</button>
-          <div v-if="showUserMenu" class="user-dropdown">
-            <router-link to="/profile" class="dropdown-item">👤 My Profile</router-link>
-            <a href="#" @click.prevent="logout" class="dropdown-item logout">🚪 Logout</a>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">Agent</span>
           </div>
-        </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          </span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
+
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
 
     <!-- Main Content -->
     <main class="main-content">
       <nav class="topbar">
         <div class="topbar-content">
           <div class="topbar-left">
-            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
+            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
             <h1 class="page-title">Documents</h1>
           </div>
           <div class="topbar-right">
@@ -521,6 +532,7 @@ export default {
       buyersLoading: false,
       userName: '',
       showUserMenu: false,
+      profilePhotoUrl: null,
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       token: localStorage.getItem('auth_token') || '',
 
@@ -618,6 +630,7 @@ export default {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userName = user.name || 'Agent';
     this.token = localStorage.getItem('auth_token') || '';
+    this.loadProfilePhoto();
     await this.loadDocuments();
     this.loadMyUploads();
     this.clearDocumentNotifications();
@@ -1136,43 +1149,115 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 3500);
     },
 
+    async loadProfilePhoto() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
+        else {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          if (user.profile_photo_path) {
+            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
+          }
+        }
+      } catch (e) { /* non-critical */ }
+    },
+
     logout() { localStorage.clear(); this.$router.push('/'); },
   },
 };
 </script>
 
 <style scoped>
-.dashboard-wrapper { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #f8f9fa; }
-.sidebar { width: 240px; min-height: 100vh; background: #fff; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
-.sidebar-header { padding: 20px; border-bottom: 1px solid #f5f5f5; }
-.sidebar-logo { font-size: 1.2rem; font-weight: 800; }
-.logo-realty { color: #100c08; } .logo-ph { color: #FFD700; }
-.sidebar-nav { flex: 1; padding: 12px 10px; }
-.nav-section { margin-top: 16px; }
-.section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; font-weight: 700; padding: 0 10px; margin-bottom: 6px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: #555; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
-.nav-item:hover, .nav-item.active { background: #fef9e7; color: #100c08; } .nav-item.active { font-weight: 700; }
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
-.sidebar-footer { padding: 12px; border-top: 1px solid #f5f5f5; }
-.user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #fafafa; position: relative; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
-.user-info { flex: 1; min-width: 0; }
-.user-name-card { font-size: 0.82rem; font-weight: 700; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-role-card { font-size: 0.72rem; color: #999; margin: 0; }
-.btn-options { background: none; border: none; cursor: pointer; font-size: 18px; color: #999; padding: 0 4px; }
-.user-dropdown { position: absolute; bottom: 56px; left: 0; right: 0; background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 10; }
-.dropdown-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; color: #333; text-decoration: none; font-size: 0.82rem; cursor: pointer; }
-.dropdown-item:hover { background: #fef9e7; } .dropdown-item.logout { color: #dc2626; }
+.dashboard-wrapper {
+  display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: var(--bg);
+  --navy:      #0B1C39;
+  --navy2:     #102445;
+  --navy3:     #1a3158;
+  --gold:      #D89B0F;
+  --gold2:     #E5B332;
+  --gold3:     #B07A08;
+  --gold-glow: rgba(216,155,15,0.12);
+  --s50:  #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s800: #292524; --s900: #1C1917;
+  --white: #FFFFFF;
+  --bg:   #F2F0EB;
+  --sw:   242px;
+  --th:   56px;
+  --r:    12px;
+  --fd:   'Outfit','Inter',-apple-system,sans-serif;
+  --fb:   'Inter',-apple-system,sans-serif;
+}
 
-.main-content { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
+  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
+}
+.sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; display: block; }
+.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px;
+  border-radius: 9px; color: rgba(255,255,255,0.45); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: all 0.18s ease; margin-bottom: 2px;
+  cursor: pointer; border: none; background: none; width: 100%;
+  text-align: left; font-family: var(--fb); position: relative;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
+.nav-item.router-link-active:not(.router-link-exact-active) { color: rgba(255,255,255,0.65); }
+.nav-item.router-link-exact-active {
+  background: linear-gradient(90deg, rgba(216,155,15,0.14) 0%, rgba(216,155,15,0.03) 100%);
+  color: var(--gold2);
+}
+.nav-item.router-link-exact-active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+}
+.nav-item.router-link-exact-active .nav-icon-wrap { color: var(--gold); }
+.nav-group-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.22); padding: 14px 12px 5px; margin: 0;
+}
+.nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
+.nav-badge {
+  margin-left: auto; background: rgba(216,155,15,0.18); color: var(--gold2);
+  border-radius: 99px; padding: 2px 7px; font-size: 10.5px; font-weight: 700;
+}
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 10px 8px; }
+.sidebar-bottom { flex-shrink: 0; padding: 0 10px 14px; }
+.nav-user { gap: 10px; padding: 8px 10px; }
+.nav-user:hover, .nav-user.router-link-exact-active { background: rgba(216,155,15,0.10); color: var(--gold2); }
+.nav-av {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
+}
+.nav-av img { width: 100%; height: 100%; object-fit: cover; }
+.nav-user-info { flex: 1; min-width: 0; }
+.nav-user-name { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-user-role  { display: block; font-size: 10.5px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; backdrop-filter: blur(2px); }
+
+.main-content { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; }
 .topbar { background: #fff; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 50; }
 .topbar-content { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
-.page-title { font-size: 1.1rem; font-weight: 700; color: #100c08; margin: 0; }
+.page-title { font-size: 1.1rem; font-weight: 700; color: #0B1C39; margin: 0; }
 .page-wrapper { padding: 24px; }
 
 .state-box { text-align: center; padding: 60px 20px; }
 .state-icon { font-size: 52px; margin-bottom: 16px; }
-.state-box h3 { font-size: 1.2rem; font-weight: 700; color: #100c08; margin-bottom: 8px; }
+.state-box h3 { font-size: 1.2rem; font-weight: 700; color: #0B1C39; margin-bottom: 8px; }
 .state-box p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
 
 .doc-area { display: flex; flex-direction: column; gap: 20px; }
@@ -1182,10 +1267,10 @@ export default {
 .doc-table td { padding: 14px 16px; border-bottom: 1px solid #f9f9f9; font-size: 0.85rem; color: #333; vertical-align: middle; }
 .doc-row:last-child td { border-bottom: none; }
 .doc-row:hover { background: #fafafa; }
-.doc-name-cell { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #100c08; }
+.doc-name-cell { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #0B1C39; }
 .doc-icon { font-size: 18px; }
 .buyer-cell { display: flex; align-items: center; gap: 8px; }
-.buyer-avatar { width: 28px; height: 28px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #100c08; flex-shrink: 0; }
+.buyer-avatar { width: 28px; height: 28px; border-radius: 50%; background: #D89B0F; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #0B1C39; flex-shrink: 0; }
 .type-badge { padding: 3px 10px; border-radius: 20px; background: #f3f4f6; color: #374151; font-size: 0.75rem; font-weight: 600; }
 .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
 .badge-pending { background: #fef9c3; color: #854d0e; }
@@ -1193,11 +1278,11 @@ export default {
 .date-cell { color: #888; font-size: 0.8rem; }
 .actions-cell { display: flex; gap: 6px; align-items: center; }
 .btn-action { padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
-.btn-view { background: #f3f4f6; color: #374151; } .btn-view:hover { background: #FFD700; color: #100c08; }
+.btn-view { background: #f3f4f6; color: #374151; } .btn-view:hover { background: #D89B0F; color: #0B1C39; }
 .btn-delete { background: #fee2e2; color: #dc2626; } .btn-delete:hover { background: #dc2626; color: #fff; }
 
 .sig-section { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.sig-section-title { font-size: 0.9rem; font-weight: 700; color: #100c08; margin-bottom: 14px; }
+.sig-section-title { font-size: 0.9rem; font-weight: 700; color: #0B1C39; margin-bottom: 14px; }
 .sig-proof-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #f0f0f0; flex-wrap: wrap; gap: 10px; }
 .sig-proof-row:first-of-type { border-top: none; padding-top: 0; }
 .sig-proof-info { font-size: 0.85rem; color: #555; }
@@ -1210,32 +1295,32 @@ export default {
 .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; overflow: hidden; }
 .modal-sm { max-width: 400px; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
-.modal-header h3 { font-size: 1rem; font-weight: 700; color: #100c08; margin: 0; }
+.modal-header h3 { font-size: 1rem; font-weight: 700; color: #0B1C39; margin: 0; }
 .btn-close { background: none; border: none; cursor: pointer; font-size: 18px; color: #999; }
 .modal-body { padding: 20px 24px; max-height: 70vh; overflow-y: auto; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid #f0f0f0; }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.form-group label { font-size: 0.85rem; font-weight: 600; color: #100c08; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: #0B1C39; }
 .required { color: #dc2626; }
 .form-input, .form-select { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; }
-.form-input:focus, .form-select:focus { border-color: #FFD700; }
+.form-input:focus, .form-select:focus { border-color: #D89B0F; }
 .form-error { font-size: 0.78rem; color: #dc2626; }
 .helper-text { padding: 10px 12px; font-size: 0.85rem; color: #888; background: #f8f9fa; border-radius: 8px; }
 .helper-text.warn { background: #fef9c3; color: #854d0e; }
 
 .file-drop { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.file-drop:hover { border-color: #FFD700; background: #fef9e7; }
+.file-drop:hover { border-color: #D89B0F; background: #fef9e7; }
 .drop-icon { font-size: 32px; display: block; margin-bottom: 8px; }
 .file-drop p { margin: 4px 0; font-size: 0.88rem; color: #555; }
 .drop-hint { font-size: 0.75rem !important; color: #999 !important; }
 .file-selected { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.file-name { font-weight: 600; color: #100c08; font-size: 0.88rem; }
+.file-name { font-weight: 600; color: #0B1C39; font-size: 0.88rem; }
 .file-size { font-size: 0.75rem; color: #888; }
 .hidden-input { display: none; }
 
-.btn-primary   { padding: 10px 18px; background: #FFD700; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-primary:hover { background: #DAB600; } .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-primary   { padding: 10px 18px; background: #D89B0F; color: #0B1C39; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+.btn-primary:hover { background: #B07A08; } .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-secondary { padding: 10px 18px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger    { padding: 10px 18px; background: #dc2626; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
 .btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -1249,8 +1334,8 @@ export default {
 /* ── Source toggle (Upload PDF / External Link) ─────── */
 .source-toggle { display: flex; gap: 8px; }
 .src-btn { flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; color: #555; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.src-btn:hover { border-color: #FFD700; }
-.src-btn.active { border-color: #FFD700; background: #fef9e7; color: #100c08; }
+.src-btn:hover { border-color: #D89B0F; }
+.src-btn.active { border-color: #D89B0F; background: #fef9e7; color: #0B1C39; }
 
 /* ── Sign modal ─────────────────────────────────────── */
 .sign-modal-box { max-width: 600px; max-height: 90vh; overflow-y: auto; }
@@ -1263,25 +1348,25 @@ export default {
 .phase-step.active { opacity: 1; }
 .phase-step.done { opacity: 0.7; }
 .phase-num { width: 22px; height: 22px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #666; }
-.phase-step.active .phase-num { background: #FFD700; color: #100c08; }
+.phase-step.active .phase-num { background: #D89B0F; color: #0B1C39; }
 .phase-step.done .phase-num { background: #16a34a; color: #fff; }
 .phase-label { font-size: 11px; font-weight: 600; color: #333; }
 .phase-connector { width: 28px; height: 2px; background: #e5e7eb; margin: 0 6px; }
 
 /* PDF Preview */
 .pdf-loading { text-align: center; padding: 40px 20px; color: #666; }
-.spinner-sm { width: 36px; height: 36px; border: 3px solid #e5e7eb; border-top-color: #FFD700; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+.spinner-sm { width: 36px; height: 36px; border: 3px solid #e5e7eb; border-top-color: #D89B0F; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .pdf-preview-area { }
 .page-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
 .page-nav-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
-.page-nav-btn:hover:not(:disabled) { background: #fef9e7; border-color: #FFD700; }
+.page-nav-btn:hover:not(:disabled) { background: #fef9e7; border-color: #D89B0F; }
 .page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .page-info { font-size: 12px; font-weight: 600; color: #333; }
 .pdf-canvas-container { position: relative; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: crosshair; background: #f5f5f5; }
 .pdf-canvas { display: block; width: 100%; height: auto; }
-.sig-placeholder { position: absolute; border: 2px dashed #FFD700; background: rgba(230,174,13,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: all 0.15s ease; }
-.sig-placeholder-text { font-size: 10px; font-weight: 700; color: #FFD700; text-transform: uppercase; letter-spacing: 0.5px; }
+.sig-placeholder { position: absolute; border: 2px dashed #D89B0F; background: rgba(230,174,13,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: all 0.15s ease; }
+.sig-placeholder-text { font-size: 10px; font-weight: 700; color: #D89B0F; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* Non-PDF notice */
 .non-pdf-notice { text-align: center; padding: 40px 20px; }
@@ -1295,13 +1380,13 @@ export default {
 
 /* Signing progress */
 .signing-progress { text-align: center; padding: 50px 24px; }
-.signing-progress h3 { font-size: 16px; font-weight: 700; color: #100c08; margin: 14px 0 6px; }
+.signing-progress h3 { font-size: 16px; font-weight: 700; color: #0B1C39; margin: 14px 0 6px; }
 .signing-progress p { font-size: 13px; color: #666; margin: 0; }
 .spinner-lg { width: 44px; height: 44px; }
 
 .sign-tabs { display: flex; border-bottom: 2px solid #f0f0f0; padding: 0 24px; }
 .sign-tab  { padding: 12px 18px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; font-size: 0.88rem; font-weight: 600; color: #888; cursor: pointer; transition: all 0.2s; }
-.sign-tab.active { color: #100c08; border-bottom-color: #FFD700; }
+.sign-tab.active { color: #0B1C39; border-bottom-color: #D89B0F; }
 .sign-tab:hover:not(.active) { color: #555; }
 
 .sign-tab-content { padding: 20px 24px; }
@@ -1316,7 +1401,7 @@ export default {
 
 /* Upload photo area */
 .upload-area { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; min-height: 150px; display: flex; align-items: center; justify-content: center; }
-.upload-area:hover { border-color: #FFD700; background: #fef9e7; }
+.upload-area:hover { border-color: #D89B0F; background: #fef9e7; }
 .upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .upload-icon { font-size: 36px; }
 .upload-area p { margin: 2px 0; font-size: 0.88rem; color: #555; }
@@ -1338,7 +1423,7 @@ export default {
 /* ── Signature proof section ─────────────────────────── */
 .sig-proof-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
 .sig-proof-card:last-child { margin-bottom: 0; }
-.sig-proof-docname { font-size: 0.88rem; font-weight: 700; color: #100c08; margin-bottom: 12px; }
+.sig-proof-docname { font-size: 0.88rem; font-weight: 700; color: #0B1C39; margin-bottom: 12px; }
 .sig-proof-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .sig-col { display: flex; flex-direction: column; gap: 8px; }
 .sig-col-label { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
@@ -1346,8 +1431,8 @@ export default {
 .sig-box-empty { background: #f9f9f9; color: #aaa; font-size: 0.82rem; flex-direction: column; gap: 8px; }
 .sig-box .sig-img { height: 60px; max-width: 100%; object-fit: contain; }
 .sig-badge { font-size: 0.72rem; color: #888; font-style: italic; text-align: center; }
-.btn-sign-inline { padding: 6px 14px; background: #FFD700; color: #100c08; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-.btn-sign-inline:hover { background: #DAB600; }
+.btn-sign-inline { padding: 6px 14px; background: #D89B0F; color: #0B1C39; border: none; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.btn-sign-inline:hover { background: #B07A08; }
 
 .toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 .toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
@@ -1358,19 +1443,19 @@ export default {
 /* My Uploads Section */
 .my-uploads-section { margin: 0 28px 28px; }
 .uploads-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.uploads-title { font-size: 18px; font-weight: 700; color: #100c08; margin: 0; }
+.uploads-title { font-size: 18px; font-weight: 700; color: #0B1C39; margin: 0; }
 .uploads-count { font-size: 13px; color: #999; background: #f5f5f5; padding: 4px 12px; border-radius: 20px; }
-.personal-upload-zone { border: 2px dashed #FFD700; border-radius: 14px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffdf5; margin-bottom: 16px; }
-.personal-upload-zone:hover, .personal-upload-zone.drag-active { background: #fdf5d0; border-color: #DAB600; }
+.personal-upload-zone { border: 2px dashed #D89B0F; border-radius: 14px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fffdf5; margin-bottom: 16px; }
+.personal-upload-zone:hover, .personal-upload-zone.drag-active { background: #fdf5d0; border-color: #B07A08; }
 .upload-zone-icon { font-size: 40px; display: block; margin-bottom: 8px; }
-.upload-zone-inner h4 { font-size: 15px; font-weight: 700; color: #100c08; margin: 0 0 4px; }
+.upload-zone-inner h4 { font-size: 15px; font-weight: 700; color: #0B1C39; margin: 0 0 4px; }
 .upload-zone-inner p { font-size: 12px; color: #888; margin: 0; }
 .my-uploads-list { display: flex; flex-direction: column; gap: 10px; }
 .upload-card { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #f0f0f0; border-radius: 12px; padding: 14px 18px; transition: box-shadow 0.2s; }
 .upload-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 .upload-card-icon { font-size: 28px; flex-shrink: 0; }
 .upload-card-info { flex: 1; min-width: 0; }
-.upload-card-name { font-size: 14px; font-weight: 600; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-card-name { font-size: 14px; font-weight: 600; color: #0B1C39; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .upload-card-date { font-size: 12px; color: #999; margin: 2px 0 0; }
 .upload-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .btn-edit-doc { background: #fff3e0; color: #e65100; }
@@ -1378,8 +1463,8 @@ export default {
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .sidebar { position: fixed; left: -280px; width: 280px; z-index: 1001; transition: left 0.3s ease; }
-  .main-content { margin-left: 0; }
+  .sidebar { position: fixed; left: calc(-1 * var(--sw)); width: var(--sw); z-index: 1001; transition: left 0.3s ease; }
+  .main-content { margin-left: 0 !important; }
   .topbar-content { flex-direction: column; align-items: flex-start; height: auto; padding: 12px 16px; gap: 10px; }
   .topbar-right { flex-wrap: wrap; width: 100%; gap: 8px; }
   .filter-tabs { flex-wrap: wrap; gap: 4px; }

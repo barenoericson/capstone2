@@ -40,10 +40,13 @@ class AdminController extends Controller
                 $query->where('status', $request->status);
             }
 
-            // Search by name or email
+            // Search by name or email (closure keeps role/status filters scoped correctly)
             if ($request->has('search') && $request->search) {
-                $query->where('name', 'like', "%{$request->search}%")
-                      ->orWhere('email', 'like', "%{$request->search}%");
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
             }
 
             $users = $query->paginate($request->get('per_page', 15));

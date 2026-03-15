@@ -96,6 +96,17 @@ class AgentApplicationController extends Controller
             $base64Image   = base64_encode($imageContents);
             $mimeType      = $request->file('prc_license_photo')->getMimeType();
 
+            // Parse selfie data (base64 data URL → raw base64, never stored to disk)
+            $selfieBase64 = null;
+            $selfieType   = 'image/jpeg';
+            if ($request->filled('selfie_data')) {
+                $dataUrl = $request->input('selfie_data');
+                if (preg_match('/^data:(image\/[a-zA-Z]+);base64,(.+)$/', $dataUrl, $m)) {
+                    $selfieType   = $m[1];
+                    $selfieBase64 = $m[2];
+                }
+            }
+
             // Call Gemini AI verification
             $gemini = new GeminiService();
             $verificationResult = $gemini->verifyPrcLicense($base64Image, $mimeType, [
@@ -105,7 +116,7 @@ class AgentApplicationController extends Controller
                 'license_number'  => $request->license_number,
                 'prc_id'          => $request->prc_id,
                 'expiry_date'     => $request->license_expiry_date,
-            ]);
+            ], $selfieBase64, $selfieType);
 
             $aiDecision = $verificationResult['decision']; // 'approved', 'unclear', or 'rejected'
 
@@ -132,7 +143,22 @@ class AgentApplicationController extends Controller
                     'company_address'        => $request->company_address,
                     'accreditation'          => $request->accreditation,
                     'bio'                    => $request->bio,
-                    'ai_verification_result' => json_encode($verificationResult['extracted']),
+                    'ai_verification_result' => json_encode([
+                        'extracted'               => $verificationResult['extracted'] ?? [],
+                        'reasoning'               => $verificationResult['reasoning'] ?? '',
+                        'confidence'              => $verificationResult['confidence'] ?? null,
+                        'authenticity_score'      => $verificationResult['authenticity_score'] ?? null,
+                        'security_features_found' => $verificationResult['security_features_found'] ?? [],
+                        'security_features_missing'=> $verificationResult['security_features_missing'] ?? [],
+                        'red_flags_detected'      => $verificationResult['red_flags_detected'] ?? [],
+                        'verification_method'     => $verificationResult['verification_method'] ?? 'single_ai',
+                        'deepseek_decision'       => $verificationResult['deepseek_decision'] ?? null,
+                        'deepseek_concerns'       => $verificationResult['deepseek_concerns'] ?? [],
+                        'deepseek_reasoning'      => $verificationResult['deepseek_reasoning'] ?? null,
+                        'face_match'              => $verificationResult['face_match'] ?? null,
+                        'face_confidence'         => $verificationResult['face_confidence'] ?? null,
+                        'face_reasoning'          => $verificationResult['face_reasoning'] ?? null,
+                    ]),
                     'ai_decision'            => $aiDecision,
                     'status'                 => $status,
                     'applied_at'             => now(),
@@ -169,6 +195,9 @@ class AgentApplicationController extends Controller
             $verificationMethod = $verificationResult['verification_method'] ?? 'single_ai';
             $authenticityData = [
                 'authenticity_score'       => $verificationResult['authenticity_score'] ?? null,
+                'face_match'               => $verificationResult['face_match'] ?? null,
+                'face_confidence'          => $verificationResult['face_confidence'] ?? null,
+                'face_reasoning'           => $verificationResult['face_reasoning'] ?? null,
                 'security_features_found'  => $verificationResult['security_features_found'] ?? [],
                 'security_features_missing'=> $verificationResult['security_features_missing'] ?? [],
                 'red_flags_detected'       => $verificationResult['red_flags_detected'] ?? [],

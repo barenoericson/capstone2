@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wireframe Option 1 — Conservative Redesign: RealtyLinkPH Landing</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Comic Sans MS', 'Chalkboard SE', cursive; background: #fff; color: #333; font-size: 14px; }
+
+  /* Annotation system */
+  .wf-wrap { position: relative; display: inline-block; width: 100%; }
+  .wf-block { position: relative; }
+  .badge-reuse { position: absolute; top: -10px; right: 4px; background: #4CAF50; color: #fff; font-size: 10px; font-family: Arial, sans-serif; font-weight: bold; padding: 2px 6px; border-radius: 3px; z-index: 20; white-space: nowrap; }
+  .badge-new { position: absolute; top: -10px; right: 4px; background: #FF9800; color: #fff; font-size: 10px; font-family: Arial, sans-serif; font-weight: bold; padding: 2px 6px; border-radius: 3px; z-index: 20; white-space: nowrap; }
+
+  /* Layout */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header label */
+  .wf-header-label { background: #333; color: #fff; text-align: center; padding: 10px; font-size: 13px; font-family: Arial, sans-serif; font-weight: bold; }
+  .wf-subheader { background: #555; color: #fff; text-align: center; padding: 6px; font-size: 11px; font-family: Arial, sans-serif; margin-bottom: 0; }
+
+  /* ── NAVBAR ── */
+  .navbar { border: 2px solid #999; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: #f5f5f5; }
+  .nav-brand { font-size: 20px; font-weight: bold; letter-spacing: -0.5px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-link { background: none; border: none; font-family: inherit; font-size: 13px; color: #555; cursor: pointer; text-decoration: underline; }
+  .nav-btn-outline { border: 2px solid #666; padding: 7px 18px; border-radius: 5px; background: none; font-family: inherit; cursor: pointer; font-size: 13px; }
+  .nav-btn-filled { border: 2px solid #333; padding: 7px 18px; border-radius: 5px; background: #333; color: #fff; font-family: inherit; cursor: pointer; font-size: 13px; }
+
+  /* ── HERO SPLIT ── */
+  .hero-split { border: 2px solid #999; display: grid; grid-template-columns: 1fr 1fr; min-height: 500px; margin-top: -2px; }
+  .hero-left { background: #eee; padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; gap: 20px; border-right: 2px dashed #ccc; }
+  .hero-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #666; background: #ddd; display: inline-block; padding: 4px 10px; border-radius: 3px; }
+  .hero-h1 { font-size: 36px; font-weight: bold; line-height: 1.2; }
+  .hero-h1 span { text-decoration: underline; }
+  .hero-sub { font-size: 14px; color: #555; line-height: 1.6; max-width: 380px; }
+  .hero-cta-row { display: flex; gap: 12px; margin-top: 8px; }
+  .btn-primary-wf { background: #333; color: #fff; border: 2px solid #333; padding: 12px 28px; border-radius: 6px; font-family: inherit; font-size: 14px; cursor: pointer; font-weight: bold; }
+  .btn-ghost-wf { background: none; color: #333; border: 2px solid #999; padding: 12px 28px; border-radius: 6px; font-family: inherit; font-size: 14px; cursor: pointer; }
+  .hero-trust { display: flex; gap: 20px; margin-top: 4px; }
+  .trust-item { font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; }
+  .trust-check { width: 14px; height: 14px; border: 1.5px solid #666; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+  .hero-right { background: #ddd; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+  .hero-map-placeholder { width: 90%; height: 300px; background: #ccc; border: 2px dashed #aaa; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+  .hero-map-label { font-size: 13px; color: #666; }
+  .hero-stat-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .stat-chip { background: #fff; border: 2px solid #bbb; padding: 8px 14px; border-radius: 20px; font-size: 12px; text-align: center; }
+  .stat-chip strong { display: block; font-size: 18px; }
+
+  /* ── SEARCH BAR ── */
+  .search-section { border: 2px solid #999; margin-top: -2px; background: #f9f9f9; padding: 20px 24px; }
+  .search-label { font-size: 12px; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .search-row { display: flex; gap: 0; border: 2px solid #999; border-radius: 6px; overflow: hidden; background: #fff; }
+  .search-field { flex: 1; padding: 12px 16px; border-right: 1px solid #ccc; }
+  .search-field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
+  .search-field input, .search-field select { width: 100%; border: none; outline: none; font-family: inherit; font-size: 13px; background: transparent; }
+  .search-submit { background: #333; color: #fff; border: none; padding: 0 28px; font-family: inherit; font-size: 14px; cursor: pointer; font-weight: bold; }
+
+  /* ── FEATURES ── */
+  .features { padding: 48px 0; border-bottom: 2px solid #eee; }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
+  .feat-card { border: 2px solid #ccc; border-radius: 8px; padding: 24px; background: #fafafa; position: relative; }
+  .feat-card.highlight { border: 3px solid #999; background: #eee; }
+  .feat-icon { width: 44px; height: 44px; background: #ddd; border: 2px solid #aaa; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 18px; }
+  .feat-card h3 { font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+  .feat-card p { font-size: 12px; color: #666; line-height: 1.5; }
+
+  /* ── PROPERTIES ── */
+  .section-head { margin-bottom: 32px; }
+  .section-badge { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #666; background: #eee; padding: 4px 12px; border-radius: 20px; border: 1px solid #ccc; display: inline-block; margin-bottom: 10px; }
+  .section-title { font-size: 26px; font-weight: bold; }
+  .section-desc { font-size: 13px; color: #666; margin-top: 8px; }
+  .prop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 12px; }
+  .prop-card-wf { border: 2px solid #ccc; border-radius: 8px; overflow: hidden; background: #fff; position: relative; }
+  .prop-img { width: 100%; height: 160px; background: #ddd; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #ccc; position: relative; }
+  .prop-img-label { font-size: 12px; color: #888; }
+  .prop-price-badge { position: absolute; bottom: 8px; left: 8px; background: #333; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
+  .prop-body-wf { padding: 14px; }
+  .prop-type { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; background: #eee; padding: 2px 8px; border-radius: 3px; margin-bottom: 6px; display: inline-block; }
+  .prop-title-wf { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+  .prop-loc { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .prop-specs-wf { display: flex; gap: 8px; }
+  .spec { font-size: 11px; background: #f0f0f0; padding: 3px 8px; border-radius: 3px; border: 1px solid #ddd; }
+  .prop-save-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; background: #fff; border: 2px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+  /* ── STEPS ── */
+  .steps-section { padding: 48px 0; background: #f9f9f9; border-top: 2px solid #eee; border-bottom: 2px solid #eee; }
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; position: relative; }
+  .step-card { border: 2px solid #ccc; border-radius: 8px; padding: 28px 24px; background: #fff; text-align: center; position: relative; }
+  .step-num { font-size: 40px; font-weight: bold; color: #ddd; position: absolute; top: 14px; right: 18px; line-height: 1; }
+  .step-icon { width: 52px; height: 52px; background: #eee; border: 2px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 22px; }
+  .step-card h3 { font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+  .step-card p { font-size: 12px; color: #666; line-height: 1.5; }
+  .step-connector { position: absolute; top: 44px; left: calc(33% + 12px); width: calc(33% - 24px); height: 2px; background: repeating-linear-gradient(90deg, #ccc 0, #ccc 6px, transparent 6px, transparent 12px); }
+  .step-connector2 { left: calc(66% + 12px); }
+
+  /* ── CTA ── */
+  .cta-section { border-top: 2px solid #eee; border-bottom: 2px solid #eee; padding: 56px 0; background: #eee; text-align: center; }
+  .cta-section h2 { font-size: 28px; font-weight: bold; margin-bottom: 12px; }
+  .cta-section p { font-size: 14px; color: #555; margin-bottom: 28px; }
+  .cta-btns { display: flex; gap: 14px; justify-content: center; }
+
+  /* ── FOOTER ── */
+  .footer { border-top: 2px solid #ccc; padding: 28px 24px; display: flex; align-items: center; justify-content: space-between; background: #f5f5f5; }
+  .footer-brand { font-size: 18px; font-weight: bold; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-size: 12px; color: #666; text-decoration: underline; }
+  .footer-copy { font-size: 11px; color: #999; }
+
+  section { padding: 48px 0; }
+  .section-divider { margin: 0; border: none; border-top: 2px solid #eee; }
+</style>
+</head>
+<body>
+
+<div class="wf-header-label">
+  WIREFRAME — Option 1: Conservative Redesign (Split-Hero + Unified Tokens)
+</div>
+<div class="wf-subheader">
+  Key changes: Unified color system · Split-hero with map preview · Persistent search bar · Reuses existing Landing.vue structure · Fixes brand consistency
+</div>
+
+<!-- ── NAVBAR ── -->
+<!-- REUSABLE: Nav structure from Landing.vue -->
+<div class="wf-block" style="position:relative; margin-top:4px;">
+  <span class="badge-reuse">[REUSE] NavBar (Landing.vue refactored)</span>
+  <nav class="navbar container" style="max-width:100%;">
+    <div class="nav-brand">RealtyLink<span style="text-decoration:underline;">PH</span></div>
+    <div class="nav-links">
+      <button class="nav-link">Home</button>
+      <button class="nav-link">Properties</button>
+      <button class="nav-link">Agents</button>
+      <button class="nav-link">About</button>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="nav-btn-outline">Sign In</button>
+      <button class="nav-btn-filled">Get Started</button>
+    </div>
+  </nav>
+</div>
+
+<!-- ── HERO SPLIT ── -->
+<!-- NEW COMPONENT: HeroSplit (replaces full-bleed hero) -->
+<div class="wf-block" style="position:relative;">
+  <span class="badge-new">[NEW] HeroSplit</span>
+  <div class="hero-split">
+    <div class="hero-left">
+      <div class="hero-eyebrow">🇵🇭 Philippines #1 Real Estate Platform</div>
+      <h1 class="hero-h1">Find Your Perfect Home in <span>the Philippines</span></h1>
+      <p class="hero-sub">Browse verified properties from trusted agents. Schedule viewings, sign documents — all in one place.</p>
+      <div class="hero-cta-row">
+        <button class="btn-primary-wf">Browse Properties</button>
+        <button class="btn-ghost-wf">Learn How It Works →</button>
+      </div>
+      <div class="hero-trust">
+        <span class="trust-item"><span class="trust-check">✓</span> PRC-verified agents</span>
+        <span class="trust-item"><span class="trust-check">✓</span> Flood-free zones tagged</span>
+        <span class="trust-item"><span class="trust-check">✓</span> Free to use</span>
+      </div>
+    </div>
+    <div class="hero-right">
+      <!-- NEW COMPONENT: Map/property preview panel -->
+      <div class="wf-block" style="position:relative; width:90%;">
+        <span class="badge-new">[NEW] MapPreviewPanel</span>
+        <div class="hero-map-placeholder">
+          <div style="font-size:32px;">🗺️</div>
+          <div class="hero-map-label">Interactive Property Map</div>
+          <div style="font-size:11px; color:#888;">Click pins to preview listings</div>
+        </div>
+      </div>
+      <div class="hero-stat-chips">
+        <div class="stat-chip"><strong>2,400+</strong>Properties</div>
+        <div class="stat-chip"><strong>180+</strong>Agents</div>
+        <div class="stat-chip"><strong>5,000+</strong>Buyers</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SEARCH BAR ── -->
+<!-- REUSABLE: SearchBar (Landing.vue search-bar refactored into component) -->
+<div class="wf-block" style="position:relative;">
+  <span class="badge-reuse">[REUSE] SearchBar (Landing.vue extracted)</span>
+  <div class="search-section">
+    <div class="container">
+      <div class="search-label">Search Properties</div>
+      <div class="search-row">
+        <div class="search-field">
+          <label>Location</label>
+          <input placeholder="e.g. Cebu City, Makati…" />
+        </div>
+        <div class="search-field">
+          <label>Property Type</label>
+          <select><option>All Types</option></select>
+        </div>
+        <div class="search-field">
+          <label>Price Range</label>
+          <select><option>Any Price</option></select>
+        </div>
+        <div class="search-field">
+          <label>Bedrooms</label>
+          <select><option>Any</option></select>
+        </div>
+        <button class="search-submit">🔍 Search</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FEATURE CARDS ── -->
+<section>
+  <div class="container">
+    <!-- REUSABLE: FeatureCard (Landing.vue feat-card) -->
+    <div class="wf-block" style="position:relative;">
+      <span class="badge-reuse">[REUSE] FeatureCards (Landing.vue)</span>
+      <div class="features-grid">
+        <div class="feat-card">
+          <div class="feat-icon">🔍</div>
+          <h3>Search Properties</h3>
+          <p>Browse verified listings with powerful filters for location, type, and price range.</p>
+        </div>
+        <div class="feat-card highlight">
+          <div class="feat-icon">👥</div>
+          <h3>Connect with Agents</h3>
+          <p>Message verified real estate agents directly, view their profiles, and get expert guidance.</p>
+          <div style="margin-top:12px; font-size:11px; padding:6px 10px; border:1px dashed #999; border-radius:4px; color:#666;">⭐ Most popular</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">📄</div>
+          <h3>Digital Documents</h3>
+          <p>Sign documents digitally, schedule viewings with calendar sync — all in one platform.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED PROPERTIES ── -->
+<section style="background:#f9f9f9; padding:48px 0;">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-badge">Featured Listings</span>
+      <div class="section-title">Explore Our Latest Properties</div>
+      <div class="section-desc">Verified listings from trusted agents across the Philippines.</div>
+    </div>
+
+    <!-- REUSABLE: PropertyCard grid (Landing.vue prop-grid) -->
+    <div class="wf-block" style="position:relative;">
+      <span class="badge-reuse">[REUSE] PropertyCard (Landing.vue prop-card extracted)</span>
+      <div class="prop-grid">
+        <!-- Card 1 -->
+        <div class="prop-card-wf">
+          <div class="prop-img">
+            <span class="prop-img-label">[Property Photo 380×200]</span>
+            <div class="prop-price-badge">₱4.5M</div>
+            <div class="prop-save-btn">♡</div>
+          </div>
+          <div class="prop-body-wf">
+            <span class="prop-type">House & Lot</span>
+            <div class="prop-title-wf">Modern Family Home in Cebu</div>
+            <div class="prop-loc">📍 Mandaue City, Cebu</div>
+            <div class="prop-specs-wf">
+              <span class="spec">🛏 3 bd</span>
+              <span class="spec">🛁 2 ba</span>
+              <span class="spec">📐 150m²</span>
+            </div>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="prop-card-wf">
+          <div class="prop-img" style="background:#c8c8c8;">
+            <span class="prop-img-label">[Property Photo 380×200]</span>
+            <div class="prop-price-badge">₱8.2M</div>
+            <div class="prop-save-btn">♡</div>
+          </div>
+          <div class="prop-body-wf">
+            <span class="prop-type">Condominium</span>
+            <div class="prop-title-wf">BGC High-Rise Condo Unit</div>
+            <div class="prop-loc">📍 Taguig City, Metro Manila</div>
+            <div class="prop-specs-wf">
+              <span class="spec">🛏 2 bd</span>
+              <span class="spec">🛁 2 ba</span>
+              <span class="spec">📐 78m²</span>
+            </div>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="prop-card-wf">
+          <div class="prop-img" style="background:#d4d4d4;">
+            <span class="prop-img-label">[Property Photo 380×200]</span>
+            <div class="prop-price-badge">₱3.1M</div>
+            <div class="prop-save-btn">♡</div>
+          </div>
+          <div class="prop-body-wf">
+            <span class="prop-type">Apartment</span>
+            <div class="prop-title-wf">Studio Apartment near Ateneo</div>
+            <div class="prop-loc">📍 Quezon City, Metro Manila</div>
+            <div class="prop-specs-wf">
+              <span class="spec">🛏 1 bd</span>
+              <span class="spec">🛁 1 ba</span>
+              <span class="spec">📐 32m²</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:28px;">
+      <button class="btn-ghost-wf">See All Properties →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="steps-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-badge">How It Works</span>
+      <div class="section-title">Your Journey to Homeownership</div>
+    </div>
+    <!-- REUSABLE: StepsGrid (Landing.vue steps-grid) -->
+    <div class="wf-block" style="position:relative;">
+      <span class="badge-reuse">[REUSE] StepsGrid (Landing.vue)</span>
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num">01</span>
+          <div class="step-icon">🔍</div>
+          <h3>Search Properties</h3>
+          <p>Browse thousands of verified listings with powerful filters.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num">02</span>
+          <div class="step-icon">💬</div>
+          <h3>Connect with Agents</h3>
+          <p>Message verified agents directly and get expert guidance.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num">03</span>
+          <div class="step-icon">📅</div>
+          <h3>Schedule & Sign</h3>
+          <p>Book property viewings and sign documents digitally.</p>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-connector step-connector2"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta-section">
+  <div class="container">
+    <!-- REUSABLE: CTABanner (Landing.vue cta-section) -->
+    <div class="wf-block" style="position:relative;">
+      <span class="badge-reuse">[REUSE] CTABanner</span>
+      <h2>Ready to Find Your Dream Home?</h2>
+      <p>Create a free account to save properties, schedule viewings, and connect with agents.</p>
+      <div class="cta-btns">
+        <button class="btn-primary-wf">Get Started Free</button>
+        <button class="btn-ghost-wf">Browse as Guest →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<!-- REUSABLE: Footer (Landing.vue footer) -->
+<div class="wf-block" style="position:relative;">
+  <span class="badge-reuse">[REUSE] Footer (Landing.vue)</span>
+  <div class="footer">
+    <div class="footer-brand">RealtyLink<span>PH</span></div>
+    <div class="footer-links">
+      <a href="#">Terms of Service</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Contact Us</a>
+      <a href="#">Help Center</a>
+    </div>
+    <div class="footer-copy">© 2026 RealtyLinkPH. All rights reserved.</div>
+  </div>
+</div>
+
+<!-- Design Notes -->
+<div style="background:#f0f0f0; border-top:2px solid #ccc; padding:20px 24px; font-family:Arial,sans-serif; font-size:12px; color:#555; line-height:1.7;">
+  <strong>Option 1 — Conservative Redesign Notes:</strong><br/>
+  • Replaces full-bleed dark hero with a <em>split-hero</em> showing an interactive property map on the right (more scannable, immediately shows the product's value)<br/>
+  • Search bar moved below the hero fold as a persistent sticky element (users understand this pattern from Airbnb/Zillow)<br/>
+  • All existing Landing.vue components extracted into reusable Vue SFCs (PropertyCard, SearchBar, CTABanner, etc.)<br/>
+  • Fixes: unified teal brand color replaces the #FFD700 split, single font system, no local CSS vars<br/>
+  • Adds "Browse as Guest" CTA to reduce signup friction
+</div>
+</body>
+</html>

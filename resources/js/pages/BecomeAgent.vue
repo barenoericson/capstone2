@@ -165,17 +165,74 @@
 
           <div class="step-footer">
             <button class="btn-secondary-lg" @click="currentStep = 1">← Back</button>
-            <button class="btn-primary-lg" @click="submitApplication" :disabled="!prcLicenseFile">
-              Submit for Verification →
+            <button class="btn-primary-lg" @click="goToStep3" :disabled="!prcLicenseFile">
+              Next: Face Scan →
             </button>
           </div>
         </div>
       </div>
 
       <!-- ════════════════════════════════════════════════ -->
-      <!-- STEP 3: AI Verification Loading -->
+      <!-- STEP 3: Face Scan -->
       <!-- ════════════════════════════════════════════════ -->
       <div v-else-if="currentStep === 3" class="step-content">
+        <div class="step-card">
+          <div class="card-header">
+            <h2>Face Verification</h2>
+            <p>Take a selfie so RealtyLinkPH Buddy can confirm your face matches the photo on your PRC license.</p>
+          </div>
+
+          <div class="face-scan-section">
+            <div class="face-instructions">
+              <div class="instr-item"><span class="instr-icon">📸</span> Look directly at the camera</div>
+              <div class="instr-item"><span class="instr-icon">💡</span> Ensure good lighting on your face</div>
+              <div class="instr-item"><span class="instr-icon">🚫</span> Remove glasses or anything covering your face</div>
+              <div class="instr-item"><span class="instr-icon">✅</span> Match your appearance in the PRC license photo</div>
+            </div>
+
+            <div v-if="cameraError" class="camera-error">
+              <p>{{ cameraError }}</p>
+              <button class="btn-secondary-lg" @click="startCamera">Try Again</button>
+            </div>
+
+            <div v-else class="camera-container">
+              <div class="camera-frame">
+                <video v-show="!selfieDataUrl" ref="videoEl" class="camera-video" autoplay muted playsinline></video>
+                <img v-if="selfieDataUrl" :src="selfieDataUrl" class="selfie-preview" alt="Your selfie" />
+                <canvas ref="canvasEl" style="display:none;"></canvas>
+                <div v-if="!selfieDataUrl" class="camera-overlay">
+                  <div class="face-guide-circle"></div>
+                </div>
+              </div>
+
+              <div class="camera-actions">
+                <button v-if="!selfieDataUrl" class="btn-capture" @click="capturePhoto">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20.94 11A8.994 8.994 0 0 0 12 3a8.994 8.994 0 0 0-8.94 8m8.94 10a8.994 8.994 0 0 0 8.94-9 8.994 8.994 0 0 0-8.94-9"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 4"/></svg>
+                  Take Photo
+                </button>
+                <button v-if="selfieDataUrl" class="btn-secondary-lg" @click="retakePhoto">↩ Retake Photo</button>
+              </div>
+            </div>
+
+            <div v-if="selfieDataUrl" class="selfie-ready">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Selfie captured — ready to submit
+            </div>
+          </div>
+
+          <div class="step-footer">
+            <button class="btn-secondary-lg" @click="backToStep2">← Back</button>
+            <button class="btn-primary-lg" :disabled="!selfieDataUrl" @click="submitApplication">
+              Submit &amp; Verify →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════ -->
+      <!-- STEP 4: AI Verification Loading -->
+      <!-- ════════════════════════════════════════════════ -->
+      <div v-else-if="currentStep === 4" class="step-content">
         <div class="step-card verify-card">
           <div class="ai-buddy">
             <div class="buddy-avatar">
@@ -210,9 +267,9 @@
       </div>
 
       <!-- ════════════════════════════════════════════════ -->
-      <!-- STEP 4: Result -->
+      <!-- STEP 5: Result -->
       <!-- ════════════════════════════════════════════════ -->
-      <div v-else-if="currentStep === 4" class="step-content">
+      <div v-else-if="currentStep === 5" class="step-content">
         <!-- APPROVED -->
         <div v-if="verificationResult && verificationResult.decision === 'approved'" class="result-card result-success">
           <div class="result-icon">🎉</div>
@@ -388,8 +445,9 @@ export default {
       steps: [
         { num: 1, label: 'Information' },
         { num: 2, label: 'Upload PRC' },
-        { num: 3, label: 'AI Verification' },
-        { num: 4, label: 'Result' },
+        { num: 3, label: 'Face Scan' },
+        { num: 4, label: 'AI Verify' },
+        { num: 5, label: 'Result' },
       ],
 
       form: {
@@ -405,6 +463,9 @@ export default {
 
       prcLicenseFile: null,
       prcPreviewUrl: null,
+      selfieDataUrl: null,
+      cameraStream: null,
+      cameraError: null,
       errors: {},
 
       // Verification state
@@ -514,7 +575,7 @@ export default {
         return;
       }
 
-      this.currentStep = 3;
+      this.currentStep = 4;
       this.isVerifying = true;
       this.verifyPhase = 1;
       this.verifyingText = 'Scanning your PRC license...';
@@ -523,9 +584,9 @@ export default {
       const phaseTimer = setInterval(() => {
         if (this.verifyPhase < 4) {
           this.verifyPhase++;
-          if (this.verifyPhase === 2) this.verifyingText = 'Gemini AI is analyzing document security features...';
-          if (this.verifyPhase === 3) this.verifyingText = 'DeepSeek AI is cross-verifying the data...';
-          if (this.verifyPhase === 4) this.verifyingText = 'Cross-referencing both AI results...';
+          if (this.verifyPhase === 2) this.verifyingText = 'Comparing facial features with PRC license photo...';
+          if (this.verifyPhase === 3) this.verifyingText = 'Gemini AI is analyzing document security features...';
+          if (this.verifyPhase === 4) this.verifyingText = 'DeepSeek AI is cross-verifying the data...';
         }
       }, 3500);
 
@@ -535,6 +596,7 @@ export default {
           if (this.form[key]) fd.append(key, this.form[key]);
         });
         fd.append('prc_license_photo', this.prcLicenseFile);
+        if (this.selfieDataUrl) fd.append('selfie_data', this.selfieDataUrl);
 
         const res = await fetch(`${this.apiUrl}/api/user/become-agent`, {
           method: 'POST',
@@ -551,7 +613,7 @@ export default {
         // Brief pause so user sees all checks complete
         await new Promise(r => setTimeout(r, 800));
 
-        this.currentStep = 4;
+        this.currentStep = 5;
 
         if (data.success) {
           this.verificationResult = {
@@ -587,7 +649,7 @@ export default {
       } catch (e) {
         clearInterval(phaseTimer);
         this.isVerifying = false;
-        this.currentStep = 4;
+        this.currentStep = 5;
         this.verificationResult = {
           decision: 'unclear',
           approved: false,
@@ -596,6 +658,59 @@ export default {
           document_type: null,
         };
       }
+    },
+
+    goToStep3() {
+      if (!this.prcLicenseFile) {
+        this.errors.prc_license_photo = 'Please upload your PRC license photo.';
+        return;
+      }
+      this.currentStep = 3;
+      this.$nextTick(() => this.startCamera());
+    },
+
+    backToStep2() {
+      this.stopCamera();
+      this.selfieDataUrl = null;
+      this.currentStep = 2;
+    },
+
+    async startCamera() {
+      this.cameraError = null;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+        });
+        this.cameraStream = stream;
+        this.$nextTick(() => {
+          if (this.$refs.videoEl) this.$refs.videoEl.srcObject = stream;
+        });
+      } catch {
+        this.cameraError = 'Camera access was denied. Please allow camera access in your browser settings and try again.';
+      }
+    },
+
+    stopCamera() {
+      if (this.cameraStream) {
+        this.cameraStream.getTracks().forEach(t => t.stop());
+        this.cameraStream = null;
+      }
+    },
+
+    capturePhoto() {
+      const video = this.$refs.videoEl;
+      const canvas = this.$refs.canvasEl;
+      if (!video || !canvas) return;
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      this.selfieDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      this.stopCamera();
+    },
+
+    retakePhoto() {
+      this.selfieDataUrl = null;
+      this.$nextTick(() => this.startCamera());
     },
 
     formatReapplyTime(isoString) {
@@ -611,21 +726,35 @@ export default {
       this.$router.push('/dashboard');
     },
   },
+
+  beforeUnmount() {
+    this.stopCamera();
+  },
 };
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 .become-agent-page {
+  --navy:  #0B1C39;
+  --navy2: #102445;
+  --gold:  #D89B0F;
+  --gold2: #E5B332;
+  --gold3: #B07A08;
+  --gold-bg: rgba(216,155,15,0.06);
+  --gold-border: rgba(216,155,15,0.30);
   min-height: 100vh;
-  background: linear-gradient(135deg, #f9f8f5 0%, #f5f0e1 100%);
+  background: #F2F0EB;
   font-family: 'Inter', sans-serif;
 }
 
 /* ── Header ───────────────────────────────────────────── */
 .page-header {
-  background: #fff;
-  border-bottom: 1px solid #e8ecf0;
+  background: var(--navy);
+  border-bottom: none;
   padding: 16px 32px;
+  box-shadow: 0 2px 12px rgba(11,28,57,0.25);
 }
 .header-content {
   max-width: 800px;
@@ -633,23 +762,30 @@ export default {
 }
 .back-link {
   font-size: 13px;
-  color: #666;
+  color: rgba(255,255,255,0.55);
   text-decoration: none;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.18s;
 }
-.back-link:hover { color: #333; }
+.back-link:hover { color: rgba(255,255,255,0.85); }
 .header-title {
+  font-family: 'Outfit', sans-serif;
   font-size: 22px;
   font-weight: 800;
   margin: 8px 0 0;
+  color: #fff;
+  letter-spacing: -0.3px;
 }
-.logo-realty { color: #100c08; }
-.logo-ph { color: #FFD700; }
+.logo-realty { color: #fff; }
+.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .header-sub {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #666;
+  color: rgba(255,255,255,0.45);
   margin-top: 2px;
 }
 
@@ -678,8 +814,8 @@ export default {
   transition: all 0.3s;
 }
 .step.active {
-  border-color: #FFD700;
-  background: #fef9e7;
+  border-color: #D89B0F;
+  background: var(--gold-bg);
 }
 .step.done {
   border-color: #22c55e;
@@ -698,10 +834,10 @@ export default {
   color: #666;
   flex-shrink: 0;
 }
-.step.active .step-circle { background: #FFD700; color: #100c08; }
+.step.active .step-circle { background: var(--gold); color: var(--navy); }
 .step.done .step-circle { background: #22c55e; color: #fff; }
 .step-label { font-size: 13px; font-weight: 600; color: #666; }
-.step.active .step-label { color: #b8860b; }
+.step.active .step-label { color: #B07A08; }
 .step.done .step-label { color: #22c55e; }
 
 /* ── Step Card ────────────────────────────────────────── */
@@ -715,7 +851,7 @@ export default {
   padding: 28px 32px 20px;
   border-bottom: 1px solid #f0f0f0;
 }
-.card-header h2 { font-size: 20px; font-weight: 800; color: #100c08; margin: 0 0 6px; }
+.card-header h2 { font-size: 20px; font-weight: 800; color: var(--navy); font-family: Outfit, sans-serif; margin: 0 0 6px; }
 .card-header p { font-size: 14px; color: #666; margin: 0; }
 
 /* ── Form ─────────────────────────────────────────────── */
@@ -727,7 +863,7 @@ export default {
 }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group.full { grid-column: 1 / -1; }
-.form-group label { font-size: 13px; font-weight: 600; color: #100c08; }
+.form-group label { font-size: 13px; font-weight: 600; color: #0B1C39; }
 .req { color: #dc2626; }
 .optional { font-weight: 400; color: #999; font-size: 12px; }
 .form-input {
@@ -741,7 +877,7 @@ export default {
   box-sizing: border-box;
   font-family: inherit;
 }
-.form-input:focus { border-color: #FFD700; }
+.form-input:focus { border-color: #D89B0F; }
 .form-textarea { resize: vertical; min-height: 60px; }
 .field-error { font-size: 12px; color: #dc2626; font-weight: 500; }
 
@@ -757,10 +893,11 @@ export default {
 /* ── Buttons ──────────────────────────────────────────── */
 .btn-primary-lg {
   padding: 12px 28px;
-  background: #FFD700;
-  color: #100c08;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(216,155,15,0.30);
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -768,14 +905,14 @@ export default {
   display: inline-block;
   transition: all 0.2s;
 }
-.btn-primary-lg:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,174,13,0.4); }
+.btn-primary-lg:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(216,155,15,0.45); }
 .btn-primary-lg:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary-lg {
   padding: 12px 28px;
   background: #f3f4f6;
   color: #374151;
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -797,7 +934,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.upload-zone:hover { border-color: #FFD700; background: #fffdf5; }
+.upload-zone:hover { border-color: #D89B0F; background: rgba(216,155,15,0.04); }
 .hidden-input { display: none; }
 
 .upload-empty {
@@ -835,14 +972,14 @@ export default {
 .info-box {
   margin: 0 32px 24px;
   padding: 16px 20px;
-  background: #fef9e7;
+  background: var(--gold-bg);
   border-radius: 12px;
-  border-left: 4px solid #FFD700;
+  border-left: 4px solid #D89B0F;
   display: flex;
   gap: 12px;
 }
 .info-icon { font-size: 20px; flex-shrink: 0; }
-.info-box strong { font-size: 13px; color: #100c08; }
+.info-box strong { font-size: 13px; color: #0B1C39; }
 .info-box ul { margin: 6px 0 0; padding-left: 18px; }
 .info-box li { font-size: 13px; color: #555; margin: 3px 0; }
 
@@ -861,7 +998,7 @@ export default {
   margin: 0 auto 14px;
   position: relative;
   overflow: hidden;
-  border: 3px solid #FFD700;
+  border: 3px solid #D89B0F;
 }
 .buddy-img {
   width: 100%;
@@ -873,28 +1010,28 @@ export default {
   position: absolute;
   inset: -6px;
   border-radius: 50%;
-  border: 3px solid #FFD700;
+  border: 3px solid #D89B0F;
   animation: pulse 2s ease-in-out infinite;
 }
 @keyframes pulse {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.1); }
 }
-.ai-buddy h2 { font-size: 22px; font-weight: 800; color: #100c08; margin: 0 0 4px; }
-.buddy-subtitle { font-size: 14px; color: #b8860b; font-weight: 600; margin: 0; }
+.ai-buddy h2 { font-size: 22px; font-weight: 800; color: #0B1C39; margin: 0 0 4px; }
+.buddy-subtitle { font-size: 14px; color: #B07A08; font-weight: 600; margin: 0; }
 
 .verify-status { margin-bottom: 32px; }
 .verify-spinner {
   width: 36px;
   height: 36px;
   border: 4px solid #e5e7eb;
-  border-top-color: #FFD700;
+  border-top-color: #D89B0F;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.verify-text { font-size: 16px; font-weight: 700; color: #100c08; margin: 0 0 6px; }
+.verify-text { font-size: 16px; font-weight: 700; color: #0B1C39; margin: 0 0 6px; }
 .verify-subtext { font-size: 13px; color: #999; margin: 0; }
 
 .verify-steps-list {
@@ -916,7 +1053,7 @@ export default {
   color: #aaa;
   transition: all 0.3s;
 }
-.verify-step.active { background: #fef9e7; color: #100c08; }
+.verify-step.active { background: var(--gold-bg); color: #0B1C39; }
 .verify-step.done { background: #f0fdf4; color: #16a34a; }
 .vs-icon { font-size: 18px; flex-shrink: 0; }
 
@@ -962,9 +1099,9 @@ export default {
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid #FFD700;
+  border: 2px solid #D89B0F;
 }
-.ai-badge strong { font-size: 13px; color: #100c08; }
+.ai-badge strong { font-size: 13px; color: #0B1C39; }
 .ai-badge p { font-size: 13px; color: #555; margin: 4px 0 0; }
 
 .review-info {
@@ -1027,7 +1164,7 @@ export default {
 .dual-ai-text {
   font-weight: 700;
   font-size: 14px;
-  color: #100c08;
+  color: #0B1C39;
 }
 .dual-ai-sub {
   font-size: 11px;
@@ -1063,7 +1200,7 @@ export default {
   gap: 8px;
   margin-bottom: 10px;
   font-size: 14px;
-  color: #100c08;
+  color: #0B1C39;
 }
 .auth-icon { font-size: 18px; flex-shrink: 0; }
 .auth-score {
@@ -1095,11 +1232,11 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 14px 20px;
-  background: #fef9e7;
-  border: 1px solid #FFD700;
+  background: var(--gold-bg);
+  border: 1px solid #D89B0F;
   border-radius: 10px;
   font-size: 14px;
-  color: #100c08;
+  color: #0B1C39;
   max-width: 420px;
   margin: 0 auto 24px;
 }
@@ -1117,4 +1254,44 @@ export default {
   .card-header, .form-grid { padding-left: 20px; padding-right: 20px; }
   .step-footer { padding-left: 20px; padding-right: 20px; }
 }
+
+/* ── FACE SCAN STEP ── */
+.face-scan-section { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 8px 0; }
+
+.face-instructions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 520px; }
+.instr-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; background: #f9f8f6; border-radius: 50px; padding: 8px 14px; font-weight: 500; }
+.instr-icon { font-size: 15px; }
+
+.camera-container { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+.camera-frame {
+  position: relative; width: 320px; height: 320px; border-radius: 50%;
+  overflow: hidden; border: 4px solid var(--gold); background: #111;
+  box-shadow: 0 0 0 6px rgba(216,155,15,0.15), 0 8px 32px rgba(0,0,0,0.18);
+}
+.camera-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.selfie-preview { width: 100%; height: 100%; object-fit: cover; }
+.camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.face-guide-circle { width: 220px; height: 260px; border: 2.5px dashed rgba(216,155,15,0.6); border-radius: 50%; }
+
+.camera-actions { display: flex; justify-content: center; }
+.btn-capture {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 32px; border-radius: 50px;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  color: #fff; font-weight: 700; font-size: 15px;
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(216,155,15,0.35);
+  transition: all 0.2s;
+}
+.btn-capture:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216,155,15,0.45); }
+
+.selfie-ready {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 600; color: #16a34a;
+  background: #dcfce7; border-radius: 50px; padding: 8px 18px;
+}
+
+.camera-error { text-align: center; padding: 20px; color: #dc2626; }
+.camera-error p { margin-bottom: 12px; font-size: 14px; }
 </style>

@@ -1,227 +1,239 @@
 <template>
-  <div class="dashboard-wrapper">
-    <!-- Sidebar -->
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+  <div class="vw-layout">
+
+    <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">RealtyLink</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link to="/dashboard" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+        <router-link to="/dashboard" exact class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          <span>Dashboard</span>
         </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Browse</h3>
-          <router-link to="/properties" class="nav-item">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Discover</span>
-          </router-link>
-          <router-link to="/saved-properties" class="nav-item">
-            <span class="nav-icon">❤️</span>
-            <span class="nav-label">Saved</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Browse</div>
+        <router-link to="/properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span>Properties</span>
+        </router-link>
+        <router-link to="/saved-properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span>Saved</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Activity</h3>
-          <router-link to="/conversations" class="nav-item">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Inbox</span>
-          </router-link>
-          <router-link to="/viewings" class="nav-item active">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Viewings</span>
-          </router-link>
-          <router-link to="/documents" class="nav-item">
-            <span class="nav-icon">📄</span>
-            <span class="nav-label">Documents</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Communicate</div>
+        <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <span>Messages</span>
+        </router-link>
+        <router-link to="/viewings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <span>Viewings</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="section-title">Settings</h3>
-          <router-link to="/profile" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Profile</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Tools</div>
+        <router-link to="/documents" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </span>
+          <span>Documents</span>
+        </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar-lg">{{ userName.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <p class="user-name-card">{{ userName }}</p>
-            <p class="user-role-card">Buyer</p>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
-          <button @click="showUserMenu = !showUserMenu" class="btn-options">⋮</button>
-          <div v-if="showUserMenu" class="user-dropdown">
-            <router-link to="/profile" class="dropdown-item">👤 My Profile</router-link>
-            <a href="#" @click.prevent="logout" class="dropdown-item logout">🚪 Logout</a>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">Buyer</span>
           </div>
-        </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          </span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <nav class="topbar">
-        <div class="topbar-content">
-          <div class="topbar-left">
-          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">☰</button>
-            <h1 class="page-title">My Viewings</h1>
-          </div>
-          <div class="topbar-right">
-            <!-- Filter tabs -->
-            <div class="filter-tabs">
-              <button
-                v-for="tab in tabs"
-                :key="tab.value"
-                class="filter-tab"
-                :class="{ active: activeTab === tab.value }"
-                @click="setTab(tab.value)"
-              >{{ tab.label }}</button>
-            </div>
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+
+    <!-- ═══════════════════ MAIN ═══════════════════ -->
+    <div class="main-wrapper">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" @click="sidebarOpen = !sidebarOpen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="topbar-title">My Viewings</span>
+        </div>
+        <div class="topbar-right">
+          <div class="filter-tabs">
+            <button
+              v-for="tab in tabs" :key="tab.value"
+              class="f-tab" :class="{ active: activeTab === tab.value }"
+              @click="setTab(tab.value)"
+            >{{ tab.label }}</button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <div class="page-wrapper">
-        <!-- Loading -->
-        <div v-if="loading" class="state-box">
-          <div class="state-icon">⏳</div>
-          <p>Loading your viewings...</p>
-        </div>
+      <div class="content-area">
+        <div class="content-inner">
 
-        <!-- Empty state -->
-        <div v-else-if="filteredViewings.length === 0" class="state-box">
-          <div class="state-icon">📅</div>
-          <h3>No {{ activeTab === 'all' ? '' : activeTab }} viewings</h3>
-          <p>Browse properties and click "Schedule Viewing" to request a tour.</p>
-          <router-link to="/properties" class="btn-primary">Discover Properties</router-link>
-        </div>
+          <!-- Loading -->
+          <div v-if="loading" class="state-center">
+            <div class="spinner"></div>
+            <p class="state-txt">Loading your viewings...</p>
+          </div>
 
-        <!-- Viewings List -->
-        <div v-else class="viewings-grid">
-          <div
-            v-for="v in filteredViewings"
-            :key="v.id"
-            class="viewing-card"
-            :class="'status-' + v.status"
-          >
-            <!-- Property thumbnail -->
-            <div class="card-thumb">
-              <img
-                v-if="v.property && v.property.cover_photo"
-                :src="v.property.cover_photo"
-                :alt="v.property.title"
-                class="thumb-img"
-              />
-              <div v-else class="thumb-placeholder">🏠</div>
-              <span class="status-badge" :class="'badge-' + v.status">{{ statusLabel(v.status) }}</span>
-            </div>
+          <!-- Empty -->
+          <div v-else-if="filteredViewings.length === 0" class="state-center">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--s300)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <h3 class="state-head">No {{ activeTab === 'all' ? '' : activeTab }} viewings</h3>
+            <p class="state-txt">Browse properties and click "Schedule Viewing" to request a tour.</p>
+            <router-link to="/properties" class="btn-cta">Discover Properties</router-link>
+          </div>
 
-            <!-- Card body -->
-            <div class="card-body">
-              <h3 class="prop-title">{{ v.property ? v.property.title : 'Property' }}</h3>
-              <p class="prop-city" v-if="v.property">📍 {{ v.property.city }}</p>
+          <!-- Viewings Grid -->
+          <div v-else>
+            <p class="grid-meta">{{ filteredViewings.length }} viewing{{ filteredViewings.length !== 1 ? 's' : '' }}</p>
+            <div class="vw-grid">
+              <div v-for="v in filteredViewings" :key="v.id" class="vw-card" :class="'st-' + v.status">
 
-              <div class="meta-row">
-                <span class="meta-item">📅 {{ formatDate(v.viewing_date) }}</span>
-                <span class="meta-item">🕐 {{ formatTime(v.viewing_time) }}</span>
-              </div>
+                <div class="card-thumb">
+                  <img v-if="v.property && v.property.cover_photo" :src="v.property.cover_photo" :alt="v.property.title" class="thumb-img" />
+                  <div v-else class="thumb-empty">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--s300)" stroke-width="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </div>
+                  <span class="status-pill" :class="'pill-' + v.status">{{ statusLabel(v.status) }}</span>
+                </div>
 
-              <div v-if="v.agent" class="meta-row">
-                <span class="meta-item">👤 Agent: {{ v.agent.name }}</span>
-              </div>
+                <div class="card-body">
+                  <h3 class="prop-name">{{ v.property ? v.property.title : 'Property' }}</h3>
+                  <p class="prop-city" v-if="v.property">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ v.property.city }}
+                  </p>
 
-              <div v-if="v.buyer_notes" class="notes-box buyer-notes">
-                <strong>Your note:</strong> {{ v.buyer_notes }}
-              </div>
+                  <div class="meta-row">
+                    <span class="meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      {{ formatDate(v.viewing_date) }}
+                    </span>
+                    <span class="meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ formatTime(v.viewing_time) }}
+                    </span>
+                  </div>
 
-              <!-- Rejection reason -->
-              <div v-if="v.status === 'rejected' && v.rejection_reason" class="notes-box rejection-notes">
-                <strong>❌ Rejection reason:</strong> {{ v.rejection_reason }}
-              </div>
+                  <div v-if="v.agent" class="agent-row">
+                    <div class="agent-av">{{ (v.agent.name || 'A').charAt(0).toUpperCase() }}</div>
+                    <span class="agent-nm">{{ v.agent.name }}</span>
+                  </div>
 
-              <!-- Approved message -->
-              <div v-if="v.status === 'approved'" class="notes-box approved-notes">
-                ✅ Your viewing is confirmed! Please be on time.
-              </div>
+                  <div v-if="v.buyer_notes" class="info-box buyer-box">
+                    <span class="box-label">Your note</span>
+                    {{ v.buyer_notes }}
+                  </div>
+                  <div v-if="v.status === 'rejected' && v.rejection_reason" class="info-box reject-box">
+                    <span class="box-label">Rejection reason</span>
+                    {{ v.rejection_reason }}
+                  </div>
+                  <div v-if="v.status === 'approved'" class="info-box approve-box">
+                    Your viewing is confirmed! Please be on time.
+                  </div>
+                  <div v-if="v.status === 'negotiating' && v.latest_proposal" class="info-box nego-box">
+                    <span class="box-label">Proposed by {{ v.latest_proposal.proposed_by_role === 'agent' ? 'Agent' : 'You' }}</span>
+                    {{ formatDate(v.latest_proposal.proposed_date) }} at {{ formatTime(v.latest_proposal.proposed_time) }}
+                    <div v-if="v.latest_proposal.note" class="proposal-note">"{{ v.latest_proposal.note }}"</div>
+                  </div>
 
-              <!-- Negotiation info -->
-              <div v-if="v.status === 'negotiating' && v.latest_proposal" class="notes-box negotiation-notes">
-                <strong>📋 Proposed by {{ v.latest_proposal.proposed_by_role === 'agent' ? 'Agent' : 'You' }}:</strong>
-                {{ formatDate(v.latest_proposal.proposed_date) }} at {{ formatTime(v.latest_proposal.proposed_time) }}
-                <div v-if="v.latest_proposal.note" class="proposal-note">"{{ v.latest_proposal.note }}"</div>
-              </div>
-
-              <div class="card-actions">
-                <!-- Negotiation actions (when agent proposed) -->
-                <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
-                  <button @click="acceptProposal(v)" class="btn-action btn-accept" :disabled="actionLoading === v.id">Accept</button>
-                  <button @click="openCounterModal(v)" class="btn-action btn-edit">Edit Schedule</button>
-                  <button @click="rejectViewing(v)" class="btn-action btn-reject-sm" :disabled="actionLoading === v.id">Reject</button>
-                </template>
-
-                <!-- Waiting for agent (buyer proposed) -->
-                <span v-else-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'" class="waiting-label">
-                  ⏳ Waiting for agent response...
-                </span>
-
-                <router-link
-                  v-if="v.property"
-                  :to="'/property/' + v.property.id"
-                  class="btn-action btn-view"
-                >View Property</router-link>
+                  <div class="card-actions">
+                    <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
+                      <button @click="acceptProposal(v)" class="btn-act btn-accept" :disabled="actionLoading === v.id">Accept</button>
+                      <button @click="openCounterModal(v)" class="btn-act btn-edit">Edit Schedule</button>
+                      <button @click="rejectViewing(v)" class="btn-act btn-reject-sm" :disabled="actionLoading === v.id">Reject</button>
+                    </template>
+                    <span v-else-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'" class="waiting-lbl">
+                      Waiting for agent response...
+                    </span>
+                    <router-link v-if="v.property" :to="'/property/' + v.property.id" class="btn-act btn-view">View Property</router-link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
       </div>
-    </main>
+    </div>
 
-    <!-- Counter-propose modal -->
+    <!-- Modal -->
     <div v-if="showCounterModal" class="modal-overlay" @click.self="showCounterModal = false">
       <div class="modal-box">
-        <div class="modal-header">
-          <h3>📅 Propose New Schedule</h3>
-          <button @click="showCounterModal = false" class="btn-close">✕</button>
+        <div class="modal-hd">
+          <h3>Propose New Schedule</h3>
+          <button @click="showCounterModal = false" class="btn-close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <div class="modal-body">
-          <p class="modal-subtitle" v-if="counterTarget">For: <strong>{{ counterTarget.property?.title }}</strong></p>
-          <div class="form-group">
+        <div class="modal-bd">
+          <p class="modal-for" v-if="counterTarget">For: <strong>{{ counterTarget.property?.title }}</strong></p>
+          <div class="form-grp">
             <label>Proposed Date *</label>
-            <input v-model="counterForm.date" type="date" class="form-input" :min="todayStr" />
+            <input v-model="counterForm.date" type="date" class="form-inp" :min="todayStr" />
           </div>
-          <div class="form-group">
+          <div class="form-grp">
             <label>Proposed Time *</label>
-            <input v-model="counterForm.time" type="time" class="form-input" />
+            <input v-model="counterForm.time" type="time" class="form-inp" />
           </div>
-          <div class="form-group">
+          <div class="form-grp">
             <label>Note to Agent</label>
-            <textarea v-model="counterForm.note" class="form-textarea" placeholder="Explain why you'd prefer this schedule..." maxlength="500"></textarea>
+            <textarea v-model="counterForm.note" class="form-ta" placeholder="Explain why you'd prefer this schedule..." maxlength="500"></textarea>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showCounterModal = false" class="btn-secondary">Cancel</button>
-          <button @click="submitCounterPropose" class="btn-primary" :disabled="counterLoading">
+        <div class="modal-ft">
+          <button @click="showCounterModal = false" class="btn-cancel">Cancel</button>
+          <button @click="submitCounterPropose" class="btn-propose" :disabled="counterLoading">
             {{ counterLoading ? 'Sending...' : 'Propose Schedule' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Notification toast -->
-    <transition name="slide-down">
-      <div v-if="toast.show" class="toast" :class="'toast-' + toast.type">
-        {{ toast.message }}
-      </div>
+    <!-- Toast -->
+    <transition name="slide-up">
+      <div v-if="toast.show" class="toast" :class="'t-' + toast.type">{{ toast.message }}</div>
     </transition>
   </div>
 </template>
@@ -236,8 +248,8 @@ export default {
       loading: true,
       viewings: [],
       activeTab: 'all',
-      showUserMenu: false,
       userName: '',
+      profilePhotoUrl: null,
       myId: null,
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       echoChannel: null,
@@ -262,25 +274,21 @@ export default {
       if (this.activeTab === 'all') return this.viewings;
       return this.viewings.filter(v => v.status === this.activeTab);
     },
-    todayStr() {
-      return new Date().toISOString().split('T')[0];
-    },
+    todayStr() { return new Date().toISOString().split('T')[0]; },
   },
 
   async mounted() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userName = user.name || 'User';
+    if (user.profile_photo_path) this.profilePhotoUrl = `${this.apiUrl}/storage/${user.profile_photo_path}`;
     this.myId = user.id;
-
     await this.loadViewings();
     this.subscribeToNotifications();
     this.clearViewingNotifications();
   },
 
   beforeUnmount() {
-    if (this.echoChannel && window.Echo) {
-      window.Echo.leave('notifications.' + this.myId);
-    }
+    if (this.echoChannel && window.Echo) window.Echo.leave('notifications.' + this.myId);
   },
 
   methods: {
@@ -299,13 +307,11 @@ export default {
       try {
         this.loading = true;
         const token = localStorage.getItem('auth_token');
-        const res   = await fetch(`${this.apiUrl}/api/buyer/viewings`, {
+        const res = await fetch(`${this.apiUrl}/api/buyer/viewings`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
         const data = await res.json();
-        if (data.success) {
-          this.viewings = data.viewings;
-        }
+        if (data.success) this.viewings = data.viewings;
       } catch (e) {
         console.error('Error loading viewings:', e);
       } finally {
@@ -326,10 +332,7 @@ export default {
                 this.viewings[idx].viewing_date = data.viewing_date;
                 this.viewings[idx].viewing_time = data.viewing_time;
               }
-            } else {
-              this.loadViewings();
-            }
-
+            } else { this.loadViewings(); }
             const msg = data.status === 'approved'
               ? `Your viewing for "${data.property?.title}" was approved!`
               : `Your viewing for "${data.property?.title}" was rejected.`;
@@ -339,40 +342,25 @@ export default {
             this.loadViewings();
             this.showToast(`New schedule proposed for "${data.property?.title}"`, 'info');
           });
-      } catch (e) {
-        console.error('Echo subscribe error:', e);
-      }
+      } catch (e) { console.error('Echo subscribe error:', e); }
     },
 
-    setTab(tab) {
-      this.activeTab = tab;
-    },
+    setTab(tab) { this.activeTab = tab; },
 
     statusLabel(status) {
-      const map = {
-        requested:   'Pending',
-        negotiating: 'Negotiating',
-        approved:    'Approved',
-        rejected:    'Rejected',
-        completed:   'Completed',
-      };
-      return map[status] || status;
+      return { requested: 'Pending', negotiating: 'Negotiating', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' }[status] || status;
     },
 
     formatDate(dateStr) {
       if (!dateStr) return 'N/A';
-      return new Date(dateStr).toLocaleDateString('en-PH', {
-        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-      });
+      return new Date(dateStr).toLocaleDateString('en-PH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
     },
 
     formatTime(timeStr) {
       if (!timeStr) return 'N/A';
       const [h, m] = timeStr.split(':');
-      const hour   = parseInt(h, 10);
-      const ampm   = hour >= 12 ? 'PM' : 'AM';
-      const h12    = hour % 12 || 12;
-      return `${h12}:${m} ${ampm}`;
+      const hour = parseInt(h, 10);
+      return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
     },
 
     async acceptProposal(v) {
@@ -384,59 +372,33 @@ export default {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
         });
         const data = await res.json();
-        if (data.success) {
-          this.showToast('Schedule accepted! Viewing confirmed.', 'success');
-          this.loadViewings();
-        } else {
-          this.showToast(data.message || 'Failed to accept proposal.', 'error');
-        }
-      } catch (e) {
-        this.showToast('Failed to accept proposal.', 'error');
-      } finally {
-        this.actionLoading = null;
-      }
+        if (data.success) { this.showToast('Schedule accepted! Viewing confirmed.', 'success'); this.loadViewings(); }
+        else this.showToast(data.message || 'Failed to accept proposal.', 'error');
+      } catch (e) { this.showToast('Failed to accept proposal.', 'error'); }
+      finally { this.actionLoading = null; }
     },
 
     openCounterModal(v) {
       this.counterTarget = v;
-      this.counterForm = {
-        date: v.latest_proposal?.proposed_date || '',
-        time: v.latest_proposal?.proposed_time || '',
-        note: '',
-      };
+      this.counterForm = { date: v.latest_proposal?.proposed_date || '', time: v.latest_proposal?.proposed_time || '', note: '' };
       this.showCounterModal = true;
     },
 
     async submitCounterPropose() {
-      if (!this.counterForm.date || !this.counterForm.time) {
-        this.showToast('Please fill in both date and time.', 'error');
-        return;
-      }
+      if (!this.counterForm.date || !this.counterForm.time) { this.showToast('Please fill in both date and time.', 'error'); return; }
       this.counterLoading = true;
       try {
         const token = localStorage.getItem('auth_token');
         const res = await fetch(`${this.apiUrl}/api/buyer/viewings/${this.counterTarget.id}/counter-propose`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({
-            proposed_date: this.counterForm.date,
-            proposed_time: this.counterForm.time,
-            note: this.counterForm.note,
-          }),
+          body: JSON.stringify({ proposed_date: this.counterForm.date, proposed_time: this.counterForm.time, note: this.counterForm.note }),
         });
         const data = await res.json();
-        if (data.success) {
-          this.showCounterModal = false;
-          this.showToast('New schedule proposed!', 'success');
-          this.loadViewings();
-        } else {
-          this.showToast(data.message || 'Failed to propose schedule.', 'error');
-        }
-      } catch (e) {
-        this.showToast('Failed to propose schedule.', 'error');
-      } finally {
-        this.counterLoading = false;
-      }
+        if (data.success) { this.showCounterModal = false; this.showToast('New schedule proposed!', 'success'); this.loadViewings(); }
+        else this.showToast(data.message || 'Failed to propose schedule.', 'error');
+      } catch (e) { this.showToast('Failed to propose schedule.', 'error'); }
+      finally { this.counterLoading = false; }
     },
 
     async rejectViewing(v) {
@@ -450,17 +412,10 @@ export default {
           body: JSON.stringify({ rejection_reason: 'Rejected by buyer' }),
         });
         const data = await res.json();
-        if (data.success) {
-          this.showToast('Viewing rejected.', 'success');
-          this.loadViewings();
-        } else {
-          this.showToast(data.message || 'Failed to reject viewing.', 'error');
-        }
-      } catch (e) {
-        this.showToast('Failed to reject viewing.', 'error');
-      } finally {
-        this.actionLoading = null;
-      }
+        if (data.success) { this.showToast('Viewing rejected.', 'success'); this.loadViewings(); }
+        else this.showToast(data.message || 'Failed to reject viewing.', 'error');
+      } catch (e) { this.showToast('Failed to reject viewing.', 'error'); }
+      finally { this.actionLoading = null; }
     },
 
     showToast(message, type = 'success') {
@@ -468,340 +423,250 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 4000);
     },
 
-    logout() {
-      localStorage.clear();
-      this.$router.push('/');
-    },
+    logout() { localStorage.clear(); this.$router.push('/'); },
   },
 };
 </script>
 
 <style scoped>
-/* ---- Layout ---- */
-.dashboard-wrapper { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #f8f9fa; }
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-/* ---- Sidebar ---- */
-.sidebar { width: 240px; min-height: 100vh; background: #fff; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
-.sidebar-header { padding: 20px; border-bottom: 1px solid #f5f5f5; }
-.sidebar-logo { font-size: 1.2rem; font-weight: 800; }
-.logo-realty { color: #100c08; }
-.logo-ph { color: #FFD700; }
-.sidebar-nav { flex: 1; padding: 12px 10px; }
-.nav-section { margin-top: 16px; }
-.section-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; font-weight: 700; padding: 0 10px; margin-bottom: 6px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: #555; text-decoration: none; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.nav-item:hover, .nav-item.active { background: #fef9e7; color: #100c08; }
-.nav-item.active { font-weight: 700; }
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
-
-.sidebar-footer { padding: 12px; border-top: 1px solid #f5f5f5; }
-.user-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #fafafa; position: relative; }
-.user-avatar-lg { width: 36px; height: 36px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #100c08; flex-shrink: 0; }
-.user-info { flex: 1; min-width: 0; }
-.user-name-card { font-size: 0.82rem; font-weight: 700; color: #100c08; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-role-card { font-size: 0.72rem; color: #999; margin: 0; }
-.btn-options { background: none; border: none; cursor: pointer; font-size: 18px; color: #999; padding: 0 4px; }
-.user-dropdown { position: absolute; bottom: 56px; left: 0; right: 0; background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 10; }
-.dropdown-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; color: #333; text-decoration: none; font-size: 0.82rem; cursor: pointer; }
-.dropdown-item:hover { background: #fef9e7; }
-.dropdown-item.logout { color: #dc2626; }
-
-/* ---- Main ---- */
-.main-content { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
-
-/* ---- Topbar ---- */
-.topbar { background: #fff; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 50; }
-.topbar-content { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
-.page-title { font-size: 1.1rem; font-weight: 700; color: #100c08; margin: 0; }
-.filter-tabs { display: flex; gap: 6px; }
-.filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.8rem; font-weight: 600; color: #666; cursor: pointer; transition: all 0.15s; }
-.filter-tab.active { background: #FFD700; border-color: #FFD700; color: #100c08; }
-
-/* ---- Page content ---- */
-.page-wrapper { padding: 24px; }
-
-/* ---- State boxes ---- */
-.state-box { text-align: center; padding: 60px 20px; }
-.state-icon { font-size: 52px; margin-bottom: 16px; }
-.state-box h3 { font-size: 1.2rem; font-weight: 700; color: #100c08; margin-bottom: 8px; }
-.state-box p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
-
-/* ---- Viewings Grid ---- */
-.viewings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-.viewing-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; transition: transform 0.15s; }
-.viewing-card:hover { transform: translateY(-2px); }
-
-/* Status color accent */
-.viewing-card.status-approved { border-left: 4px solid #16a34a; }
-.viewing-card.status-rejected  { border-left: 4px solid #dc2626; }
-.viewing-card.status-requested { border-left: 4px solid #FFD700; }
-.viewing-card.status-completed   { border-left: 4px solid #6b7280; }
-.viewing-card.status-negotiating { border-left: 4px solid #2563eb; }
-
-.card-thumb { position: relative; height: 160px; background: #f5f5f5; }
-.thumb-img { width: 100%; height: 100%; object-fit: cover; }
-.thumb-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 48px; color: #ccc; }
-
-.status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
-.badge-requested { background: #fef9c3; color: #854d0e; }
-.badge-approved  { background: #dcfce7; color: #166534; }
-.badge-rejected  { background: #fee2e2; color: #991b1b; }
-.badge-completed   { background: #f3f4f6; color: #374151; }
-.badge-negotiating { background: #dbeafe; color: #1e40af; }
-
-.card-body { padding: 16px; }
-.prop-title { font-size: 0.95rem; font-weight: 700; color: #100c08; margin: 0 0 4px; }
-.prop-city  { font-size: 0.8rem; color: #666; margin: 0 0 10px; }
-.meta-row   { display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
-.meta-item  { font-size: 0.8rem; color: #555; }
-
-.notes-box { padding: 10px 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 10px; line-height: 1.5; }
-.buyer-notes     { background: #f8f9fa; border: 1px solid #e5e7eb; color: #555; }
-.rejection-notes { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; }
-.approved-notes  { background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; }
-
-.card-actions { display: flex; gap: 8px; margin-top: 12px; }
-.btn-action { padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; border: none; }
-.btn-view   { background: #f5f5f5; color: #100c08; }
-.btn-view:hover { background: #FFD700; }
-
-/* ---- Primary button ---- */
-.btn-primary { display: inline-block; padding: 10px 20px; background: #FFD700; color: #100c08; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-decoration: none; }
-.btn-primary:hover { background: #DAB600; }
-
-/* ---- Toast ---- */
-.toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-.toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-
-/* Negotiation */
-.negotiation-notes { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
-.proposal-note { margin-top: 6px; font-style: italic; color: #3b82f6; }
-.btn-accept { background: #dcfce7; color: #166534; }
-.btn-accept:hover { background: #16a34a; color: #fff; }
-.btn-edit { background: #dbeafe; color: #1e40af; }
-.btn-edit:hover { background: #2563eb; color: #fff; }
-.btn-reject-sm { background: #fee2e2; color: #991b1b; }
-.btn-reject-sm:hover { background: #dc2626; color: #fff; }
-.waiting-label { font-size: 0.8rem; color: #6b7280; font-style: italic; }
-.toast-info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-
-/* Modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-box { background: #fff; border-radius: 16px; width: 90%; max-width: 460px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #f0f0f0; }
-.modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #100c08; }
-.btn-close { background: none; border: none; font-size: 18px; color: #999; cursor: pointer; }
-.modal-body { padding: 20px 24px; }
-.modal-subtitle { font-size: 0.85rem; color: #555; margin: 0 0 16px; }
-.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #f0f0f0; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #333; margin-bottom: 6px; }
-.form-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.88rem; box-sizing: border-box; }
-.form-input:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 0 3px rgba(230,174,13,0.15); }
-.form-textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.88rem; min-height: 70px; resize: vertical; box-sizing: border-box; }
-.form-textarea:focus { outline: none; border-color: #FFD700; box-shadow: 0 0 0 3px rgba(230,174,13,0.15); }
-.btn-secondary { padding: 9px 18px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #555; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-
-.slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s ease; }
-.slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(20px); }
-
-/* ---- Responsive: 768px ---- */
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -280px;
-    width: 280px;
-    z-index: 1001;
-    transition: left 0.3s ease;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .topbar-content {
-    flex-direction: column;
-    align-items: flex-start;
-    height: auto;
-    padding: 12px 16px;
-    gap: 10px;
-  }
-
-  .page-title {
-    font-size: 1rem;
-  }
-
-  .topbar-right {
-    width: 100%;
-  }
-
-  .filter-tabs {
-    flex-wrap: wrap;
-    gap: 6px;
-    width: 100%;
-  }
-
-  .filter-tab {
-    padding: 5px 10px;
-    font-size: 0.75rem;
-  }
-
-  .page-wrapper {
-    padding: 16px;
-  }
-
-  .viewings-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .card-body {
-    padding: 12px;
-  }
-
-  .card-actions {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .btn-action {
-    padding: 7px 12px;
-    font-size: 0.78rem;
-  }
-
-  .state-box {
-    padding: 40px 16px;
-  }
-
-  .modal-box {
-    width: 95%;
-    border-radius: 12px;
-  }
-
-  .modal-header {
-    padding: 14px 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .modal-footer {
-    padding: 12px 16px;
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-
-  .modal-footer .btn-primary,
-  .modal-footer .btn-secondary {
-    width: 100%;
-    text-align: center;
-  }
+/* ── TOKENS ── */
+.vw-layout {
+  --primary:  #0B1C39;
+  --primary2: #102445;
+  --primary3: #1a3158;
+  --accent:   #D89B0F;
+  --accent2:  #E5B332;
+  --accent3:  #B07A08;
+  --bg:       #EDF0F2;
+  --white:    #FFFFFF;
+  --sw:       242px;
+  --th:       56px;
+  --fd:       'Outfit','Inter',-apple-system,sans-serif;
+  --fb:       'Inter',-apple-system,sans-serif;
+  --s50:  #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s800: #292524; --s900: #1C1917;
+  display: flex; min-height: 100vh;
+  background: var(--bg); font-family: var(--fb);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ---- Responsive: 480px ---- */
+/* ══ SIDEBAR ══ */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
+  background: var(--primary); display: flex; flex-direction: column; z-index: 100;
+}
+.sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+.sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; }
+.logo-ph { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px;
+  border-radius: 9px; color: rgba(255,255,255,0.45); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: all 0.18s ease; margin-bottom: 2px;
+  cursor: pointer; border: none; background: none; width: 100%;
+  text-align: left; font-family: var(--fb); position: relative;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
+.nav-item.router-link-exact-active {
+  background: linear-gradient(90deg, rgba(216,155,15,0.14) 0%, rgba(216,155,15,0.03) 100%);
+  color: var(--accent2);
+}
+.nav-item.router-link-exact-active::before {
+  content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+}
+.nav-item.router-link-exact-active .nav-icon-wrap { color: var(--accent); }
+
+.nav-group-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.22); padding: 14px 12px 5px;
+}
+.nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
+
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 10px 8px; }
+.sidebar-bottom { flex-shrink: 0; padding: 0 10px 14px; }
+
+.nav-user { gap: 10px; padding: 8px 10px; }
+.nav-user:hover, .nav-user.router-link-exact-active { background: rgba(216,155,15,0.10); color: var(--accent2); }
+.nav-av {
+  width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 11px; color: #fff;
+}
+.nav-user-info { flex: 1; min-width: 0; }
+.nav-user-name { display: block; font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-user-role  { display: block; font-size: 10.5px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
+
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; backdrop-filter: blur(2px); }
+
+/* ══ MAIN ══ */
+.main-wrapper { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+.topbar {
+  background: var(--white); position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: var(--th); border-bottom: 1px solid var(--s200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.topbar-left  { display: flex; align-items: center; gap: 10px; }
+.topbar-right { display: flex; align-items: center; }
+.hamburger { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: -0.3px; }
+
+/* Filter tabs */
+.filter-tabs { display: flex; gap: 4px; }
+.f-tab {
+  padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--s200);
+  background: transparent; font-size: 12px; font-weight: 600; color: var(--s500);
+  cursor: pointer; transition: all 0.15s; font-family: var(--fb); white-space: nowrap;
+}
+.f-tab:hover { border-color: rgba(216,155,15,0.4); color: var(--primary); }
+.f-tab.active { background: var(--primary); border-color: var(--primary); color: var(--white); font-weight: 700; }
+
+/* ── Content ── */
+.content-area { flex: 1; background: var(--bg); }
+.content-inner { max-width: 1200px; margin: 0 auto; padding: 28px 30px 48px; }
+
+/* States */
+.state-center { text-align: center; padding: 80px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.state-head { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--primary); margin: 0; }
+.state-txt  { font-size: 13.5px; color: var(--s400); margin: 0; }
+.spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--s200); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-cta {
+  display: inline-block; padding: 10px 24px; background: var(--primary); color: var(--white);
+  border-radius: 50px; font-weight: 700; font-size: 13.5px; text-decoration: none; transition: all 0.2s;
+}
+.btn-cta:hover { background: var(--primary2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(40,53,62,0.22); }
+
+.grid-meta { font-size: 12.5px; color: var(--s400); margin: 0 0 18px; }
+
+/* ── Viewings Grid ── */
+.vw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+
+.vw-card {
+  background: var(--white); border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--s200); border-left: 4px solid var(--s200);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.vw-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(40,53,62,0.1); }
+
+.vw-card.st-approved    { border-left-color: #16a34a; }
+.vw-card.st-rejected    { border-left-color: #dc2626; }
+.vw-card.st-requested   { border-left-color: var(--accent); }
+.vw-card.st-completed   { border-left-color: var(--s300); }
+.vw-card.st-negotiating { border-left-color: var(--primary2); }
+
+.card-thumb { position: relative; height: 162px; background: var(--s100); }
+.thumb-img  { width: 100%; height: 100%; object-fit: cover; }
+.thumb-empty { display: flex; align-items: center; justify-content: center; height: 100%; }
+
+.status-pill { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.pill-requested   { background: rgba(216,155,15,0.12); color: var(--accent); border: 1px solid rgba(216,155,15,0.25); }
+.pill-approved    { background: #dcfce7; color: #166534; }
+.pill-rejected    { background: #fee2e2; color: #991b1b; }
+.pill-completed   { background: var(--s100); color: var(--s500); }
+.pill-negotiating { background: rgba(40,53,62,0.08); color: var(--primary2); }
+
+.card-body { padding: 15px 17px; }
+.prop-name { font-family: var(--fd); font-size: 14.5px; font-weight: 700; color: var(--primary); margin: 0 0 4px; }
+.prop-city { font-size: 12px; color: var(--s400); margin: 0 0 11px; display: flex; align-items: center; gap: 4px; }
+
+.meta-row  { display: flex; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+.meta-item { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--s500); font-weight: 500; }
+
+.agent-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.agent-av  {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary3));
+  color: var(--accent2); font-weight: 700; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.agent-nm { font-size: 12.5px; color: var(--s500); font-weight: 600; }
+
+.info-box { padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; line-height: 1.55; }
+.box-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; opacity: 0.65; }
+.buyer-box   { background: var(--s50); border: 1px solid var(--s200); color: var(--s600); }
+.reject-box  { background: #fff5f5; border: 1px solid #fecaca; color: #991b1b; }
+.approve-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.nego-box    { background: rgba(40,53,62,0.04); border: 1px solid rgba(40,53,62,0.1); color: var(--primary); }
+.proposal-note { margin-top: 5px; font-style: italic; opacity: 0.75; }
+
+.card-actions { display: flex; gap: 7px; margin-top: 13px; flex-wrap: wrap; }
+.btn-act { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; font-family: var(--fb); }
+.btn-view      { background: var(--s100); color: var(--primary); }
+.btn-view:hover { background: rgba(216,155,15,0.1); color: var(--accent); }
+.btn-accept    { background: #dcfce7; color: #166534; }
+.btn-accept:hover { background: #16a34a; color: #fff; }
+.btn-edit      { background: rgba(40,53,62,0.08); color: var(--primary); }
+.btn-edit:hover { background: var(--primary); color: #fff; }
+.btn-reject-sm { background: #fee2e2; color: #991b1b; }
+.btn-reject-sm:hover { background: #dc2626; color: #fff; }
+.waiting-lbl { font-size: 12px; color: var(--s300); font-style: italic; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.modal-box { background: var(--white); border-radius: 16px; width: 90%; max-width: 460px; box-shadow: 0 12px 40px rgba(40,53,62,0.18); overflow: hidden; }
+.modal-hd { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--s100); }
+.modal-hd h3 { margin: 0; font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--primary); }
+.btn-close { background: none; border: none; cursor: pointer; color: var(--s300); padding: 2px; display: flex; align-items: center; transition: color 0.15s; }
+.btn-close:hover { color: var(--s500); }
+.modal-bd { padding: 20px 24px; }
+.modal-for { font-size: 13px; color: var(--s400); margin: 0 0 16px; }
+.modal-ft { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--s100); }
+
+.form-grp { margin-bottom: 15px; }
+.form-grp label { display: block; font-size: 11.5px; font-weight: 700; color: var(--s500); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.form-inp { width: 100%; padding: 9px 12px; border: 1px solid var(--s200); border-radius: 8px; font-size: 14px; box-sizing: border-box; font-family: var(--fb); transition: border-color 0.2s; }
+.form-inp:focus { outline: none; border-color: rgba(216,155,15,0.5); box-shadow: 0 0 0 3px rgba(216,155,15,0.08); }
+.form-ta { width: 100%; padding: 9px 12px; border: 1px solid var(--s200); border-radius: 8px; font-size: 14px; min-height: 70px; resize: vertical; box-sizing: border-box; font-family: var(--fb); transition: border-color 0.2s; }
+.form-ta:focus { outline: none; border-color: rgba(216,155,15,0.5); box-shadow: 0 0 0 3px rgba(216,155,15,0.08); }
+
+.btn-cancel { padding: 9px 18px; border-radius: 8px; border: 1.5px solid var(--s200); background: var(--white); color: var(--s500); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: var(--fb); }
+.btn-cancel:hover { background: var(--s100); }
+.btn-propose { padding: 9px 20px; border-radius: 8px; border: none; background: var(--primary); color: var(--white); font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.15s; font-family: var(--fb); }
+.btn-propose:hover { background: var(--primary2); }
+.btn-propose:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.t-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.t-error   { background: #fff5f5; color: #991b1b; border: 1px solid #fecaca; }
+.t-info    { background: rgba(40,53,62,0.05); color: var(--primary); border: 1px solid rgba(40,53,62,0.1); }
+
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
+.slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(10px); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; }
+  .hamburger { display: flex; }
+  .main-wrapper { margin-left: 0; }
+  .topbar { padding: 0 16px; height: auto; flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 10px; }
+  .topbar-right { width: 100%; }
+  .filter-tabs { flex-wrap: wrap; gap: 5px; }
+  .f-tab { padding: 5px 11px; font-size: 11.5px; }
+  .content-inner { padding: 16px; }
+  .vw-grid { grid-template-columns: 1fr; gap: 14px; }
+  .card-actions { flex-wrap: wrap; gap: 6px; }
+  .modal-box { width: 95%; }
+  .modal-ft { flex-direction: column-reverse; gap: 8px; }
+  .modal-ft .btn-propose, .modal-ft .btn-cancel { width: 100%; text-align: center; }
+  .toast { left: 16px; right: 16px; bottom: 16px; }
+}
 @media (max-width: 480px) {
-  .topbar-content {
-    padding: 10px 12px;
-  }
-
-  .page-title {
-    font-size: 0.92rem;
-  }
-
-  .filter-tab {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-  }
-
-  .page-wrapper {
-    padding: 12px;
-  }
-
-  .viewings-grid {
-    gap: 12px;
-  }
-
-  .card-thumb {
-    height: 130px;
-  }
-
-  .card-body {
-    padding: 10px;
-  }
-
-  .prop-title {
-    font-size: 0.88rem;
-  }
-
-  .prop-city {
-    font-size: 0.75rem;
-  }
-
-  .meta-row {
-    gap: 10px;
-  }
-
-  .meta-item {
-    font-size: 0.75rem;
-  }
-
-  .notes-box {
-    padding: 8px 10px;
-    font-size: 0.75rem;
-  }
-
-  .card-actions {
-    gap: 5px;
-    margin-top: 10px;
-  }
-
-  .btn-action {
-    padding: 6px 10px;
-    font-size: 0.75rem;
-  }
-
-  .state-box {
-    padding: 30px 12px;
-  }
-
-  .state-icon {
-    font-size: 40px;
-  }
-
-  .state-box h3 {
-    font-size: 1rem;
-  }
-
-  .state-box p {
-    font-size: 0.82rem;
-  }
-
-  .modal-header h3 {
-    font-size: 0.9rem;
-  }
-
-  .modal-body {
-    padding: 12px;
-  }
-
-  .form-group label {
-    font-size: 0.78rem;
-  }
-
-  .form-input,
-  .form-textarea {
-    font-size: 0.82rem;
-    padding: 8px 10px;
-  }
-
-  .toast {
-    bottom: 16px;
-    right: 12px;
-    left: 12px;
-    font-size: 0.82rem;
-    padding: 12px 14px;
-  }
+  .content-inner { padding: 12px; }
+  .card-thumb { height: 140px; }
 }
 </style>

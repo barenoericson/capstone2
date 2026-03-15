@@ -798,7 +798,7 @@ export default {
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#1a1a2e';
+      ctx.strokeStyle = '#0B1C39';
       ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -1014,7 +1014,7 @@ export default {
 /* =========================================================
    Sidebar
    ========================================================= */
-.sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+.sidebar { width: 260px; min-height: 100vh; background: #0B1C39; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
 .sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .sidebar-logo { font-size: 22px; font-weight: 800; margin: 0; }
 .logo-realty { color: #fff; } .logo-ph { color: #e94560; }
@@ -1044,11 +1044,11 @@ export default {
 .main-content { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 .topbar { background: #fff; border-bottom: 1px solid #e8ecf0; padding: 0 28px; height: 64px; position: sticky; top: 0; z-index: 50; }
 .topbar-content { display: flex; align-items: center; justify-content: space-between; height: 100%; }
-.page-title { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-title { font-size: 20px; font-weight: 700; color: #0B1C39; margin: 0; }
 .filter-tabs { display: flex; gap: 6px; }
 .filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #e0e0e0; background: #fff; color: #666; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-.filter-tab:hover { border-color: #0f3460; color: #0f3460; }
-.filter-tab.active { background: #0f3460; border-color: #0f3460; color: #fff; }
+.filter-tab:hover { border-color: #D89B0F; color: #D89B0F; }
+.filter-tab.active { background: #D89B0F; border-color: #D89B0F; color: #fff; }
 .tab-badge { background: #e94560; color: #fff; border-radius: 12px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
 .content-area { padding: 28px; flex: 1; }
 
@@ -1056,11 +1056,11 @@ export default {
    Loading / Empty
    ========================================================= */
 .loading-state { text-align: center; padding: 80px 20px; color: #666; }
-.spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #0f3460; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+.spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #D89B0F; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .empty-state { text-align: center; padding: 80px 20px; }
 .empty-icon { font-size: 56px; margin-bottom: 16px; }
-.empty-state h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0 0 8px; }
+.empty-state h3 { font-size: 20px; font-weight: 700; color: #0B1C39; margin: 0 0 8px; }
 .empty-state p { color: #666; margin: 0; }
 
 /* =========================================================
@@ -1073,7 +1073,7 @@ export default {
 .doc-icon { font-size: 26px; }
 .doc-info { flex: 1; min-width: 0; }
 .doc-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
-.doc-name { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.doc-name { font-size: 16px; font-weight: 700; color: #0B1C39; margin: 0; }
 .doc-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .badge-pending { background: #fff3e0; color: #e65100; }
 .badge-signed { background: #e8f5e9; color: #2e7d32; }
@@ -1094,10 +1094,10 @@ export default {
 .signature-thumb { max-width: 100px; max-height: 40px; object-fit: contain; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa; }
 
 /* Upload zone */
-.upload-zone { border: 2px dashed #0f3460; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f0f4ff; margin-bottom: 24px; }
+.upload-zone { border: 2px dashed #D89B0F; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(216,155,15,0.04); margin-bottom: 24px; }
 .upload-zone:hover, .upload-zone.drag-active { background: #e0e8ff; border-color: #e94560; }
 .upload-zone-icon { font-size: 48px; display: block; margin-bottom: 12px; }
-.upload-zone h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0 0 6px; }
+.upload-zone h4 { font-size: 16px; font-weight: 700; color: #0B1C39; margin: 0 0 6px; }
 .upload-zone p { font-size: 13px; color: #888; margin: 0; }
 .btn-edit { background: #fff3e0; color: #e65100; }
 .btn-edit:hover { background: #e65100; color: #fff; }
@@ -1109,7 +1109,7 @@ export default {
 .modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 620px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; max-height: 90vh; overflow-y: auto; }
 .sign-modal-wide { max-width: 800px; }
 .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 28px 0; }
-.modal-title { font-size: 20px; font-weight: 800; color: #1a1a2e; margin: 0 0 4px; }
+.modal-title { font-size: 20px; font-weight: 800; color: #0B1C39; margin: 0 0 4px; }
 .modal-subtitle { font-size: 13px; color: #666; margin: 0; }
 .modal-close { background: none; border: none; font-size: 20px; color: #999; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
 .modal-close:hover { background: #f5f5f5; color: #333; }
@@ -1117,8 +1117,8 @@ export default {
 /* Tabs */
 .sign-tabs { display: flex; padding: 20px 28px 0; border-bottom: 2px solid #f0f0f0; }
 .sign-tab { flex: 1; padding: 10px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #999; cursor: pointer; transition: all 0.2s; margin-bottom: -2px; }
-.sign-tab:hover { color: #0f3460; }
-.sign-tab.active { color: #0f3460; border-bottom-color: #0f3460; }
+.sign-tab:hover { color: #D89B0F; }
+.sign-tab.active { color: #D89B0F; border-bottom-color: #D89B0F; }
 
 .sign-tab-content { padding: 20px 28px; }
 .sign-hint { font-size: 13px; color: #666; margin: 0 0 14px; }
@@ -1133,7 +1133,7 @@ export default {
 
 /* Upload area */
 .upload-area { border: 2px dashed #c5cae9; border-radius: 12px; min-height: 200px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: #fafbff; transition: border-color 0.2s; }
-.upload-area:hover { border-color: #0f3460; }
+.upload-area:hover { border-color: #D89B0F; }
 .hidden-input { display: none; }
 .upload-placeholder { text-align: center; color: #999; }
 .upload-icon { font-size: 40px; display: block; margin-bottom: 10px; }
@@ -1151,7 +1151,7 @@ export default {
 .preview-label { font-size: 14px; color: #555; margin: 0 0 14px; font-weight: 500; }
 .sig-area-box { border: 2px dashed #c5cae9; border-radius: 12px; background: #fafbff; padding: 20px 24px 0; min-height: 130px; display: flex; flex-direction: column; justify-content: flex-end; }
 .sig-area-img { max-height: 90px; max-width: 55%; object-fit: contain; display: block; margin: 0 auto 8px; }
-.sig-area-line { display: flex; justify-content: space-between; border-top: 2px solid #1a1a2e; padding: 8px 4px 12px; font-size: 12px; color: #666; font-weight: 500; }
+.sig-area-line { display: flex; justify-content: space-between; border-top: 2px solid #0B1C39; padding: 8px 4px 12px; font-size: 12px; color: #666; font-weight: 500; }
 
 /* Footer */
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px; border-top: 1px solid #f0f0f0; }
@@ -1169,7 +1169,7 @@ export default {
 .phase-step.active { opacity: 1; }
 .phase-step.done { opacity: 0.7; }
 .phase-num { width: 24px; height: 24px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #666; }
-.phase-step.active .phase-num { background: #0f3460; color: #fff; }
+.phase-step.active .phase-num { background: #D89B0F; color: #fff; }
 .phase-step.done .phase-num { background: #27ae60; color: #fff; }
 .phase-label { font-size: 12px; font-weight: 600; color: #333; }
 .phase-connector { width: 32px; height: 2px; background: #e0e0e0; margin: 0 8px; }
@@ -1181,7 +1181,7 @@ export default {
 .pdf-preview-area { }
 .page-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
 .page-nav-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fff; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-.page-nav-btn:hover:not(:disabled) { background: #f0f4ff; border-color: #0f3460; }
+.page-nav-btn:hover:not(:disabled) { background: rgba(216,155,15,0.04); border-color: #D89B0F; }
 .page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .page-info { font-size: 13px; font-weight: 600; color: #333; }
 .pdf-canvas-container { position: relative; border: 2px solid #e0e0e0; border-radius: 8px; overflow: hidden; cursor: crosshair; background: #f5f5f5; }
@@ -1201,9 +1201,9 @@ export default {
 
 /* Signing progress */
 .signing-progress { text-align: center; padding: 60px 28px; }
-.signing-progress h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 16px 0 8px; }
+.signing-progress h3 { font-size: 18px; font-weight: 700; color: #0B1C39; margin: 16px 0 8px; }
 .signing-progress p { font-size: 14px; color: #666; margin: 0; }
-.spinner-lg { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: #0f3460; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+.spinner-lg { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: #D89B0F; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
 
 /* =========================================================
    Toast
@@ -1211,7 +1211,7 @@ export default {
 .toast { position: fixed; bottom: 28px; right: 28px; padding: 14px 22px; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 600; box-shadow: 0 6px 24px rgba(0,0,0,0.2); z-index: 9999; animation: slideUp 0.3s ease; }
 .toast-success { background: #27ae60; }
 .toast-error   { background: #e74c3c; }
-.toast-info    { background: #0f3460; }
+.toast-info    { background: #D89B0F; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ===== Responsive ===== */

@@ -11,15 +11,15 @@ const routes = [
     },
     {
         path: '/login',
-        component: () => import('../pages/Login.vue'),
+        component: () => import('../pages/Landing.vue'),
         name: 'Login',
-        meta: { transition: 'slide-left' },
+        meta: { transition: 'fade' },
     },
     {
         path: '/register',
-        component: () => import('../pages/Register.vue'),
+        component: () => import('../pages/Landing.vue'),
         name: 'Register',
-        meta: { transition: 'slide-right' },
+        meta: { transition: 'fade' },
     },
     {
         path: '/reset-password',
@@ -46,6 +46,14 @@ const routes = [
             requiresAuth: true,
             transition: 'fade',
         },
+    },
+
+    // ✅ Guest Properties (public browsing — no auth required)
+    {
+        path: '/explore',
+        component: () => import('../pages/GuestProperties.vue'),
+        name: 'GuestProperties',
+        meta: { requiresAuth: false, transition: 'fade' },
     },
 
     // ✅ Property Details Page (public - visitors can browse)

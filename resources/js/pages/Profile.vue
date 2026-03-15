@@ -180,11 +180,14 @@
 
           <!-- ② TABS -->
           <div class="tab-nav">
-            <button v-for="tab in profileTabs" :key="tab.id"
+            <button
+              v-for="tab in profileTabs.filter(t => !t.buyerOnly || userRole === 'buyer')"
+              :key="tab.id"
               class="tab-btn" :class="{ active: activeTab === tab.id }"
               @click="activeTab = tab.id">
               <span class="tab-ic" v-html="tab.svg"></span>
               {{ tab.label }}
+              <span v-if="tab.id === 'application' && agentApplication && agentApplication.status === 'pending'" class="tab-badge-dot"></span>
             </button>
           </div>
 
@@ -382,6 +385,101 @@
             </div>
           </section>
 
+          <!-- ⑥ AGENT APPLICATION (buyer only) -->
+          <section v-if="activeTab === 'application' && userRole === 'buyer'" class="section-card">
+            <div class="sc-head">
+              <div class="sc-title-row">
+                <div class="sc-icon si-gold">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div>
+                  <h3 class="sc-title">Agent Application</h3>
+                  <p class="sc-sub">Track your application to become a RealtyLinkPH agent</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="loadingApplication" class="app-loading">
+              <div class="app-spinner"></div>
+              <span>Loading application status…</span>
+            </div>
+
+            <!-- No application yet -->
+            <div v-else-if="!agentApplication" class="app-empty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <p>You haven't applied to become an agent yet.</p>
+              <router-link to="/become-agent" class="btn-apply-now">Apply Now →</router-link>
+            </div>
+
+            <!-- Application exists -->
+            <div v-else class="app-detail">
+              <!-- Status banner -->
+              <div class="app-status-banner" :class="appStatusClass(agentApplication.status)">
+                <div class="app-status-icon">
+                  <svg v-if="agentApplication.status === 'approved'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg v-else-if="agentApplication.status === 'rejected'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div>
+                  <strong>{{ appStatusLabel(agentApplication.status) }}</strong>
+                  <p v-if="agentApplication.status === 'pending'">Your application is being reviewed. You'll be notified once a decision is made.</p>
+                  <p v-else-if="agentApplication.status === 'approved'">Congratulations! You are now a verified RealtyLinkPH agent.</p>
+                  <p v-else-if="agentApplication.status === 'rejected'">Your application was not approved. See details below.</p>
+                </div>
+              </div>
+
+              <!-- Application details -->
+              <div class="info-grid app-info-grid">
+                <div class="info-item">
+                  <span class="ii-label">Applicant Name</span>
+                  <span class="ii-value">{{ agentApplication.applicant_name }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="ii-label">License Number</span>
+                  <span class="ii-value">{{ agentApplication.license_number }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="ii-label">Company</span>
+                  <span class="ii-value">{{ agentApplication.company_name }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="ii-label">Submitted</span>
+                  <span class="ii-value">{{ formatAppDate(agentApplication.applied_at) }}</span>
+                </div>
+                <div v-if="agentApplication.verified_at" class="info-item">
+                  <span class="ii-label">Approved On</span>
+                  <span class="ii-value">{{ formatAppDate(agentApplication.verified_at) }}</span>
+                </div>
+                <div v-if="agentApplication.rejected_at" class="info-item">
+                  <span class="ii-label">Rejected On</span>
+                  <span class="ii-value">{{ formatAppDate(agentApplication.rejected_at) }}</span>
+                </div>
+              </div>
+
+              <!-- AI Decision -->
+              <div v-if="agentApplication.ai_decision" class="app-ai-section">
+                <div class="app-ai-label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  RealtyLinkPH Buddy Decision:
+                  <span class="ai-verdict" :class="'ai-' + agentApplication.ai_decision">
+                    {{ agentApplication.ai_decision === 'approved' ? '✅ Auto-Approved' : agentApplication.ai_decision === 'rejected' ? '❌ Rejected' : '🔍 Sent for Review' }}
+                  </span>
+                </div>
+                <p v-if="agentApplication.rejection_reason" class="app-rejection-reason">{{ agentApplication.rejection_reason }}</p>
+              </div>
+
+              <!-- Cooldown + reapply -->
+              <div v-if="agentApplication.status === 'rejected'" class="app-reapply-section">
+                <div v-if="canReapplyAt && new Date(canReapplyAt) > new Date()" class="cooldown-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  You can reapply after <strong>{{ formatAppDate(canReapplyAt) }}</strong>
+                </div>
+                <router-link v-else to="/become-agent" class="btn-apply-now">Reapply Now →</router-link>
+              </div>
+            </div>
+          </section>
+
         </div><!-- /content-inner -->
       </main>
 
@@ -455,10 +553,14 @@ export default {
         { id: 3, device: 'Chrome on MacOS',   location: 'Davao, Philippines', time: '3 days ago at 8:45 PM' },
       ],
       profileTabs: [
-        { id: 'personal', label: 'Personal Info', svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
-        { id: 'security', label: 'Security',      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
-        { id: 'account',  label: 'Account',       svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
+        { id: 'personal',    label: 'Personal Info', svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
+        { id: 'security',    label: 'Security',      svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+        { id: 'account',     label: 'Account',       svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
+        { id: 'application', label: 'Agent Application', svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', buyerOnly: true },
       ],
+      agentApplication: null,
+      loadingApplication: false,
+      canReapplyAt: null,
     };
   },
 
@@ -600,6 +702,34 @@ export default {
     showSuccess(msg) { this.successMessage = msg; setTimeout(() => { this.successMessage = ''; }, 3000); },
     showError(msg)   { this.errorMessage   = msg; setTimeout(() => { this.errorMessage   = ''; }, 3000); },
 
+    async loadAgentApplication() {
+      this.loadingApplication = true;
+      try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetch(`${window.__API_URL__}/api/user/agent-application-status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.hasApplication) {
+          this.agentApplication = data.application;
+          this.canReapplyAt     = data.canReapplyAt || null;
+        }
+      } catch { /* silent */ } finally {
+        this.loadingApplication = false;
+      }
+    },
+
+    appStatusLabel(status) {
+      return { pending: 'Under Review', approved: 'Approved', rejected: 'Rejected' }[status] || status;
+    },
+    appStatusClass(status) {
+      return { pending: 'app-pending', approved: 'app-approved', rejected: 'app-rejected' }[status] || '';
+    },
+    formatAppDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    },
+
     loadUserData() {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -669,6 +799,7 @@ export default {
     if (this.userRole === 'buyer') {
       this.loadViewings();
       this.loadConversations();
+      this.loadAgentApplication();
     }
   },
 };
@@ -679,12 +810,13 @@ export default {
 
 /* ── TOKENS (defined on wrapper so scoped vars cascade correctly) ── */
 .profile-layout {
-  --navy:  #0B1C39; --navy2: #102445; --navy3: #1a3158;
-  --gold:  #D89B0F; --gold2: #E5B332; --gold3: #B07A08;
+  --primary:  #0B1C39; --primary2: #102445; --primary3: #1a3158;
+  --navy: #0B1C39; --navy2: #102445; --navy3: #1a3158;
+  --accent:   #D89B0F; --accent2:  #E5B332; --accent3:  #B07A08;
   --s50: #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
   --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
   --s600: #57534E; --s700: #44403C; --s900: #1C1917;
-  --white: #FFFFFF; --bg: #F2F0EB;
+  --white: #FFFFFF; --bg: #EDF0F2;
   --sw: 242px; --th: 56px;
   --fd: 'Outfit','Inter',-apple-system,sans-serif;
   --fb: 'Inter',-apple-system,sans-serif;
@@ -695,11 +827,11 @@ export default {
 /* ══ SIDEBAR ══ */
 .sidebar {
   position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
-  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
+  background: var(--primary); display: flex; flex-direction: column; z-index: 100;
 }
 .sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
 .sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; }
-.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.logo-ph { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
 .sidebar-nav::-webkit-scrollbar { display: none; }
 
@@ -711,10 +843,10 @@ export default {
   font-family: var(--fb); position: relative;
 }
 .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
-.nav-item.router-link-exact-active { background: rgba(216,155,15,0.12); color: var(--gold2); }
+.nav-item.router-link-exact-active { background: rgba(216,155,15,0.12); color: var(--accent2); }
 .nav-item.router-link-exact-active::before {
   content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
-  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
 }
 .nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nav-icon-wrap svg { width: 18px; height: 18px; }
@@ -723,7 +855,7 @@ export default {
 .nav-user { gap: 10px; padding: 8px 10px; }
 .nav-av {
   width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
   display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
 }
 .nav-av img { width: 100%; height: 100%; object-fit: cover; }
@@ -746,14 +878,14 @@ export default {
 }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
 .hamburger { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
-.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: -0.3px; }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .tb-settings {
   display: flex; align-items: center; gap: 6px; padding: 7px 15px;
-  border: 1.5px solid var(--s200); border-radius: 8px; font-size: 12.5px;
+  border: 1.5px solid var(--s200); border-radius: 50px; font-size: 12.5px;
   font-weight: 600; color: var(--s600); text-decoration: none; transition: all .2s;
 }
-.tb-settings:hover { border-color: var(--gold); color: var(--gold3); }
+.tb-settings:hover { border-color: var(--accent); color: var(--accent3); }
 
 /* CONTENT */
 .content-area { flex: 1; background: var(--bg); }
@@ -1055,4 +1187,36 @@ export default {
   .sc-head { flex-direction: column; padding: 18px 18px 16px; }
   .tab-btn { font-size: 12px; padding: 8px 10px; }
 }
+
+/* ── AGENT APPLICATION TAB ── */
+.tab-badge-dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; display: inline-block; margin-left: 5px; vertical-align: middle; }
+
+.app-loading { display: flex; align-items: center; gap: 12px; padding: 32px 24px; color: var(--s500); font-size: 14px; }
+.app-spinner { width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.app-empty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 48px 24px; color: var(--s500); font-size: 14px; }
+.btn-apply-now { display: inline-block; padding: 10px 26px; border-radius: 50px; background: linear-gradient(135deg, var(--gold), var(--gold3, #B07A08)); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; transition: opacity 0.2s; }
+.btn-apply-now:hover { opacity: 0.88; }
+
+.app-status-banner { display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; }
+.app-status-banner strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.app-status-banner p { font-size: 13px; margin: 0; opacity: 0.85; }
+.app-pending  { background: #fef9ec; border: 1px solid #fde68a; color: #92400e; }
+.app-approved { background: #d4edda; border: 1px solid #86efac; color: #166534; }
+.app-rejected { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+.app-status-icon { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.6); }
+
+.app-info-grid { margin-bottom: 16px; }
+
+.app-ai-section { background: #f9f8f6; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; }
+.app-ai-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--s600); }
+.ai-verdict { margin-left: auto; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 50px; }
+.ai-approved { background: #d4edda; color: #166534; }
+.ai-rejected  { background: #fee2e2; color: #991b1b; }
+.ai-unclear   { background: #fef3c7; color: #92400e; }
+.app-rejection-reason { font-size: 13px; color: var(--s500); margin: 10px 0 0; line-height: 1.5; }
+
+.app-reapply-section { margin-top: 8px; }
+.cooldown-box { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #92400e; background: #fef9ec; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; }
 </style>

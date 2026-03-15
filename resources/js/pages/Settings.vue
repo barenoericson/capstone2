@@ -68,7 +68,8 @@
         <div class="sidebar-divider"></div>
         <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
           <div class="nav-av">
-            <span>{{ userName.charAt(0).toUpperCase() }}</span>
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
           <div class="nav-user-info">
             <span class="nav-user-name">{{ userName }}</span>
@@ -300,7 +301,7 @@ export default {
   data() {
     return {
       sidebarOpen: false,
-      userName: '', userRole: '',
+      userName: '', userRole: '', profilePhotoUrl: null,
       currentTheme: localStorage.getItem('theme_preference') || 'light',
       currentLang:  localStorage.getItem('lang_preference')  || 'en',
       saved: false,
@@ -414,6 +415,7 @@ export default {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.userName = user.name || 'User';
     this.userRole = user.role || 'buyer';
+    if (user.profile_photo_path) this.profilePhotoUrl = `${this.apiUrl}/storage/${user.profile_photo_path}`;
     this.loadSavedNotifSettings();
     this.applyTheme();
     this.checkGoogleCalendarStatus();
@@ -427,12 +429,12 @@ export default {
 
 /* ── TOKENS ── */
 .settings-layout {
-  --navy:  #0B1C39; --navy2: #102445; --navy3: #1a3158;
-  --gold:  #D89B0F; --gold2: #E5B332; --gold3: #B07A08;
+  --primary:  #0B1C39; --primary2: #102445; --primary3: #1a3158;
+  --accent:   #D89B0F; --accent2:  #E5B332; --accent3:  #B07A08;
   --s50: #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
   --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
   --s600: #57534E; --s700: #44403C; --s900: #1C1917;
-  --white: #FFFFFF; --bg: #F2F0EB;
+  --white: #FFFFFF; --bg: #EDF0F2;
   --sw: 242px; --th: 56px;
   --fd: 'Outfit','Inter',-apple-system,sans-serif;
   --fb: 'Inter',-apple-system,sans-serif;
@@ -443,11 +445,11 @@ export default {
 /* ══ SIDEBAR ══ */
 .sidebar {
   position: fixed; top: 0; left: 0; bottom: 0; width: var(--sw);
-  background: var(--navy); display: flex; flex-direction: column; z-index: 100;
+  background: var(--primary); display: flex; flex-direction: column; z-index: 100;
 }
 .sidebar-header { padding: 22px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
 .sidebar-logo { font-family: var(--fd); font-size: 18px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: -0.4px; }
-.logo-ph { background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.logo-ph { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 10px 4px; scrollbar-width: none; }
 .sidebar-nav::-webkit-scrollbar { display: none; }
 
@@ -459,10 +461,10 @@ export default {
   font-family: var(--fb); position: relative;
 }
 .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.78); }
-.nav-item.router-link-exact-active { background: rgba(216,155,15,0.12); color: var(--gold2); }
+.nav-item.router-link-exact-active { background: rgba(216,155,15,0.12); color: var(--accent2); }
 .nav-item.router-link-exact-active::before {
   content: ''; position: absolute; left: 0; top: 7px; bottom: 7px;
-  width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
 }
 .nav-icon-wrap { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nav-icon-wrap svg { width: 18px; height: 18px; }
@@ -471,7 +473,7 @@ export default {
 .nav-user { gap: 10px; padding: 8px 10px; }
 .nav-av {
   width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
   display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; color: #fff;
 }
 .nav-user-info { flex: 1; min-width: 0; }
@@ -493,14 +495,14 @@ export default {
 }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
 .hamburger { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
-.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; }
+.topbar-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: -0.3px; }
 .topbar-right { display: flex; align-items: center; }
 .tb-profile {
   display: flex; align-items: center; gap: 6px; padding: 7px 15px;
-  border: 1.5px solid var(--s200); border-radius: 8px; font-size: 12.5px;
+  border: 1.5px solid var(--s200); border-radius: 50px; font-size: 12.5px;
   font-weight: 600; color: var(--s600); text-decoration: none; transition: all .2s;
 }
-.tb-profile:hover { border-color: var(--gold); color: var(--gold3); }
+.tb-profile:hover { border-color: var(--accent); color: var(--accent3); }
 
 /* CONTENT */
 .content-area { flex: 1; background: var(--bg); }
@@ -521,9 +523,9 @@ export default {
 }
 .ci-purple { background: rgba(168,85,247,0.09); color: #9333ea; }
 .ci-blue   { background: rgba(59,130,246,0.09);  color: #3b82f6; }
-.ci-gold   { background: rgba(216,155,15,0.10);  color: var(--gold); }
+.ci-gold   { background: rgba(216,155,15,0.10);  color: var(--accent); }
 .ci-green  { background: rgba(22,163,74,0.09);   color: #16a34a; }
-.card-title { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.card-title { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
 .card-desc  { font-size: 12.5px; color: var(--s400); }
 
 /* ── THEME GRID ── */
@@ -534,7 +536,7 @@ export default {
   padding: 0 0 12px; display: flex; flex-direction: column;
 }
 .theme-btn:hover { border-color: rgba(216,155,15,0.35); }
-.theme-btn.active { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(216,155,15,0.12); }
+.theme-btn.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(216,155,15,0.12); }
 
 .theme-preview { height: 72px; display: flex; flex-direction: column; overflow: hidden; }
 .tp-light .theme-preview { background: #f8f8f8; }
@@ -555,7 +557,7 @@ export default {
 .theme-label-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 13px 0; }
 .theme-label { font-size: 13px; font-weight: 600; color: var(--s700); }
 .theme-check {
-  width: 20px; height: 20px; border-radius: 50%; background: var(--gold);
+  width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
   display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
 }
 
@@ -574,7 +576,7 @@ export default {
 .lang-name { display: block; font-size: 14px; font-weight: 700; color: var(--s900); }
 .lang-native { display: block; font-size: 12px; color: var(--s400); margin-top: 1px; }
 .lang-check {
-  width: 22px; height: 22px; border-radius: 50%; background: var(--gold);
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
   display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
 }
 
@@ -594,7 +596,7 @@ export default {
   background: var(--s300); border: none; cursor: pointer;
   position: relative; transition: background .3s; flex-shrink: 0; padding: 0;
 }
-.toggle-switch.on { background: var(--gold); }
+.toggle-switch.on { background: var(--accent); }
 .toggle-thumb {
   position: absolute; width: 19px; height: 19px; border-radius: 50%;
   background: white; top: 3px; left: 3px;
@@ -610,7 +612,7 @@ export default {
 }
 .gcal-spinner {
   width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid var(--s200); border-top-color: var(--gold);
+  border: 2px solid var(--s200); border-top-color: var(--accent);
   animation: spin .7s linear infinite; flex-shrink: 0;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -626,10 +628,10 @@ export default {
 .btn-connect {
   display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px;
   border-radius: 10px; border: 1.5px solid rgba(216,155,15,0.35);
-  background: rgba(216,155,15,0.06); color: var(--gold3);
+  background: rgba(216,155,15,0.06); color: var(--accent3);
   font-size: 13px; font-weight: 700; cursor: pointer; transition: all .22s; align-self: flex-start;
 }
-.btn-connect:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
+.btn-connect:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 .btn-disconnect {
   display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
   border-radius: 9px; border: 1.5px solid #fecaca; background: #fef2f2;

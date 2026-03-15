@@ -642,7 +642,7 @@ export default {
     requireAuth() {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        this.showLoginModal = true;
+        this.$router.push({ path: '/login', query: { redirect: this.$route.fullPath } });
         return false;
       }
       return true;
@@ -978,7 +978,7 @@ export default {
   background: var(--palace-gold);
   color: var(--smoky-black);
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -1720,7 +1720,7 @@ export default {
   background: var(--palace-gold);
   color: #001F3F;
   border: none;
-  border-radius: 10px;
+  border-radius: 50px;
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
@@ -1751,7 +1751,7 @@ export default {
   background: #001F3F;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 50px;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -1789,7 +1789,7 @@ export default {
   background: transparent;
   color: #001F3F;
   border: 1.5px solid #001F3F;
-  border-radius: 8px;
+  border-radius: 50px;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
