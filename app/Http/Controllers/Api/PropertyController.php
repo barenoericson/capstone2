@@ -17,16 +17,22 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         try {
-            $properties = Property::with([
+            $query = Property::with([
                 'agent.user',
                 'photos' => function ($q) {
                     $q->orderBy('is_cover', 'desc')
                       ->orderBy('sort_order', 'asc');
                 }
             ])
-            ->where('status', 'available')
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->where('status', 'available');
+
+            // Filter by listing type (sale/rent)
+            if ($request->has('listing_type') && in_array($request->listing_type, ['sale', 'rent'])) {
+                $query->where('listing_type', $request->listing_type);
+            }
+
+            $properties = $query->orderBy('created_at', 'desc')
+                ->paginate(12);
 
             return response()->json([
                 'success' => true,
@@ -138,7 +144,8 @@ class PropertyController extends Controller
                 'floor_area' => 'nullable|numeric',
                 'lot_area' => 'nullable|numeric',
                 'property_type' => 'required|string',
-                'status' => 'nullable|string|in:available,sold',
+                'listing_type' => 'nullable|string|in:sale,rent',
+                'status' => 'nullable|string|in:available,sold,rented',
             ]);
 
             $agent = auth()->user()->agent;
@@ -151,6 +158,7 @@ class PropertyController extends Controller
 
             $validated['agent_id'] = $agent->id;
             $validated['status'] = $validated['status'] ?? 'available';
+            $validated['listing_type'] = $validated['listing_type'] ?? 'sale';
 
             $property = Property::create($validated);
 
@@ -235,7 +243,8 @@ class PropertyController extends Controller
                 'floor_area' => 'nullable|numeric',
                 'lot_area' => 'nullable|numeric',
                 'property_type' => 'required|string',
-                'status' => 'nullable|string|in:available,sold',
+                'listing_type' => 'nullable|string|in:sale,rent',
+                'status' => 'nullable|string|in:available,sold,rented',
             ]);
 
             $property->update($validated);
@@ -319,7 +328,7 @@ class PropertyController extends Controller
             }
 
             $validated = $request->validate([
-                'status' => 'required|string|in:available,sold',
+                'status' => 'required|string|in:available,sold,rented',
             ]);
 
             $property->update(['status' => $validated['status']]);

@@ -101,7 +101,8 @@
               {{ properties.length }} saved
             </span>
             <router-link to="/properties" class="btn-browse">
-              🏠 Browse Properties
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Browse Properties
             </router-link>
           </div>
         </div>
@@ -116,11 +117,15 @@
 
         <!-- Empty State -->
         <div v-else-if="properties.length === 0" class="empty-state">
-          <div class="empty-icon">🏡</div>
+          <div class="empty-icon-svg">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
           <h3>No Saved Properties Yet</h3>
           <p>Browse listings and tap the save button to add properties to your wallet.</p>
           <router-link to="/properties" class="btn-go-browse">
-            Discover Properties →
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Discover Properties
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </router-link>
         </div>
 
@@ -430,12 +435,14 @@ export default {
 
 .empty-state { text-align: center; padding: 100px 20px; }
 .empty-icon { font-size: 72px; margin-bottom: 20px; }
+.empty-icon-svg { margin-bottom: 20px; }
 .empty-state h3 { font-size: 24px; font-weight: 700; color: var(--navy); margin: 0 0 12px; }
 .empty-state p { color: #999; font-size: 15px; margin-bottom: 28px; }
 .btn-go-browse {
-  display: inline-block; padding: 13px 28px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px;
   background: linear-gradient(135deg, var(--gold), var(--gold3));
-  color: var(--navy); border-radius: 10px; font-weight: 700; font-size: 15px;
+  color: var(--navy); border-radius: 50px; font-weight: 700; font-size: 15px;
   text-decoration: none; transition: all 0.2s;
 }
 .btn-go-browse:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(230,174,13,0.3); }

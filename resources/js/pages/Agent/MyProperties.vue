@@ -97,9 +97,12 @@
             <h1 class="page-title">My Properties</h1>
           </div>
           <div class="topbar-right">
-            <button class="btn-icon">🔔</button>
+            <button class="btn-icon" title="Notifications">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
             <router-link to="/agent/properties/create" class="btn-primary">
-              ➕ Add New Property
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add New Property
             </router-link>
           </div>
         </div>
@@ -119,10 +122,19 @@
           </div>
 
           <div class="filter-group">
+            <select v-model="listingTypeFilter" class="filter-select">
+              <option value="">All Listings</option>
+              <option value="sale">For Sale</option>
+              <option value="rent">For Rent</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
             <select v-model="statusFilter" class="filter-select">
               <option value="">All Status</option>
               <option value="available">Available</option>
               <option value="sold">Sold</option>
+              <option value="rented">Rented</option>
             </select>
           </div>
 
@@ -139,13 +151,15 @@
 
         <!-- Loading State -->
         <div v-if="loading" class="loading-state">
-          <p>⏳ Loading properties...</p>
+          <div class="spinner"></div>
+          <p>Loading properties...</p>
         </div>
 
         <!-- Empty State -->
         <div v-else-if="filteredProperties.length === 0" class="empty-state">
           <div class="empty-content">
-            <h3>📭 No Properties Found</h3>
+            <div class="empty-icon-wrap"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+            <h3>No Properties Found</h3>
             <p>{{ searchQuery ? 'No properties match your search.' : 'You haven\'t created any properties yet.' }}</p>
             <router-link to="/agent/properties/create" class="btn-primary">
               Create Your First Property
@@ -164,26 +178,30 @@
                 :alt="property.title"
                 class="card-image"
               />
-              <div v-else class="card-image-placeholder">📷</div>
+              <div v-else class="card-image-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
               
+              <span :class="['listing-type-badge', 'lt-' + (property.listing_type || 'sale')]">
+                {{ (property.listing_type || 'sale') === 'rent' ? 'For Rent' : 'For Sale' }}
+              </span>
               <span :class="['status-badge', 'status-' + property.status]">
                 {{ formatStatus(property.status) }}
               </span>
 
               <span v-if="property.photos && property.photos.length > 0" class="photo-count">
-                📸 {{ property.photos.length }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                {{ property.photos.length }}
               </span>
             </div>
 
             <!-- Card Content -->
             <div class="card-content">
               <h4 class="property-title">{{ property.title }}</h4>
-              <p class="property-location">📍 {{ property.city }}</p>
+              <p class="property-location"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> {{ property.city }}</p>
 
               <div class="property-specs-row">
-                <span class="spec">🛏️ {{ property.bedrooms }}</span>
-                <span class="spec">🚿 {{ property.bathrooms }}</span>
-                <span class="spec">👁️ {{ property.view_count || 0 }}</span>
+                <span class="spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg> {{ property.bedrooms }}</span>
+                <span class="spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1z"/><path d="M6 12V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v7"/></svg> {{ property.bathrooms }}</span>
+                <span class="spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ property.view_count || 0 }}</span>
               </div>
 
               <div class="property-price">
@@ -199,21 +217,21 @@
                   class="btn-card btn-edit"
                   title="Edit"
                 >
-                  ✏️ Edit
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit
                 </router-link>
                 <button
                   @click="deleteProperty(property.id)"
                   class="btn-card btn-delete"
                   title="Delete"
                 >
-                  🗑️ Delete
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete
                 </button>
                 <button
                   @click="changeStatus(property.id, property.status)"
                   class="btn-card btn-status"
                   title="Change Status"
                 >
-                  ⚙️ Status
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Status
                 </button>
               </div>
             </div>
@@ -255,7 +273,7 @@
           <p>Select new status for this property:</p>
           <div class="status-options">
             <button
-              v-for="status in ['available', 'sold']"
+              v-for="status in ['available', 'sold', 'rented']"
               :key="status"
               @click="confirmStatusChange(status)"
               :class="['status-option', 'status-' + status]"
@@ -300,6 +318,7 @@ export default {
 
       // Filters
       searchQuery: '',
+      listingTypeFilter: '',
       statusFilter: '',
       sortBy: 'newest',
 
@@ -327,6 +346,11 @@ export default {
           p.city.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
           p.address.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
+      }
+
+      // Filter by listing type
+      if (this.listingTypeFilter) {
+        filtered = filtered.filter(p => (p.listing_type || 'sale') === this.listingTypeFilter);
       }
 
       // Filter by status
@@ -362,20 +386,11 @@ export default {
       this.showUserMenu = !this.showUserMenu;
     },
 
-    async loadProfilePhoto() {
+    loadProfilePhoto() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
-        else {
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.profile_photo_path) {
-            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
-          }
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.profile_photo_path) {
+          this.profilePhotoUrl = `${window.__API_URL__ || 'http://localhost:8000'}/storage/${user.profile_photo_path}`;
         }
       } catch (e) { /* non-critical */ }
     },
@@ -392,6 +407,7 @@ export default {
       const statusMap = {
         available: 'Available',
         sold: 'Sold',
+        rented: 'Rented',
       };
       return statusMap[status] || status;
     },
@@ -847,6 +863,19 @@ export default {
   color: #ddd;
 }
 
+.listing-type-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.lt-sale { background: #dcfce7; color: #15803d; }
+.lt-rent { background: #ede9fe; color: #7c3aed; }
+
 .status-badge {
   position: absolute;
   top: 12px;
@@ -868,8 +897,13 @@ export default {
   color: #721c24;
 }
 
+.status-rented {
+  background: #dbeafe;
+  color: #1e40af;
+}
 
 .photo-count {
+  display: inline-flex; align-items: center; gap: 4px;
   position: absolute;
   bottom: 12px;
   left: 12px;
@@ -991,6 +1025,9 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-icon-wrap { margin-bottom: 8px; color: #ccc; }
 .empty-content {
   display: flex;
   flex-direction: column;
@@ -1144,6 +1181,11 @@ export default {
 .status-option.status-sold {
   border-color: #721c24;
   color: #721c24;
+}
+
+.status-option.status-rented {
+  border-color: #1e40af;
+  color: #1e40af;
 }
 
 

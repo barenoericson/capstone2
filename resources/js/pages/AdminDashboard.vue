@@ -11,38 +11,112 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button
-          v-for="tab in navTabs"
-          :key="tab.id"
-          :class="['nav-item', { active: activeTab === tab.id }]"
-          @click="activeTab = tab.id"
-        >
-          <span class="nav-icon" v-html="getTabIcon(tab.id)"></span>
-          <span class="nav-label">{{ tab.label }}</span>
-          <span v-if="tab.badge" class="nav-badge">{{ tab.badge }}</span>
+        <button :class="['nav-item', { active: activeTab === 'overview' }]" @click="activeTab = 'overview'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('overview')"></span>
+          <span>Overview</span>
+        </button>
+
+        <div class="nav-group-label">Management</div>
+        <button :class="['nav-item', { active: activeTab === 'agents' }]" @click="activeTab = 'agents'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('agents')"></span>
+          <span>Agent Verification</span>
+          <span v-if="navTabs[1].badge" class="nav-badge">{{ navTabs[1].badge }}</span>
+        </button>
+        <button :class="['nav-item', { active: activeTab === 'users' }]" @click="activeTab = 'users'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('users')"></span>
+          <span>User Management</span>
+        </button>
+
+        <div class="nav-group-label">Content</div>
+        <button :class="['nav-item', { active: activeTab === 'properties' }]" @click="activeTab = 'properties'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('properties')"></span>
+          <span>Properties</span>
+        </button>
+        <button :class="['nav-item', { active: activeTab === 'photos' }]" @click="activeTab = 'photos'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('photos')"></span>
+          <span>Photo Moderation</span>
+          <span v-if="navTabs[4].badge" class="nav-badge">{{ navTabs[4].badge }}</span>
+        </button>
+        <button :class="['nav-item', { active: activeTab === 'flagged' }]" @click="activeTab = 'flagged'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('flagged')"></span>
+          <span>Flagged Properties</span>
+          <span v-if="navTabs[5].badge" class="nav-badge">{{ navTabs[5].badge }}</span>
+        </button>
+
+        <div class="nav-group-label">System</div>
+        <button :class="['nav-item', { active: activeTab === 'audit' }]" @click="activeTab = 'audit'">
+          <span class="nav-icon-wrap" v-html="getTabIcon('audit')"></span>
+          <span>Audit Logs</span>
+        </button>
+        <button :class="['nav-item', { active: activeTab === 'announcements' }]" @click="activeTab = 'announcements'">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+          <span>Announcements</span>
         </button>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <p class="user-name">{{ userName }}</p>
-            <p class="user-role">Administrator</p>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <div class="nav-item nav-user">
+          <div class="nav-av">
+            <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" />
+            <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
+          </div>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">Administrator</span>
           </div>
         </div>
-        <button @click="logout" class="btn-logout">Logout</button>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
     <!-- ========== MAIN CONTENT ========== -->
     <main class="main-content">
-      <nav class="topbar">
-        <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <h1 class="page-title">{{ currentTabTitle }}</h1>
-      </nav>
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 class="page-title">{{ currentTabTitle }}</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="tb-icon-btn" @click="showNotifPanel = !showNotifPanel">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span v-if="adminUnreadCount > 0" class="tb-badge">{{ adminUnreadCount > 99 ? '99+' : adminUnreadCount }}</span>
+            </button>
+            <transition name="drop">
+              <div v-if="showNotifPanel" class="notif-panel">
+                <div class="np-head">
+                  <span>Notifications</span>
+                  <button v-if="adminNotifications.length > 0" class="np-read-all" @click="markAllAdminNotifsRead">Mark all read</button>
+                </div>
+                <div v-if="adminNotifications.length === 0" class="np-empty">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                  <p>No notifications</p>
+                </div>
+                <div v-for="n in adminNotifications.slice(0, 8)" :key="n.id"
+                  class="np-item" :class="{ 'np-unread': !n.is_read }" @click="handleAdminNotifClick(n)">
+                  <div class="np-dot-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+                  </div>
+                  <div class="np-body">
+                    <p class="np-title">{{ n.title }}</p>
+                    <p class="np-msg">{{ n.message }}</p>
+                    <p class="np-time">{{ formatRelativeTime(n.created_at) }}</p>
+                  </div>
+                  <span v-if="!n.is_read" class="np-unread-dot"></span>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+      </header>
 
       <div class="page-wrapper">
         <!-- ===== OVERVIEW TAB ===== -->
@@ -56,49 +130,63 @@
             <!-- Stat Cards -->
             <div class="stats-grid">
               <div class="stat-card">
-                <div class="stat-icon stat-icon-users">👥</div>
+                <div class="stat-icon stat-icon-users">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.total_users }}</p>
                   <p class="stat-label">Total Users</p>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon stat-icon-properties">🏠</div>
+                <div class="stat-icon stat-icon-properties">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.total_properties }}</p>
                   <p class="stat-label">Total Properties</p>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon stat-icon-agents">✅</div>
+                <div class="stat-icon stat-icon-agents">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.verified_agents }}</p>
                   <p class="stat-label">Verified Agents</p>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon stat-icon-pending">⏳</div>
+                <div class="stat-icon stat-icon-pending">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.pending_agents }}</p>
                   <p class="stat-label">Pending Applications</p>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon stat-icon-active">📍</div>
+                <div class="stat-icon stat-icon-active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.active_properties }}</p>
                   <p class="stat-label">Active Properties</p>
                 </div>
               </div>
               <div class="stat-card">
-                <div class="stat-icon stat-icon-photos">📷</div>
+                <div class="stat-icon stat-icon-photos">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.pending_photos }}</p>
                   <p class="stat-label">Pending Photos</p>
                 </div>
               </div>
-              <div class="stat-card" v-if="overview.flagged_properties > 0" @click="activeTab = 'flagged'" style="cursor:pointer">
-                <div class="stat-icon stat-icon-flagged">🚩</div>
+              <div class="stat-card sc-flagged" v-if="overview.flagged_properties > 0" @click="activeTab = 'flagged'" style="cursor:pointer">
+                <div class="stat-icon stat-icon-flagged">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </div>
                 <div class="stat-body">
                   <p class="stat-number">{{ overview.flagged_properties }}</p>
                   <p class="stat-label">Flagged Properties</p>
@@ -152,6 +240,9 @@
             <div class="section-card">
               <h3 class="section-title">Recent Activity</h3>
               <div v-if="recentActivity.length === 0" class="empty-state">
+                <div class="empty-icon-wrap empty-icon-sm">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
                 <p>No recent activity</p>
               </div>
               <div v-else class="activity-feed">
@@ -260,7 +351,9 @@
               :class="['filter-btn', { active: agentFilter === f }]"
               @click="agentFilter = f"
             >
-              {{ f === 'pending' ? '⏳' : f === 'verified' ? '✅' : '❌' }}
+              <svg v-if="f === 'pending'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg v-else-if="f === 'verified'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               {{ capitalize(f) }}
               <span class="filter-count">{{ getAgentCount(f) }}</span>
             </button>
@@ -274,7 +367,9 @@
           <!-- PENDING -->
           <template v-if="agentFilter === 'pending' && !loadingAgents">
             <div v-if="pendingAgents.length === 0" class="empty-state">
-              <span class="empty-icon">✓</span>
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
               <p>No pending applications</p>
             </div>
 
@@ -413,6 +508,23 @@
                     </div>
                   </div>
 
+                  <!-- Face Verification -->
+                  <div v-if="parseAiResult(app.ai_verification_result).face_match != null || parseAiResult(app.ai_verification_result).face_comparison_performed" class="face-section">
+                    <div class="face-header">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Face Verification
+                      <span v-if="parseAiResult(app.ai_verification_result).face_match === true" class="face-badge face-pass">Match</span>
+                      <span v-else-if="parseAiResult(app.ai_verification_result).face_match === false" class="face-badge face-fail">No Match</span>
+                      <span v-else class="face-badge face-na">Not Available</span>
+                      <span v-if="parseAiResult(app.ai_verification_result).face_confidence != null" class="face-conf" :class="scoreClass(parseAiResult(app.ai_verification_result).face_confidence)">
+                        {{ Math.round(parseAiResult(app.ai_verification_result).face_confidence * 100) }}%
+                      </span>
+                    </div>
+                    <p v-if="parseAiResult(app.ai_verification_result).face_reasoning" class="face-reasoning-text">
+                      {{ parseAiResult(app.ai_verification_result).face_reasoning }}
+                    </p>
+                  </div>
+
                   <!-- Security Features Found -->
                   <div v-if="parseAiResult(app.ai_verification_result).security_features_found?.length" class="ai-tags-section ai-tags-good">
                     <div class="tags-label">
@@ -485,6 +597,9 @@
           <!-- VERIFIED -->
           <template v-if="agentFilter === 'verified' && !loadingAgents">
             <div v-if="verifiedAgents.length === 0" class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+              </div>
               <p>No verified agents yet</p>
             </div>
             <div v-for="app in verifiedAgents" :key="app.id" class="agent-card card-verified">
@@ -494,23 +609,85 @@
                   <h3>{{ app.applicant_name || app.user?.name }}</h3>
                   <p>{{ app.user?.email }}</p>
                 </div>
-                <span class="status-pill status-verified">Verified</span>
+                <div class="header-badges">
+                  <span v-if="app.ai_decision" class="ai-badge" :class="'ai-' + app.ai_decision">AI: {{ capitalize(app.ai_decision) }}</span>
+                  <span v-if="parseAiResult(app.ai_verification_result).verification_method === 'dual_ai'" class="dual-ai-badge">Dual AI</span>
+                  <span class="status-pill status-verified">Verified Agent</span>
+                </div>
               </div>
+
               <div class="agent-card-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label>License Number</label>
-                    <p>{{ app.license_number }}</p>
+                <div class="card-cols">
+                  <div class="card-col-main">
+                    <div class="field-grid">
+                      <div class="field"><label>License Number</label><p>{{ app.license_number }}</p></div>
+                      <div class="field"><label>PRC ID</label><p>{{ app.prc_id }}</p></div>
+                      <div class="field"><label>Company</label><p>{{ app.company_name || 'N/A' }}</p></div>
+                      <div class="field"><label>Accreditation</label><p>{{ app.accreditation || 'N/A' }}</p></div>
+                      <div class="field"><label>License Expiry</label><p>{{ formatDate(app.license_expiry_date) }}</p></div>
+                      <div class="field"><label>Verified On</label><p>{{ formatDateTime(app.verified_at) }}</p></div>
+                    </div>
                   </div>
-                  <div class="field">
-                    <label>Verified</label>
-                    <p>{{ formatDateTime(app.verified_at) }}</p>
-                  </div>
-                  <div class="field">
-                    <label>AI Decision</label>
-                    <p>{{ app.ai_decision || 'N/A' }}</p>
+                  <div v-if="app.prc_license_photo" class="card-col-photo">
+                    <label class="photo-label">PRC License Photo</label>
+                    <img :src="'/storage/' + app.prc_license_photo" alt="PRC License" class="prc-photo" @click="openPhotoPreview('/storage/' + app.prc_license_photo)" />
+                    <p class="photo-hint">Click to enlarge</p>
                   </div>
                 </div>
+
+                <!-- AI Analysis Panel (same as pending) -->
+                <div v-if="app.ai_verification_result" class="ai-analysis-panel">
+                  <div class="ai-panel-header">
+                    <div class="ai-panel-title">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                      RealtyLinkPH Buddy — AI Analysis
+                    </div>
+                    <div class="ai-scores">
+                      <div v-if="parseAiResult(app.ai_verification_result).confidence != null" class="ai-score-item">
+                        <span class="score-label">Confidence</span>
+                        <span class="score-val" :class="scoreClass(parseAiResult(app.ai_verification_result).confidence)">{{ Math.round(parseAiResult(app.ai_verification_result).confidence * 100) }}%</span>
+                      </div>
+                      <div v-if="parseAiResult(app.ai_verification_result).authenticity_score != null" class="ai-score-item">
+                        <span class="score-label">Authenticity</span>
+                        <span class="score-val" :class="scoreClass(parseAiResult(app.ai_verification_result).authenticity_score)">{{ Math.round(parseAiResult(app.ai_verification_result).authenticity_score * 100) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="parseAiResult(app.ai_verification_result).reasoning" class="ai-reasoning">
+                    <div class="buddy-row">
+                      <img src="/images/buddy-avatar.jpg" alt="Buddy" class="buddy-mini-avatar" />
+                      <div class="buddy-bubble"><strong>Buddy's reasoning:</strong><p>{{ parseAiResult(app.ai_verification_result).reasoning }}</p></div>
+                    </div>
+                  </div>
+                  <!-- Face Verification -->
+                  <div v-if="parseAiResult(app.ai_verification_result).face_match != null || parseAiResult(app.ai_verification_result).face_comparison_performed" class="face-section">
+                    <div class="face-header">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Face Verification
+                      <span v-if="parseAiResult(app.ai_verification_result).face_match === true" class="face-badge face-pass">Match</span>
+                      <span v-else-if="parseAiResult(app.ai_verification_result).face_match === false" class="face-badge face-fail">No Match</span>
+                      <span v-else class="face-badge face-na">Not Available</span>
+                      <span v-if="parseAiResult(app.ai_verification_result).face_confidence != null" class="face-conf" :class="scoreClass(parseAiResult(app.ai_verification_result).face_confidence)">{{ Math.round(parseAiResult(app.ai_verification_result).face_confidence * 100) }}%</span>
+                    </div>
+                    <p v-if="parseAiResult(app.ai_verification_result).face_reasoning" class="face-reasoning-text">{{ parseAiResult(app.ai_verification_result).face_reasoning }}</p>
+                  </div>
+                  <!-- Security & Red Flags -->
+                  <div v-if="parseAiResult(app.ai_verification_result).security_features_found?.length" class="ai-tags-section ai-tags-good">
+                    <div class="tags-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Security Features Found</div>
+                    <div class="tags-row"><span v-for="f in parseAiResult(app.ai_verification_result).security_features_found" :key="f" class="tag tag-good">{{ f }}</span></div>
+                  </div>
+                  <div v-if="parseAiResult(app.ai_verification_result).red_flags_detected?.length" class="ai-tags-section ai-tags-danger">
+                    <div class="tags-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Red Flags Detected</div>
+                    <div class="tags-row"><span v-for="f in parseAiResult(app.ai_verification_result).red_flags_detected" :key="f" class="tag tag-danger">{{ f }}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="agent-card-actions">
+                <button @click="demoteAgent(app)" class="btn-reject" :disabled="processingId === app.id">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  {{ processingId === app.id ? 'Demoting...' : 'Demote to Buyer' }}
+                </button>
               </div>
             </div>
           </template>
@@ -518,6 +695,9 @@
           <!-- REJECTED -->
           <template v-if="agentFilter === 'rejected' && !loadingAgents">
             <div v-if="rejectedAgents.length === 0" class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
               <p>No rejected applications</p>
             </div>
             <div v-for="app in rejectedAgents" :key="app.id" class="agent-card card-rejected">
@@ -527,21 +707,70 @@
                   <h3>{{ app.applicant_name || app.user?.name }}</h3>
                   <p>{{ app.user?.email }}</p>
                 </div>
-                <span class="status-pill status-rejected">Rejected</span>
+                <div class="header-badges">
+                  <span v-if="app.ai_decision" class="ai-badge" :class="'ai-' + app.ai_decision">AI: {{ capitalize(app.ai_decision) }}</span>
+                  <span class="status-pill status-rejected">Rejected</span>
+                </div>
               </div>
+
               <div class="agent-card-body">
-                <div class="field-grid">
-                  <div class="field full-width">
-                    <label>Rejection Reason</label>
-                    <p>{{ app.rejection_reason || 'No reason provided' }}</p>
+                <div class="card-cols">
+                  <div class="card-col-main">
+                    <div class="field-grid">
+                      <div class="field full-width"><label>Rejection Reason</label><p>{{ app.rejection_reason || 'No reason provided' }}</p></div>
+                      <div class="field"><label>License Number</label><p>{{ app.license_number }}</p></div>
+                      <div class="field"><label>PRC ID</label><p>{{ app.prc_id }}</p></div>
+                      <div class="field"><label>Company</label><p>{{ app.company_name || 'N/A' }}</p></div>
+                      <div class="field"><label>Rejected On</label><p>{{ formatDateTime(app.rejected_at) }}</p></div>
+                    </div>
                   </div>
-                  <div class="field">
-                    <label>Rejected</label>
-                    <p>{{ formatDateTime(app.rejected_at) }}</p>
+                  <div v-if="app.prc_license_photo" class="card-col-photo">
+                    <label class="photo-label">PRC License Photo</label>
+                    <img :src="'/storage/' + app.prc_license_photo" alt="PRC License" class="prc-photo" @click="openPhotoPreview('/storage/' + app.prc_license_photo)" />
+                    <p class="photo-hint">Click to enlarge</p>
                   </div>
-                  <div class="field">
-                    <label>AI Decision</label>
-                    <p>{{ app.ai_decision || 'N/A' }}</p>
+                </div>
+
+                <!-- AI Analysis Panel -->
+                <div v-if="app.ai_verification_result" class="ai-analysis-panel">
+                  <div class="ai-panel-header">
+                    <div class="ai-panel-title">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                      RealtyLinkPH Buddy — AI Analysis
+                    </div>
+                    <div class="ai-scores">
+                      <div v-if="parseAiResult(app.ai_verification_result).confidence != null" class="ai-score-item">
+                        <span class="score-label">Confidence</span>
+                        <span class="score-val" :class="scoreClass(parseAiResult(app.ai_verification_result).confidence)">{{ Math.round(parseAiResult(app.ai_verification_result).confidence * 100) }}%</span>
+                      </div>
+                      <div v-if="parseAiResult(app.ai_verification_result).authenticity_score != null" class="ai-score-item">
+                        <span class="score-label">Authenticity</span>
+                        <span class="score-val" :class="scoreClass(parseAiResult(app.ai_verification_result).authenticity_score)">{{ Math.round(parseAiResult(app.ai_verification_result).authenticity_score * 100) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="parseAiResult(app.ai_verification_result).reasoning" class="ai-reasoning">
+                    <div class="buddy-row">
+                      <img src="/images/buddy-avatar.jpg" alt="Buddy" class="buddy-mini-avatar" />
+                      <div class="buddy-bubble"><strong>Buddy's reasoning:</strong><p>{{ parseAiResult(app.ai_verification_result).reasoning }}</p></div>
+                    </div>
+                  </div>
+                  <!-- Face Verification -->
+                  <div v-if="parseAiResult(app.ai_verification_result).face_match != null || parseAiResult(app.ai_verification_result).face_comparison_performed" class="face-section">
+                    <div class="face-header">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Face Verification
+                      <span v-if="parseAiResult(app.ai_verification_result).face_match === true" class="face-badge face-pass">Match</span>
+                      <span v-else-if="parseAiResult(app.ai_verification_result).face_match === false" class="face-badge face-fail">No Match</span>
+                      <span v-else class="face-badge face-na">Not Available</span>
+                      <span v-if="parseAiResult(app.ai_verification_result).face_confidence != null" class="face-conf" :class="scoreClass(parseAiResult(app.ai_verification_result).face_confidence)">{{ Math.round(parseAiResult(app.ai_verification_result).face_confidence * 100) }}%</span>
+                    </div>
+                    <p v-if="parseAiResult(app.ai_verification_result).face_reasoning" class="face-reasoning-text">{{ parseAiResult(app.ai_verification_result).face_reasoning }}</p>
+                  </div>
+                  <!-- Red Flags -->
+                  <div v-if="parseAiResult(app.ai_verification_result).red_flags_detected?.length" class="ai-tags-section ai-tags-danger">
+                    <div class="tags-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Red Flags Detected</div>
+                    <div class="tags-row"><span v-for="f in parseAiResult(app.ai_verification_result).red_flags_detected" :key="f" class="tag tag-danger">{{ f }}</span></div>
                   </div>
                 </div>
               </div>
@@ -583,6 +812,9 @@
 
           <template v-else>
             <div v-if="users.length === 0" class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
               <p>No users found</p>
             </div>
 
@@ -610,6 +842,18 @@
                     </td>
                     <td>{{ formatDate(user.created_at) }}</td>
                     <td class="td-actions">
+                      <select
+                        v-if="user.id !== currentUserId"
+                        class="role-select"
+                        :value="user.role"
+                        @change="changeRole(user, $event.target.value)"
+                        :disabled="processingId === user.id"
+                      >
+                        <option value="buyer">Buyer</option>
+                        <option value="agent">Agent</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      <span v-else class="role-self">You</span>
                       <button
                         v-if="user.status === 'active'"
                         @click="suspendUser(user)"
@@ -683,6 +927,9 @@
 
           <template v-else>
             <div v-if="properties.length === 0" class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
               <p>No properties found</p>
             </div>
 
@@ -790,6 +1037,9 @@
 
           <template v-else>
             <div v-if="auditLogs.length === 0" class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
               <p>No audit logs found</p>
             </div>
 
@@ -853,11 +1103,13 @@
 
           <template v-else>
             <div v-if="pendingPhotos.length === 0" class="empty-state">
-              <span class="empty-icon">✓</span>
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
               <p>No photos pending review</p>
             </div>
 
-            <div v-for="photo in pendingPhotos" :key="photo.id" class="photo-mod-card">
+            <div v-for="photo in pendingPhotos" :key="photo?.id" class="photo-mod-card">
               <div class="photo-mod-img-wrap">
                 <img
                   :src="photo.photo_url ? photo.photo_url : '/storage/' + photo.photo_path"
@@ -915,7 +1167,10 @@
             <button v-for="f in ['pending_review', 'approved', 'dismissed']" :key="f"
               :class="['filter-btn', { active: flaggedFilter === f }]"
               @click="flaggedFilter = f; loadFlaggedProperties()">
-              {{ f === 'pending_review' ? '🚩 Pending' : f === 'approved' ? '✅ Cleared' : '⚡ Actioned' }}
+              <svg v-if="f === 'pending_review'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <svg v-else-if="f === 'approved'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              {{ f === 'pending_review' ? 'Pending' : f === 'approved' ? 'Cleared' : 'Actioned' }}
             </button>
           </div>
 
@@ -926,7 +1181,9 @@
 
           <template v-else>
             <div v-if="flaggedProperties.length === 0" class="empty-state">
-              <span class="empty-icon">✓</span>
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
               <p>No flagged properties in this category</p>
             </div>
 
@@ -983,6 +1240,102 @@
             </div>
           </template>
         </section>
+
+        <!-- ===== ANNOUNCEMENTS TAB ===== -->
+        <section v-if="activeTab === 'announcements'" class="tab-content">
+          <div class="section-header-row">
+            <h2>System Announcements</h2>
+            <button @click="showAnnouncementModal = true" class="btn-primary-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Announcement
+            </button>
+          </div>
+
+          <!-- Top Agents Preview -->
+          <div class="ann-top-agents-section">
+            <h3 class="ann-sub-title">Top 10 Agents</h3>
+            <p class="ann-sub-desc">Quick-announce a top agent by clicking the megaphone icon.</p>
+            <div v-if="topAgentsList.length === 0" class="empty-state">
+              <div class="empty-icon-wrap empty-icon-sm">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+              </div>
+              <p>No verified agents yet</p>
+            </div>
+            <div v-else class="top-agents-admin-list">
+              <div v-for="(agent, index) in topAgentsList" :key="agent.id" class="ta-admin-row">
+                <span class="ta-admin-rank" :class="{ 'rank-1': index === 0, 'rank-2': index === 1, 'rank-3': index === 2 }">{{ index + 1 }}</span>
+                <span class="ta-admin-name">{{ agent.name }}</span>
+                <span class="ta-admin-stats">{{ agent.properties_count }} listings · {{ agent.average_rating }} ★ ({{ agent.total_reviews }})</span>
+                <button class="btn-announce-agent" @click="quickAnnounceAgent(agent)" title="Announce this agent">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Existing Announcements -->
+          <div class="ann-existing">
+            <h3 class="ann-sub-title">Active Announcements</h3>
+            <div v-if="adminAnnouncements.length === 0" class="empty-state">
+              <div class="empty-icon-wrap empty-icon-sm">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <p>No announcements yet</p>
+            </div>
+            <div v-for="ann in adminAnnouncements" :key="ann.id" class="ann-admin-card" :class="{ 'ann-inactive': !ann.is_active }">
+              <div class="ann-admin-left">
+                <span class="ann-type-badge" :class="'atb-' + ann.type">{{ ann.type.replace('_', ' ') }}</span>
+                <h4>{{ ann.title }}</h4>
+                <p class="ann-admin-msg">{{ ann.message }}</p>
+                <p class="ann-admin-meta">By {{ ann.admin?.name || 'Admin' }} · {{ formatDateTime(ann.created_at) }}</p>
+              </div>
+              <div class="ann-admin-actions">
+                <button @click="toggleAnnouncementActive(ann)" class="btn-sm" :class="ann.is_active ? 'btn-muted' : 'btn-green'">
+                  {{ ann.is_active ? 'Deactivate' : 'Activate' }}
+                </button>
+                <button @click="deleteAnnouncementConfirm(ann)" class="btn-sm btn-danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Create Announcement Modal -->
+        <div v-if="showAnnouncementModal" class="modal-backdrop" @click.self="showAnnouncementModal = false">
+          <div class="modal-card" style="max-width:520px">
+            <div class="modal-header">
+              <h3>Create Announcement</h3>
+              <button @click="showAnnouncementModal = false" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Title</label>
+                <input v-model="newAnnouncement.title" type="text" class="form-input" placeholder="e.g., Top Agent of the Month" />
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <textarea v-model="newAnnouncement.message" class="form-input" rows="3" placeholder="Write your announcement..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select v-model="newAnnouncement.type" class="form-input">
+                  <option value="general">General</option>
+                  <option value="top_agent">Top Agent</option>
+                  <option value="top_buyer">Top Buyer</option>
+                  <option value="achievement">Achievement</option>
+                  <option value="system">System</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expires (optional)</label>
+                <input v-model="newAnnouncement.expires_at" type="datetime-local" class="form-input" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button @click="showAnnouncementModal = false" class="btn-sm btn-muted">Cancel</button>
+              <button @click="createAnnouncement" class="btn-sm btn-primary" :disabled="!newAnnouncement.title || !newAnnouncement.message">Publish</button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -1207,6 +1560,13 @@ export default {
 
       // User info
       userName: 'Admin',
+      currentUserId: null,
+      profilePhotoUrl: null,
+
+      // Notifications
+      showNotifPanel: false,
+      adminNotifications: [],
+      adminUnreadCount: 0,
 
       // Overview
       overview: {
@@ -1315,6 +1675,17 @@ export default {
       loadingAudit: false,
       processingId: null,
 
+      // Announcements
+      showAnnouncementModal: false,
+      adminAnnouncements: [],
+      topAgentsList: [],
+      newAnnouncement: {
+        title: '',
+        message: '',
+        type: 'general',
+        expires_at: '',
+      },
+
       // Toast notifications
       toasts: [],
       toastCounter: 0,
@@ -1354,6 +1725,7 @@ export default {
       else if (newTab === 'photos') this.loadPendingPhotos();
       else if (newTab === 'flagged') this.loadFlaggedProperties();
       else if (newTab === 'audit') this.loadAuditLogs();
+      else if (newTab === 'announcements') { this.loadAdminAnnouncements(); this.loadTopAgentsList(); }
     },
     agentFilter() {
       // Data already loaded when tab was switched
@@ -1411,9 +1783,16 @@ export default {
           adminAPI.getVerifiedAgents(),
           adminAPI.getRejectedAgents(),
         ]);
-        this.pendingAgents = pendingRes.data.data?.data || pendingRes.data.data || pendingRes.data.applications || [];
-        this.verifiedAgents = verifiedRes.data.data?.data || verifiedRes.data.data || verifiedRes.data.agents || [];
-        this.rejectedAgents = rejectedRes.data.data?.data || rejectedRes.data.data || rejectedRes.data.applications || [];
+        // API returns paginated: { success, data: { data: [...], current_page, ... } }
+        const extract = (res) => {
+          const d = res.data?.data;
+          if (Array.isArray(d)) return d;
+          if (d && Array.isArray(d.data)) return d.data;
+          return [];
+        };
+        this.pendingAgents = extract(pendingRes);
+        this.verifiedAgents = extract(verifiedRes);
+        this.rejectedAgents = extract(rejectedRes);
       } catch (error) {
         console.error('Failed to load agents:', error);
       } finally {
@@ -1470,6 +1849,26 @@ export default {
       } finally {
         this.processingId = null;
       }
+    },
+
+    async demoteAgent(app) {
+      const name = app.applicant_name || app.user?.name;
+      this.askConfirm({
+        title: 'Demote Agent',
+        message: `Demote ${name} back to buyer? This will revoke their agent privileges.`,
+        action: async () => {
+          try {
+            this.processingId = app.id;
+            await adminAPI.rejectAgent(app.id, 'Demoted by admin');
+            this.showToast(`${name} has been demoted to buyer.`, 'info');
+            await this.loadAgentData();
+          } catch (error) {
+            this.showToast('Failed to demote: ' + (error.response?.data?.message || error.message), 'error');
+          } finally {
+            this.processingId = null;
+          }
+        }
+      });
     },
 
     formatAiResult(result) {
@@ -1534,6 +1933,28 @@ export default {
       this.userSearchTimeout = setTimeout(() => {
         this.loadUsers();
       }, 400);
+    },
+
+    changeRole(user, newRole) {
+      if (user.role === newRole) return;
+      const oldRole = user.role;
+      this.askConfirm({
+        title: 'Change Role',
+        message: `Change ${user.name}'s role from ${this.capitalize(oldRole)} to ${this.capitalize(newRole)}?`,
+        action: async () => {
+          try {
+            this.processingId = user.id;
+            const res = await adminAPI.changeUserRole(user.id, newRole);
+            this.showToast(res.data.message || `${user.name} is now a ${newRole}.`);
+            await this.loadUsers();
+          } catch (error) {
+            this.showToast('Failed: ' + (error.response?.data?.message || error.message), 'error');
+            await this.loadUsers();
+          } finally {
+            this.processingId = null;
+          }
+        }
+      });
     },
 
     suspendUser(user) {
@@ -1741,7 +2162,8 @@ export default {
       this.loadingPhotos = true;
       try {
         const res = await adminAPI.getPendingPhotos();
-        this.pendingPhotos = res.data.data || res.data.photos || [];
+        const d = res.data?.data;
+        this.pendingPhotos = (Array.isArray(d) ? d : (d && Array.isArray(d.data) ? d.data : res.data?.photos || [])).filter(Boolean);
         // Refresh badge
         const photosTab = this.navTabs.find(t => t.id === 'photos');
         if (photosTab) photosTab.badge = this.pendingPhotos.length > 0 ? this.pendingPhotos.length : null;
@@ -1873,6 +2295,79 @@ export default {
     },
 
     // ========================
+    // Admin Notifications
+    // ========================
+    async loadAdminNotifications() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
+        const res = await fetch(`${apiUrl}/api/notifications`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.adminNotifications = data.notifications || [];
+          this.adminUnreadCount = this.adminNotifications.filter(n => !n.is_read).length;
+        }
+      } catch (e) {
+        console.error('Load admin notifications error:', e);
+      }
+    },
+
+    async markAllAdminNotifsRead() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
+        await fetch(`${apiUrl}/api/notifications/mark-all-read`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        this.adminNotifications.forEach(n => n.is_read = true);
+        this.adminUnreadCount = 0;
+      } catch (e) { /* silent */ }
+    },
+
+    async handleAdminNotifClick(notif) {
+      if (!notif.is_read) {
+        try {
+          const token = localStorage.getItem('auth_token');
+          const apiUrl = localStorage.getItem('api_url') || window.__API_URL__;
+          await fetch(`${apiUrl}/api/notifications/${notif.id}/read`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          });
+          notif.is_read = true;
+          this.adminUnreadCount = Math.max(0, this.adminUnreadCount - 1);
+        } catch (e) { /* silent */ }
+      }
+      this.showNotifPanel = false;
+
+      // Route to appropriate tab based on notification type
+      if (notif.notification_type === 'agent_verification' || notif.title?.includes('Agent')) {
+        this.activeTab = 'agents';
+      } else if (notif.notification_type === 'property_update' || notif.title?.includes('Property')) {
+        this.activeTab = 'properties';
+      } else if (notif.notification_type === 'document') {
+        this.activeTab = 'overview';
+      }
+    },
+
+    formatRelativeTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'Just now';
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      const diffDay = Math.floor(diffHr / 24);
+      if (diffDay < 7) return `${diffDay}d ago`;
+      return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    },
+
+    // ========================
     // Helpers
     // ========================
     // ========================
@@ -1913,6 +2408,69 @@ export default {
       });
     },
 
+    // ── ANNOUNCEMENTS ──
+    async loadAdminAnnouncements() {
+      try {
+        const res = await adminAPI.getAnnouncements();
+        const d = res.data?.data;
+        this.adminAnnouncements = Array.isArray(d) ? d : (d?.data || []);
+      } catch (e) { console.error('Failed to load announcements:', e); }
+    },
+    async loadTopAgentsList() {
+      try {
+        const res = await adminAPI.getTopAgents({ limit: 10 });
+        this.topAgentsList = res.data?.data || [];
+      } catch { /* non-critical */ }
+    },
+    async createAnnouncement() {
+      try {
+        const payload = { ...this.newAnnouncement };
+        if (!payload.expires_at) payload.expires_at = null;
+        await adminAPI.createAnnouncement(payload);
+        this.showToast('Announcement published!');
+        this.showAnnouncementModal = false;
+        this.newAnnouncement = { title: '', message: '', type: 'general', expires_at: '' };
+        await this.loadAdminAnnouncements();
+      } catch (e) {
+        this.showToast('Failed: ' + (e.response?.data?.message || e.message), 'error');
+      }
+    },
+    async toggleAnnouncementActive(ann) {
+      try {
+        await adminAPI.toggleAnnouncement(ann.id);
+        this.showToast(ann.is_active ? 'Announcement deactivated' : 'Announcement activated');
+        await this.loadAdminAnnouncements();
+      } catch (e) {
+        this.showToast('Failed: ' + (e.response?.data?.message || e.message), 'error');
+      }
+    },
+    deleteAnnouncementConfirm(ann) {
+      this.askConfirm({
+        title: 'Delete Announcement',
+        message: `Delete "${ann.title}"? This cannot be undone.`,
+        confirmLabel: 'Delete',
+        danger: true,
+        onConfirm: async () => {
+          try {
+            await adminAPI.deleteAnnouncement(ann.id);
+            this.showToast('Announcement deleted.');
+            await this.loadAdminAnnouncements();
+          } catch (e) {
+            this.showToast('Failed: ' + (e.response?.data?.message || e.message), 'error');
+          }
+        },
+      });
+    },
+    quickAnnounceAgent(agent) {
+      this.newAnnouncement = {
+        title: `Top Agent: ${agent.name}`,
+        message: `Congratulations to ${agent.name} for being one of our top-performing agents with ${agent.properties_count} active listings and a ${agent.average_rating} star rating!`,
+        type: 'top_agent',
+        expires_at: '',
+      };
+      this.showAnnouncementModal = true;
+    },
+
     formatDateTime(date) {
       if (!date) return 'N/A';
       return new Date(date).toLocaleDateString('en-US', {
@@ -1943,7 +2501,19 @@ export default {
       return;
     }
     this.userName = user.name || 'Admin';
+    this.currentUserId = user.id || null;
+    if (user.profile_photo_path) {
+      const apiUrl = window.__API_URL__ || 'http://localhost:8000';
+      this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
+    }
     this.loadOverview();
+    this.loadAdminNotifications();
+    // Poll notifications every 30s
+    this._notifInterval = setInterval(() => this.loadAdminNotifications(), 30000);
+  },
+
+  beforeUnmount() {
+    if (this._notifInterval) clearInterval(this._notifInterval);
   },
 };
 </script>
@@ -1966,6 +2536,14 @@ export default {
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #d97706;
+
+  /* Aliases used by announcements & modals */
+  --accent: #D89B0F;
+  --surface: #ffffff;
+  --border: #e0e0e0;
+  --text-primary: #0B1C39;
+  --text-muted: #999;
+  --font-brand: 'Outfit', sans-serif;
 }
 
 /* ============================================================================
@@ -2025,105 +2603,91 @@ export default {
 
 .sidebar-nav {
   flex: 1;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.nav-group-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,.35);
+  padding: 18px 20px 6px; margin: 0;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 9px 20px;
+  margin: 1px 8px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   border-radius: 8px;
-  transition: all 0.2s;
+  transition: all 0.18s;
   text-align: left;
-  width: 100%;
+  width: calc(100% - 16px);
+  font-family: 'Inter', sans-serif;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
   color: #fff;
 }
 
 .nav-item.active {
-  background: var(--gold);
-  color: var(--navy);
+  background: rgba(216,155,15,.13);
+  color: var(--gold);
   font-weight: 600;
 }
 
-.nav-icon { font-size: 18px; }
+.nav-icon-wrap {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-icon-wrap svg { width: 18px; height: 18px; }
 
 .nav-badge {
   margin-left: auto;
   background: var(--danger);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   padding: 2px 7px;
-  border-radius: 10px;
-  min-width: 20px;
+  border-radius: 99px;
+  min-width: 18px;
   text-align: center;
 }
 
 .nav-item.active .nav-badge {
-  background: var(--navy);
-  color: var(--gold);
-}
-
-.sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.user-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
   background: var(--gold);
   color: var(--navy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
 }
 
-.user-info { flex: 1; }
-.user-name { font-size: 13px; font-weight: 600; color: #fff; }
-.user-role { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+/* Sidebar bottom */
+.sidebar-bottom { padding: 0 0 10px; }
+.sidebar-divider { height: 1px; background: rgba(255,255,255,.08); margin: 6px 16px 8px; }
 
-.btn-logout {
-  width: 100%;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+.nav-user { gap: 10px; cursor: default; }
+.nav-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--navy);
+  flex-shrink: 0; overflow: hidden;
 }
+.nav-av img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.nav-user-info { display: flex; flex-direction: column; min-width: 0; }
+.nav-user-name { font-size: 13px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-user-role { font-size: 11px; color: rgba(255,255,255,.4); }
 
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
+.nav-logout { color: rgba(255,255,255,.4); }
+.nav-logout:hover { color: #ef4444; background: rgba(239,68,68,.1); }
 
 /* ============================================================================
    MAIN CONTENT
@@ -2136,20 +2700,90 @@ export default {
 }
 
 .topbar {
+  display: flex; align-items: center; justify-content: space-between;
   background: var(--white);
-  padding: 20px 32px;
+  padding: 0 28px; height: 60px;
   border-bottom: 1px solid var(--light-gray);
   position: sticky;
   top: 0;
   z-index: 50;
 }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
 
 .page-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--navy);
 }
+
+/* Notification Bell */
+.notif-wrap { position: relative; }
+.tb-icon-btn {
+  position: relative;
+  background: none; border: 1px solid var(--light-gray);
+  border-radius: 50%; width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--navy); transition: all .18s;
+}
+.tb-icon-btn:hover { background: var(--bg); }
+.tb-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; border: 2px solid #fff;
+}
+
+/* Notification Panel */
+.notif-panel {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-height: 440px; overflow-y: auto;
+  background: #fff; border-radius: 12px;
+  border: 1px solid var(--light-gray);
+  box-shadow: 0 12px 40px rgba(11,28,57,.15);
+  z-index: 200;
+}
+.np-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--light-gray);
+  font-size: 14px; font-weight: 700; color: var(--navy);
+}
+.np-read-all {
+  background: none; border: none; color: var(--gold);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.np-empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px; color: #aaa; gap: 8px; font-size: 13px;
+}
+.np-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px; cursor: pointer; transition: background .15s;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+}
+.np-item:hover { background: var(--bg); }
+.np-unread { background: rgba(216,155,15,.04); }
+.np-dot-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(216,155,15,.1); color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.np-body { flex: 1; min-width: 0; }
+.np-title { font-size: 13px; font-weight: 600; color: var(--navy); margin: 0; }
+.np-msg { font-size: 12px; color: #777; margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.np-time { font-size: 11px; color: #aaa; margin: 3px 0 0; }
+.np-unread-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0; margin-top: 6px;
+}
+
+.drop-enter-active { animation: dropIn .2s ease; }
+.drop-leave-active { animation: dropIn .15s ease reverse; }
+@keyframes dropIn { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
 
 .page-wrapper {
   padding: 24px 32px;
@@ -2201,8 +2835,20 @@ export default {
   font-size: 15px;
 }
 
-.empty-icon {
-  font-size: 40px;
+.empty-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #bbb;
+}
+.empty-icon-wrap.empty-icon-sm {
+  width: 56px;
+  height: 56px;
   margin-bottom: 12px;
 }
 
@@ -2239,16 +2885,18 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
   flex-shrink: 0;
 }
+.stat-icon svg { width: 24px; height: 24px; }
 
-.stat-icon-users { background: #e3f2fd; }
-.stat-icon-properties { background: #fce4ec; }
-.stat-icon-agents { background: #e8f5e9; }
-.stat-icon-pending { background: #fff8e1; }
-.stat-icon-active { background: #f3e5f5; }
-.stat-icon-photos { background: #e0f2f1; }
+.stat-icon-users { background: rgba(59,130,246,.1); color: #3b82f6; }
+.stat-icon-properties { background: rgba(239,68,68,.08); color: #ef4444; }
+.stat-icon-agents { background: rgba(22,163,74,.1); color: #16a34a; }
+.stat-icon-pending { background: rgba(216,155,15,.1); color: var(--gold); }
+.stat-icon-active { background: rgba(168,85,247,.1); color: #a855f7; }
+.stat-icon-photos { background: rgba(6,182,212,.1); color: #06b6d4; }
+.stat-icon-flagged { background: rgba(239,68,68,.08); color: #ef4444; }
+.sc-flagged { border-color: rgba(239,68,68,.2); }
 
 .stat-number {
   font-family: 'Outfit', sans-serif;
@@ -2404,6 +3052,9 @@ export default {
 
 .filter-btn.active .filter-count {
   background: rgba(0, 0, 0, 0.15);
+}
+.filter-btn svg {
+  flex-shrink: 0;
 }
 
 /* Agent Cards */
@@ -2791,6 +3442,12 @@ export default {
 .btn-delete:hover:not(:disabled) { background: #f1aeb5; }
 
 .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Role Select Dropdown */
+.role-select { padding: 5px 8px; border: 1.5px solid var(--gold); border-radius: 50px; font-size: 12px; font-weight: 600; color: var(--navy); background: rgba(216,155,15,0.06); cursor: pointer; outline: none; transition: all 0.2s; }
+.role-select:hover { border-color: var(--gold3); background: rgba(216,155,15,0.12); }
+.role-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.role-self { font-size: 11px; color: #999; font-style: italic; }
 
 /* Property thumbnail */
 .property-thumb {
@@ -3315,6 +3972,108 @@ export default {
 }
 
 /* ============================================================================
+   ANNOUNCEMENTS TAB
+============================================================================ */
+.section-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.section-header-row h2 { font-family: var(--font-brand); font-size: 20px; font-weight: 700; color: var(--navy); }
+.btn-primary-sm {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 50px; border: none; cursor: pointer;
+  background: var(--gold); color: var(--navy); font-size: 13px; font-weight: 700;
+  transition: all .2s; box-shadow: 0 2px 8px rgba(216,155,15,.25);
+}
+.btn-primary-sm:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(216,155,15,.35); }
+
+.ann-top-agents-section {
+  background: #fff; border-radius: 14px; padding: 24px; margin-bottom: 24px;
+  border: 1px solid #e5e7eb; box-shadow: 0 1px 4px rgba(11,28,57,.06);
+}
+.ann-sub-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; font-family: var(--font-brand); }
+.ann-sub-desc { font-size: 12.5px; color: #888; margin-bottom: 16px; }
+
+.top-agents-admin-list { display: flex; flex-direction: column; gap: 6px; }
+.ta-admin-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  background: #f9fafb; border-radius: 10px; border: 1px solid #e5e7eb;
+  transition: all .2s;
+}
+.ta-admin-row:hover { background: #f3f4f6; border-color: rgba(216,155,15,.3); }
+.ta-admin-rank {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 12px; background: #e5e7eb; color: #64748b;
+}
+.ta-admin-rank.rank-1 { background: linear-gradient(135deg, var(--gold), #B07A08); color: #fff; box-shadow: 0 2px 8px rgba(216,155,15,.3); }
+.ta-admin-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #fff; }
+.ta-admin-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #a0622e); color: #fff; }
+.ta-admin-name { font-size: 13.5px; font-weight: 700; color: var(--navy); flex: 1; min-width: 0; }
+.ta-admin-stats { font-size: 11.5px; color: #888; white-space: nowrap; }
+.btn-announce-agent {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e5e7eb;
+  background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--gold); transition: all .2s;
+}
+.btn-announce-agent:hover { background: var(--gold); color: #fff; border-color: var(--gold); box-shadow: 0 2px 10px rgba(216,155,15,.3); }
+
+.ann-existing { margin-top: 8px; }
+.ann-admin-card {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 18px 22px; background: #fff; border-radius: 14px;
+  border: 1px solid #e5e7eb; margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(11,28,57,.06); transition: all .2s;
+}
+.ann-admin-card:hover { border-color: rgba(216,155,15,.25); box-shadow: 0 2px 10px rgba(11,28,57,.08); }
+.ann-admin-card.ann-inactive { opacity: 0.45; }
+.ann-admin-left { flex: 1; min-width: 0; }
+.ann-type-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;
+  letter-spacing: .3px;
+}
+.atb-general { background: rgba(11,28,57,.08); color: var(--navy); }
+.atb-top_agent { background: rgba(216,155,15,.12); color: #B07A08; }
+.atb-top_buyer { background: #dbeafe; color: #2563eb; }
+.atb-achievement { background: #ede9fe; color: #7c3aed; }
+.atb-system { background: #fee2e2; color: #dc2626; }
+.ann-admin-msg { font-size: 13px; color: #666; line-height: 1.5; margin: 4px 0; }
+.ann-admin-meta { font-size: 11px; color: #aaa; }
+.ann-admin-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; }
+.btn-sm {
+  padding: 7px 14px; border-radius: 50px; border: 1px solid #e0e0e0;
+  background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.btn-muted { color: #888; }
+.btn-muted:hover { background: #f3f4f6; color: #555; }
+.btn-green { color: #16a34a; border-color: #bbf7d0; }
+.btn-green:hover { background: #dcfce7; }
+.btn-danger { color: #dc2626; border-color: #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-primary { background: var(--gold); color: var(--navy); border-color: var(--gold); font-weight: 700; }
+.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 2px 8px rgba(216,155,15,.3); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Modal styles for announcement */
+.modal-card { background: #fff; border-radius: 16px; width: 100%; overflow: hidden; box-shadow: 0 20px 60px rgba(11,28,57,0.25); }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; border-bottom: 1px solid #e5e7eb;
+  background: var(--navy); color: #fff;
+}
+.modal-header h3 { font-size: 16px; font-weight: 700; color: #fff; font-family: var(--font-brand); }
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: rgba(255,255,255,.6); transition: color .2s; }
+.modal-close:hover { color: #fff; }
+.modal-body { padding: 20px 24px; }
+.modal-body .form-group { margin-bottom: 14px; }
+.modal-body .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
+.modal-body .form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 10px;
+  font-size: 13px; outline: none; transition: border-color .2s; font-family: inherit;
+  color: var(--navy);
+}
+.modal-body .form-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(216,155,15,.12); }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #e5e7eb; background: #fafafa; }
+
+/* ============================================================================
    TOAST NOTIFICATIONS
    ============================================================================ */
 .toast-container {
@@ -3399,4 +4158,14 @@ export default {
   .card-cols { flex-direction: column; }
   .card-col-photo { width: 100%; }
 }
+
+/* ── Face Verification Section ── */
+.face-section { padding: 10px 14px; background: #f0f7ff; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(11,28,57,0.08); }
+.face-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--navy); }
+.face-badge { padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.face-pass { background: #dcfce7; color: #15803d; }
+.face-fail { background: #fee2e2; color: #b91c1c; }
+.face-na { background: #f3f4f6; color: #6b7280; }
+.face-conf { font-size: 12px; font-weight: 700; margin-left: auto; }
+.face-reasoning-text { font-size: 12.5px; color: #555; margin-top: 6px; line-height: 1.5; }
 </style>

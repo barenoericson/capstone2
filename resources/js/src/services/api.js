@@ -374,6 +374,7 @@ export const adminAPI = {
   getAgentDetail: (agentId) => apiClient.get(`/admin/agents/${agentId}`),
   verifyAgent: (appId) => apiClient.post(`/admin/agents/${appId}/verify`),
   rejectAgent: (appId, rejectionReason) => apiClient.post(`/admin/agents/${appId}/reject`, { rejection_reason: rejectionReason }),
+  changeUserRole: (userId, role) => apiClient.post(`/admin/users/${userId}/change-role`, { role }),
 
   // Property Management
   getProperties: (filters = {}) => apiClient.get('/admin/properties', { params: filters }),
@@ -400,6 +401,15 @@ export const adminAPI = {
 
   // Analytics
   getAnalyticsData: (params = {}) => apiClient.get('/admin/dashboard/analytics', { params }),
+
+  // Top Agents
+  getTopAgents: (params = {}) => apiClient.get('/admin/top-agents', { params }),
+
+  // Announcements
+  getAnnouncements: (params = {}) => apiClient.get('/admin/announcements', { params }),
+  createAnnouncement: (data) => apiClient.post('/admin/announcements', data),
+  deleteAnnouncement: (id) => apiClient.delete(`/admin/announcements/${id}`),
+  toggleAnnouncement: (id) => apiClient.post(`/admin/announcements/${id}/toggle`),
 };
 
 // ============================================
@@ -462,6 +472,14 @@ export const searchAPI = {
 };
 
 // ============================================
+// PUBLIC DATA ENDPOINTS
+// ============================================
+export const publicAPI = {
+  getTopAgents: (params = {}) => apiClient.get('/top-agents', { params }),
+  getActiveAnnouncements: () => apiClient.get('/announcements/active', { params: { active_only: true } }),
+};
+
+// ============================================
 // EXPORT ALL APIs
 // ============================================
 export default {
@@ -474,5 +492,6 @@ export default {
   adminAPI,
   notificationsAPI,
   searchAPI,
+  publicAPI,
   apiClient,
 };

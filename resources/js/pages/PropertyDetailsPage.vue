@@ -79,7 +79,8 @@
               📍 {{ property.city }}, {{ property.province }}, {{ property.country }}
             </p>
             <div class="price-type">
-              <span class="price">₱{{ formatPrice(property.price) }}</span>
+              <span class="price">₱{{ formatPrice(property.price) }}{{ (property.listing_type || 'sale') === 'rent' ? '/mo' : '' }}</span>
+              <span class="listing-type-tag" :class="property.listing_type || 'sale'">{{ (property.listing_type || 'sale') === 'rent' ? 'For Rent' : 'For Sale' }}</span>
               <span class="property-type">{{ formatPropertyType(property.property_type) }}</span>
             </div>
           </div>
@@ -888,17 +889,6 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-:root {
-  --smoky-black: #100c08;
-  --white-smoke: #f5f5f5;
-  --palace-gold: #FFD700;
-  --palace-gold-dark: #DAB600;
-  --light-gray: #e0e0e0;
-  --border-gray: #ddd;
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -906,9 +896,23 @@ export default {
 }
 
 .property-details-wrapper {
+  --navy: #0B1C39; --navy2: #102445; --navy3: #1a3158;
+  --gold: #D89B0F; --gold2: #E5B332; --gold3: #B07A08;
+  --smoky-black: #100c08;
+  --white-smoke: #F0F2F5;
+  --palace-gold: #D89B0F;
+  --palace-gold-dark: #B07A08;
+  --light-gray: #e0e0e0;
+  --border-gray: #E7E5E4;
+  --font-display: 'Outfit','Inter',-apple-system,sans-serif;
+  --font-body: 'Inter',-apple-system,sans-serif;
+  --s50: #FAFAF9; --s100: #F5F5F4; --s200: #E7E5E4;
+  --s300: #D6D3D1; --s400: #A8A29E; --s500: #78716C;
+  --s600: #57534E; --s700: #44403C; --s900: #1C1917;
   min-height: 100vh;
   background: var(--white-smoke);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ============================================================================
@@ -1229,6 +1233,16 @@ export default {
   line-height: 1;
   letter-spacing: -0.5px;
 }
+
+.listing-type-tag {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+.listing-type-tag.sale { background: #dcfce7; color: #15803d; }
+.listing-type-tag.rent { background: #ede9fe; color: #7c3aed; }
 
 .property-type {
   background: var(--white-smoke);
@@ -1709,7 +1723,7 @@ export default {
    BUTTON HIERARCHY
    ============================================================================ */
 
-/* PRIMARY: Schedule Viewing — solid gold, dark navy text */
+/* PRIMARY: Schedule Viewing — solid gold */
 .btn-schedule {
   display: flex;
   align-items: center;
@@ -1717,23 +1731,22 @@ export default {
   gap: 8px;
   width: 100%;
   padding: 14px 16px;
-  background: var(--palace-gold);
-  color: #001F3F;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--navy);
   border: none;
   border-radius: 50px;
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.22s, transform 0.18s, box-shadow 0.22s;
+  transition: all 0.25s ease;
   font-family: var(--font-display);
-  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(216, 155, 15, 0.35);
   letter-spacing: 0.2px;
 }
 
 .btn-schedule:hover {
-  background: var(--palace-gold-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.45);
+  box-shadow: 0 6px 20px rgba(216, 155, 15, 0.45);
 }
 
 .btn-schedule:active {
@@ -1748,20 +1761,21 @@ export default {
   gap: 8px;
   width: 100%;
   padding: 11px 16px;
-  background: #001F3F;
+  background: linear-gradient(135deg, var(--navy), var(--navy3));
   color: white;
   border: none;
   border-radius: 50px;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.22s, transform 0.18s;
+  transition: all 0.25s ease;
   font-family: var(--font-display);
+  box-shadow: 0 2px 8px rgba(11, 28, 57, 0.20);
 }
 
 .btn-tour-navy:hover {
-  background: #002d5a;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(11, 28, 57, 0.30);
 }
 
 /* Property actions container */
@@ -1787,19 +1801,20 @@ export default {
   flex: 1;
   padding: 10px 12px;
   background: transparent;
-  color: #001F3F;
-  border: 1.5px solid #001F3F;
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
   border-radius: 50px;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.22s;
+  transition: all 0.25s ease;
   font-family: var(--font-display);
 }
 
 .btn-outline-navy:hover {
-  background: #001F3F;
+  background: var(--navy);
   color: white;
+  box-shadow: 0 4px 12px rgba(11, 28, 57, 0.20);
 }
 
 /* TERTIARY: Save Property — text link style */
@@ -1824,8 +1839,8 @@ export default {
 }
 
 .btn-save-link:hover {
-  color: #c0392b;
-  text-decoration-color: #c0392b;
+  color: var(--gold);
+  text-decoration-color: var(--gold);
 }
 
 .divider {
@@ -1837,38 +1852,39 @@ export default {
 /* Modal action buttons (used in viewing modal footer) */
 .btn-primary {
   padding: 12px 16px;
-  background: var(--palace-gold);
-  color: var(--smoky-black);
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--navy);
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s;
   font-size: 13px;
   width: 100%;
+  box-shadow: 0 3px 10px rgba(216,155,15,0.25);
 }
 
 .btn-primary:hover {
-  background: var(--palace-gold-dark);
   transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(216,155,15,0.35);
 }
 
 .btn-secondary {
   padding: 12px 16px;
   background: white;
-  color: var(--smoky-black);
-  border: 1px solid var(--light-gray);
-  border-radius: 8px;
+  color: var(--navy);
+  border: 1.5px solid var(--s200);
+  border-radius: 50px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s;
   font-size: 13px;
   width: 100%;
 }
 
 .btn-secondary:hover {
-  border-color: var(--palace-gold);
-  background: var(--white-smoke);
+  border-color: var(--gold);
+  color: var(--gold3);
 }
 
 /* Info Box */
@@ -1938,7 +1954,8 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(11, 28, 57, 0.50);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1948,13 +1965,15 @@ export default {
 
 .modal-box {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  animation: modalIn 0.3s ease-out;
 }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
 .modal-header {
   padding: 24px;

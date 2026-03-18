@@ -90,137 +90,139 @@
     <!-- Main Content -->
     <main class="main-content">
       <!-- Topbar -->
-      <nav class="topbar">
-        <div class="topbar-content">
-          <div class="topbar-left">
-            <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-            <h1 class="page-title">Viewing Requests</h1>
-          </div>
-          <div class="topbar-right">
-            <button class="btn-calendar" @click="showCalendarManager = true">
-              📅 Manage Calendar
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger-btn" @click="sidebarOpen = !sidebarOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h1 class="page-title">Viewing Requests</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="btn-calendar" @click="showCalendarManager = true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Manage Calendar
+          </button>
+          <div class="filter-tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.value"
+              class="f-tab"
+              :class="{ active: activeTab === tab.value }"
+              @click="setTab(tab.value)"
+            >
+              {{ tab.label }}
+              <span v-if="tab.value === 'requested' && pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
+              <span v-if="tab.value === 'negotiating' && negotiatingCount > 0" class="tab-badge tab-badge-blue">{{ negotiatingCount }}</span>
             </button>
-            <div class="filter-tabs">
-              <button
-                v-for="tab in tabs"
-                :key="tab.value"
-                class="filter-tab"
-                :class="{ active: activeTab === tab.value }"
-                @click="setTab(tab.value)"
-              >
-                {{ tab.label }}
-                <span v-if="tab.value === 'requested' && pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
-                <span v-if="tab.value === 'negotiating' && negotiatingCount > 0" class="tab-badge tab-badge-blue">{{ negotiatingCount }}</span>
-              </button>
-            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <div class="page-wrapper">
-        <!-- Loading -->
-        <div v-if="loading" class="state-box">
-          <div class="state-icon">⏳</div>
-          <p>Loading viewing requests...</p>
-        </div>
+      <div class="content-area">
+        <div class="content-inner">
+          <!-- Loading -->
+          <div v-if="loading" class="state-center">
+            <div class="spinner"></div>
+            <p class="state-txt">Loading viewing requests...</p>
+          </div>
 
-        <!-- Empty state -->
-        <div v-else-if="filteredViewings.length === 0" class="state-box">
-          <div class="state-icon">📅</div>
-          <h3>No {{ activeTab === 'all' ? '' : activeTab }} viewing requests</h3>
-          <p>When buyers request viewings for your properties, they'll appear here.</p>
-        </div>
+          <!-- Empty state -->
+          <div v-else-if="filteredViewings.length === 0" class="state-center">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--s300)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <h3 class="state-head">No {{ activeTab === 'all' ? 'requested' : activeTab }} viewing requests</h3>
+            <p class="state-txt">When buyers request viewings for your properties, they'll appear here.</p>
+          </div>
 
-        <!-- Viewings List -->
-        <div v-else class="viewings-list">
-          <div
-            v-for="v in filteredViewings"
-            :key="v.id"
-            class="viewing-row"
-            :class="'status-' + v.status"
-          >
-            <!-- Property info -->
-            <div class="row-thumb">
-              <img
-                v-if="v.property && v.property.cover_photo"
-                :src="v.property.cover_photo"
-                :alt="v.property.title"
-                class="thumb-img"
-              />
-              <div v-else class="thumb-placeholder">🏠</div>
-            </div>
+          <!-- Viewings Grid -->
+          <div v-else>
+            <p class="grid-meta">{{ filteredViewings.length }} viewing{{ filteredViewings.length !== 1 ? 's' : '' }}</p>
+            <div class="vw-grid">
+              <div v-for="v in filteredViewings" :key="v.id" class="vw-card" :class="'st-' + v.status">
 
-            <div class="row-info">
-              <h3 class="prop-title">{{ v.property ? v.property.title : 'Property' }}</h3>
-              <p class="prop-city" v-if="v.property">📍 {{ v.property.city }}</p>
-              <div class="meta-row">
-                <span class="meta-item">📅 {{ formatDate(v.viewing_date) }}</span>
-                <span class="meta-item">🕐 {{ formatTime(v.viewing_time) }}</span>
-                <span class="meta-item">👤 {{ v.buyer ? v.buyer.name : 'Buyer' }}</span>
-              </div>
-              <div v-if="v.buyer_notes" class="notes-box">
-                <strong>Buyer note:</strong> {{ v.buyer_notes }}
-              </div>
-              <div v-if="v.status === 'rejected' && v.rejection_reason" class="notes-box rejection-notes">
-                <strong>Rejection reason:</strong> {{ v.rejection_reason }}
-              </div>
-
-              <!-- Negotiation info -->
-              <div v-if="v.latest_proposal" class="negotiation-box">
-                <div class="negotiation-header">
-                  <span class="negotiation-icon">🔄</span>
-                  <strong>{{ v.latest_proposal.proposed_by_role === 'buyer' ? 'Buyer' : 'You' }} proposed a new schedule:</strong>
+                <div class="card-thumb">
+                  <img v-if="v.property && v.property.cover_photo" :src="v.property.cover_photo" :alt="v.property.title" class="thumb-img" />
+                  <div v-else class="thumb-empty">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--s300)" stroke-width="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </div>
+                  <span class="status-pill" :class="'pill-' + v.status">{{ statusLabel(v.status) }}</span>
                 </div>
-                <div class="negotiation-details">
-                  <span>📅 {{ formatDate(v.latest_proposal.proposed_date) }}</span>
-                  <span>🕐 {{ formatTime(v.latest_proposal.proposed_time) }}</span>
-                </div>
-                <div v-if="v.latest_proposal.note" class="negotiation-note">
-                  💬 {{ v.latest_proposal.note }}
+
+                <div class="card-body">
+                  <h3 class="prop-name">{{ v.property ? v.property.title : 'Property' }}</h3>
+                  <p class="prop-city" v-if="v.property">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ v.property.city }}
+                  </p>
+
+                  <div class="meta-row">
+                    <span class="meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      {{ formatDate(v.viewing_date) }}
+                    </span>
+                    <span class="meta-item">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ formatTime(v.viewing_time) }}
+                    </span>
+                  </div>
+
+                  <div v-if="v.buyer" class="buyer-row">
+                    <div class="buyer-av">{{ (v.buyer.name || 'B').charAt(0).toUpperCase() }}</div>
+                    <span class="buyer-nm">{{ v.buyer.name }}</span>
+                  </div>
+
+                  <div v-if="v.buyer_notes" class="info-box buyer-box">
+                    <span class="box-label">Buyer note</span>
+                    {{ v.buyer_notes }}
+                  </div>
+                  <div v-if="v.status === 'rejected' && v.rejection_reason" class="info-box reject-box">
+                    <span class="box-label">Rejection reason</span>
+                    {{ v.rejection_reason }}
+                  </div>
+                  <div v-if="v.status === 'approved'" class="info-box approve-box">
+                    Viewing confirmed! Buyer will be notified.
+                  </div>
+
+                  <!-- Negotiation info -->
+                  <div v-if="v.latest_proposal" class="info-box nego-box">
+                    <span class="box-label">Proposed by {{ v.latest_proposal.proposed_by_role === 'buyer' ? 'Buyer' : 'You' }}</span>
+                    {{ formatDate(v.latest_proposal.proposed_date) }} at {{ formatTime(v.latest_proposal.proposed_time) }}
+                    <div v-if="v.latest_proposal.note" class="proposal-note">"{{ v.latest_proposal.note }}"</div>
+                  </div>
+
+                  <div class="card-actions">
+                    <!-- Approve / Edit Schedule / Reject for pending (requested) -->
+                    <template v-if="v.status === 'requested'">
+                      <button @click="approveViewing(v)" class="btn-act btn-accept" :disabled="actionLoading === v.id">
+                        {{ actionLoading === v.id ? '...' : 'Approve' }}
+                      </button>
+                      <button @click="openCounterModal(v)" class="btn-act btn-edit">Edit Schedule</button>
+                      <button @click="openRejectModal(v)" class="btn-act btn-reject-sm">Reject</button>
+                    </template>
+
+                    <!-- Negotiating: buyer proposed -->
+                    <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'">
+                      <button @click="acceptProposal(v)" class="btn-act btn-accept" :disabled="actionLoading === v.id">
+                        {{ actionLoading === v.id ? '...' : 'Accept' }}
+                      </button>
+                      <button @click="openCounterModal(v)" class="btn-act btn-edit">Edit Schedule</button>
+                      <button @click="openRejectModal(v)" class="btn-act btn-reject-sm">Reject</button>
+                    </template>
+
+                    <!-- Negotiating: agent proposed -->
+                    <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
+                      <span class="waiting-lbl">Waiting for buyer response...</span>
+                    </template>
+
+                    <!-- Mark completed for approved -->
+                    <template v-if="v.status === 'approved'">
+                      <button @click="markCompleted(v)" class="btn-act btn-complete" :disabled="actionLoading === v.id">
+                        {{ actionLoading === v.id ? '...' : 'Mark Completed' }}
+                      </button>
+                    </template>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div class="row-actions">
-              <span class="status-badge" :class="'badge-' + v.status">{{ statusLabel(v.status) }}</span>
-
-              <!-- Approve / Edit Schedule / Reject for pending (requested) -->
-              <template v-if="v.status === 'requested'">
-                <button @click="approveViewing(v)" class="btn-approve" :disabled="actionLoading === v.id">
-                  {{ actionLoading === v.id ? '...' : '✅ Approve' }}
-                </button>
-                <button @click="openCounterModal(v)" class="btn-edit-schedule">
-                  ✏️ Edit Schedule
-                </button>
-                <button @click="openRejectModal(v)" class="btn-reject">
-                  ❌ Reject
-                </button>
-              </template>
-
-              <!-- Negotiating: buyer proposed → Accept / Edit / Reject -->
-              <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'buyer'">
-                <button @click="acceptProposal(v)" class="btn-approve" :disabled="actionLoading === v.id">
-                  {{ actionLoading === v.id ? '...' : '✅ Accept' }}
-                </button>
-                <button @click="openCounterModal(v)" class="btn-edit-schedule">
-                  ✏️ Edit Schedule
-                </button>
-                <button @click="openRejectModal(v)" class="btn-reject">
-                  ❌ Reject
-                </button>
-              </template>
-
-              <!-- Negotiating: agent proposed → waiting -->
-              <template v-if="v.status === 'negotiating' && v.latest_proposal && v.latest_proposal.proposed_by_role === 'agent'">
-                <span class="waiting-label">⏳ Waiting for buyer response</span>
-              </template>
-
-              <!-- Mark completed for approved -->
-              <template v-if="v.status === 'approved'">
-                <button @click="markCompleted(v)" class="btn-complete" :disabled="actionLoading === v.id">
-                  {{ actionLoading === v.id ? '...' : '✔ Mark Completed' }}
-                </button>
-              </template>
             </div>
           </div>
         </div>
@@ -753,20 +755,11 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 4000);
     },
 
-    async loadProfilePhoto() {
+    loadProfilePhoto() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
-        else {
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.profile_photo_path) {
-            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
-          }
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.profile_photo_path) {
+          this.profilePhotoUrl = `${window.__API_URL__ || 'http://localhost:8000'}/storage/${user.profile_photo_path}`;
         }
       } catch (e) { /* non-critical */ }
     },
@@ -858,172 +851,188 @@ export default {
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; backdrop-filter: blur(2px); }
 
 /* ---- Main ---- */
-.main-content { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; }
+.main-content { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
 /* ---- Topbar ---- */
-.topbar { background: #fff; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 50; }
-.topbar-content { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
-.page-title { font-size: 1.1rem; font-weight: 700; color: #0B1C39; margin: 0; }
+.topbar {
+  background: var(--white); position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: var(--th); border-bottom: 1px solid var(--s200);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.hamburger-btn { display: none; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--s200); background: var(--white); cursor: pointer; color: var(--s600); align-items: center; justify-content: center; }
+.page-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; margin: 0; }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
-.btn-calendar { padding: 8px 16px; border-radius: 50px; border: 1.5px solid #D89B0F; background: transparent; color: #0B1C39; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
-.btn-calendar:hover { background: #fef9e7; }
-.filter-tabs { display: flex; gap: 6px; }
-.filter-tab { padding: 6px 14px; border-radius: 50px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.8rem; font-weight: 600; color: #666; cursor: pointer; transition: all 0.15s; position: relative; }
-.filter-tab.active { background: #D89B0F; border-color: #D89B0F; color: #0B1C39; }
+.btn-calendar { padding: 8px 16px; border-radius: 50px; border: 1.5px solid var(--gold); background: transparent; color: var(--navy); font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: var(--fb); }
+.btn-calendar:hover { background: rgba(216,155,15,0.08); }
+
+/* Filter tabs */
+.filter-tabs { display: flex; gap: 4px; }
+.f-tab {
+  padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--s200);
+  background: transparent; font-size: 12px; font-weight: 600; color: var(--s500);
+  cursor: pointer; transition: all 0.15s; font-family: var(--fb); white-space: nowrap; position: relative;
+}
+.f-tab:hover { border-color: rgba(216,155,15,0.4); color: var(--navy); }
+.f-tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); font-weight: 700; }
 .tab-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; margin-left: 4px; }
+.tab-badge-blue { background: #2563eb; }
 
-/* ---- Page wrapper ---- */
-.page-wrapper { padding: 24px; }
+/* ---- Content ---- */
+.content-area { flex: 1; background: var(--bg); }
+.content-inner { max-width: 1200px; margin: 0 auto; padding: 28px 30px 48px; }
 
-/* ---- State ---- */
-.state-box { text-align: center; padding: 60px 20px; }
-.state-icon { font-size: 52px; margin-bottom: 16px; }
-.state-box h3 { font-size: 1.2rem; font-weight: 700; color: #0B1C39; margin-bottom: 8px; }
-.state-box p { color: #666; font-size: 0.9rem; }
+/* States */
+.state-center { text-align: center; padding: 80px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.state-head { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--navy); margin: 0; }
+.state-txt  { font-size: 13.5px; color: var(--s400); margin: 0; }
+.spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--s200); border-top-color: var(--gold); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---- Viewings List ---- */
-.viewings-list { display: flex; flex-direction: column; gap: 16px; }
-.viewing-row { background: #fff; border-radius: 14px; padding: 16px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
-.viewing-row.status-approved { border-left: 4px solid #16a34a; }
-.viewing-row.status-rejected  { border-left: 4px solid #dc2626; }
-.viewing-row.status-requested { border-left: 4px solid #D89B0F; }
-.viewing-row.status-completed { border-left: 4px solid #6b7280; }
-.viewing-row.status-negotiating { border-left: 4px solid #2563eb; }
+.grid-meta { font-size: 12.5px; color: var(--s400); margin: 0 0 18px; }
 
-.row-thumb { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: #f5f5f5; }
-.thumb-img { width: 100%; height: 100%; object-fit: cover; }
-.thumb-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 28px; color: #ccc; }
+/* ---- Viewings Grid ---- */
+.vw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 
-.row-info { flex: 1; min-width: 0; }
-.prop-title { font-size: 0.95rem; font-weight: 700; color: #0B1C39; margin: 0 0 2px; }
-.prop-city  { font-size: 0.8rem; color: #666; margin: 0 0 8px; }
-.meta-row   { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
-.meta-item  { font-size: 0.8rem; color: #555; }
-.notes-box { padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; margin-top: 6px; background: #f8f9fa; border: 1px solid #e5e7eb; color: #555; line-height: 1.5; }
-.rejection-notes { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+.vw-card {
+  background: var(--white); border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--s200); border-left: 4px solid var(--s200);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.vw-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(40,53,62,0.1); }
 
-.row-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 140px; }
-.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
-.badge-requested { background: #fef9c3; color: #854d0e; }
-.badge-approved  { background: #dcfce7; color: #166534; }
-.badge-rejected  { background: #fee2e2; color: #991b1b; }
-.badge-completed { background: #f3f4f6; color: #374151; }
-.badge-negotiating { background: #dbeafe; color: #1e40af; }
+.vw-card.st-approved    { border-left-color: #16a34a; }
+.vw-card.st-rejected    { border-left-color: #dc2626; }
+.vw-card.st-requested   { border-left-color: var(--gold); }
+.vw-card.st-completed   { border-left-color: var(--s300); }
+.vw-card.st-negotiating { border-left-color: #2563eb; }
 
-.btn-approve  { padding: 8px 14px; border-radius: 8px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
-.btn-approve:hover:not(:disabled) { background: #16a34a; color: #fff; }
-.btn-reject   { padding: 8px 14px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
-.btn-reject:hover { background: #dc2626; color: #fff; }
-.btn-complete { padding: 8px 14px; border-radius: 8px; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
-.btn-complete:hover:not(:disabled) { background: #374151; color: #fff; }
+.card-thumb { position: relative; height: 162px; background: var(--s100); }
+.thumb-img  { width: 100%; height: 100%; object-fit: cover; }
+.thumb-empty { display: flex; align-items: center; justify-content: center; height: 100%; }
+
+.status-pill { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.pill-requested   { background: rgba(216,155,15,0.12); color: var(--gold); border: 1px solid rgba(216,155,15,0.25); }
+.pill-approved    { background: #dcfce7; color: #166534; }
+.pill-rejected    { background: #fee2e2; color: #991b1b; }
+.pill-completed   { background: var(--s100); color: var(--s500); }
+.pill-negotiating { background: #dbeafe; color: #1e40af; }
+
+.card-body { padding: 15px 17px; }
+.prop-name { font-family: var(--fd); font-size: 14.5px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+.prop-city { font-size: 12px; color: var(--s400); margin: 0 0 11px; display: flex; align-items: center; gap: 4px; }
+
+.meta-row  { display: flex; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+.meta-item { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--s500); font-weight: 500; }
+
+.buyer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.buyer-av  {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), #1a3158);
+  color: var(--gold2); font-weight: 700; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.buyer-nm { font-size: 12.5px; color: var(--s500); font-weight: 600; }
+
+.info-box { padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 10px; line-height: 1.55; }
+.box-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; opacity: 0.65; }
+.buyer-box   { background: var(--s50); border: 1px solid var(--s200); color: var(--s600); }
+.reject-box  { background: #fff5f5; border: 1px solid #fecaca; color: #991b1b; }
+.approve-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.nego-box    { background: rgba(40,53,62,0.04); border: 1px solid rgba(40,53,62,0.1); color: var(--navy); }
+.proposal-note { margin-top: 5px; font-style: italic; opacity: 0.75; }
+
+.card-actions { display: flex; gap: 7px; margin-top: 13px; flex-wrap: wrap; }
+.btn-act { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; font-family: var(--fb); }
+.btn-accept    { background: #dcfce7; color: #166534; }
+.btn-accept:hover:not(:disabled) { background: #16a34a; color: #fff; }
+.btn-edit      { background: rgba(40,53,62,0.08); color: var(--navy); }
+.btn-edit:hover { background: var(--navy); color: #fff; }
+.btn-reject-sm { background: #fee2e2; color: #991b1b; }
+.btn-reject-sm:hover { background: #dc2626; color: #fff; }
+.btn-complete  { background: var(--s100); color: var(--navy); }
+.btn-complete:hover:not(:disabled) { background: var(--navy); color: #fff; }
+.waiting-lbl { font-size: 12px; color: var(--s300); font-style: italic; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---- Modal ---- */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
-.modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; overflow: hidden; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+.modal-box { background: var(--white); border-radius: 16px; width: 90%; max-width: 480px; box-shadow: 0 12px 40px rgba(40,53,62,0.18); overflow: hidden; }
 .modal-wide { max-width: 600px; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #f0f0f0; }
-.modal-header h3 { font-size: 1rem; font-weight: 700; color: #0B1C39; margin: 0; }
-.btn-close { background: none; border: none; cursor: pointer; font-size: 18px; color: #999; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--s100); }
+.modal-header h3 { font-family: var(--fd); font-size: 1rem; font-weight: 700; color: var(--navy); margin: 0; }
+.btn-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--s300); padding: 2px; display: flex; align-items: center; transition: color 0.15s; }
+.btn-close:hover { color: var(--s500); }
 .modal-body { padding: 20px 24px; max-height: 70vh; overflow-y: auto; }
-.modal-subtitle { font-size: 0.88rem; color: #555; margin-bottom: 16px; line-height: 1.6; }
-.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid #f0f0f0; }
+.modal-subtitle { font-size: 0.88rem; color: var(--s400); margin-bottom: 16px; line-height: 1.6; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--s100); }
 
 .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.form-group label { font-size: 0.85rem; font-weight: 600; color: #0B1C39; }
+.form-group label { font-size: 11.5px; font-weight: 700; color: var(--s500); text-transform: uppercase; letter-spacing: 0.5px; }
 .required { color: #dc2626; }
-.form-textarea { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; resize: vertical; outline: none; transition: border-color 0.2s; font-family: inherit; }
-.form-textarea:focus { border-color: #D89B0F; }
-.form-input { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
-.form-input:focus { border-color: #D89B0F; }
+.form-textarea { width: 100%; border: 1px solid var(--s200); border-radius: 8px; padding: 9px 12px; font-size: 14px; resize: vertical; outline: none; transition: border-color 0.2s; font-family: var(--fb); box-sizing: border-box; }
+.form-textarea:focus { border-color: rgba(216,155,15,0.5); box-shadow: 0 0 0 3px rgba(216,155,15,0.08); }
+.form-input { width: 100%; border: 1px solid var(--s200); border-radius: 8px; padding: 9px 12px; font-size: 14px; outline: none; transition: border-color 0.2s; font-family: var(--fb); box-sizing: border-box; }
+.form-input:focus { border-color: rgba(216,155,15,0.5); box-shadow: 0 0 0 3px rgba(216,155,15,0.08); }
 .form-error { font-size: 0.78rem; color: #dc2626; }
+.form-error { font-size: 0.78rem; color: #dc2626; }
+
+/* Block form */
+/* Buttons */
+.btn-primary   { padding: 9px 20px; border-radius: 8px; border: none; background: var(--navy); color: var(--white); font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.15s; font-family: var(--fb); }
+.btn-primary:hover { background: #102445; }
+.btn-secondary { padding: 9px 18px; border-radius: 8px; border: 1.5px solid var(--s200); background: var(--white); color: var(--s500); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: var(--fb); }
+.btn-secondary:hover { background: var(--s100); }
+.btn-danger    { padding: 9px 20px; border-radius: 8px; border: none; background: #dc2626; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; font-family: var(--fb); }
+.btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.toast-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.toast-error   { background: #fff5f5; color: #991b1b; border: 1px solid #fecaca; }
+.toast-info    { background: rgba(40,53,62,0.05); color: var(--navy); border: 1px solid rgba(40,53,62,0.1); }
 
 /* Block form */
 .block-form { margin-bottom: 20px; }
 .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 .form-row .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
-.btn-block { padding: 10px 16px; border-radius: 10px; background: #D89B0F; color: #0B1C39; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
-.btn-block:hover:not(:disabled) { background: #B07A08; }
+.btn-block { padding: 10px 16px; border-radius: 10px; background: var(--gold); color: var(--navy); border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: var(--fb); }
+.btn-block:hover:not(:disabled) { background: var(--gold3); }
 
-.blocked-title { font-size: 0.88rem; font-weight: 700; color: #0B1C39; margin-bottom: 10px; }
-.state-empty { padding: 16px 0; color: #999; font-size: 0.85rem; }
-.blocked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: #fef9e7; border: 1px solid #fde68a; margin-bottom: 8px; }
+.blocked-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.state-empty { padding: 16px 0; color: var(--s400); font-size: 0.85rem; }
+.blocked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: rgba(216,155,15,0.06); border: 1px solid rgba(216,155,15,0.2); margin-bottom: 8px; }
 .blocked-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.blocked-date { font-size: 0.85rem; font-weight: 700; color: #0B1C39; }
-.blocked-reason { font-size: 0.8rem; color: #555; }
+.blocked-date { font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+.blocked-reason { font-size: 0.8rem; color: var(--s500); }
 .btn-unblock { padding: 5px 12px; border-radius: 8px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .btn-unblock:hover { background: #dc2626; color: #fff; }
-
-/* Buttons */
-.btn-primary   { padding: 10px 20px; background: #D89B0F; color: #0B1C39; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-primary:hover { background: #B07A08; }
-.btn-secondary { padding: 10px 20px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-danger    { padding: 10px 20px; background: #dc2626; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
-.btn-danger:hover:not(:disabled) { background: #b91c1c; }
-
-/* Toast */
-.toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-.toast-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.toast-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-
-/* Negotiation box */
-.negotiation-box { margin-top: 8px; padding: 10px 14px; border-radius: 10px; background: #eff6ff; border: 1px solid #bfdbfe; }
-.negotiation-header { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #1e40af; margin-bottom: 4px; }
-.negotiation-icon { font-size: 14px; }
-.negotiation-details { display: flex; gap: 14px; font-size: 0.8rem; color: #1e40af; margin-bottom: 2px; }
-.negotiation-note { font-size: 0.8rem; color: #3b82f6; font-style: italic; }
-
-/* Edit schedule button */
-.btn-edit-schedule { padding: 8px 14px; border-radius: 8px; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; }
-.btn-edit-schedule:hover { background: #2563eb; color: #fff; }
-
-/* Waiting label */
-.waiting-label { font-size: 0.8rem; color: #6b7280; font-style: italic; text-align: center; padding: 4px 0; }
-
-/* Tab badge blue */
-.tab-badge-blue { background: #2563eb; }
 
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
 .slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px); }
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .sidebar { position: fixed; left: calc(-1 * var(--sw)); width: var(--sw); z-index: 1001; transition: left 0.3s ease; }
-  .main-content { margin-left: 0 !important; }
-  .topbar-content { flex-direction: column; align-items: flex-start; height: auto; padding: 12px 16px; gap: 10px; }
-  .topbar-right { flex-wrap: wrap; width: 100%; }
-  .filter-tabs { flex-wrap: wrap; gap: 4px; }
-  .filter-tab { padding: 5px 10px; font-size: 0.75rem; }
+  .sidebar { transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; }
+  .hamburger-btn { display: flex; }
+  .main-content { margin-left: 0; }
+  .topbar { padding: 0 16px; height: auto; flex-direction: column; align-items: flex-start; padding: 12px 16px; gap: 10px; }
+  .topbar-right { width: 100%; flex-wrap: wrap; }
+  .filter-tabs { flex-wrap: wrap; gap: 5px; }
+  .f-tab { padding: 5px 11px; font-size: 11.5px; }
   .btn-calendar { font-size: 0.78rem; padding: 6px 12px; }
-  .page-wrapper { padding: 14px; }
-  .viewing-row { flex-direction: column; padding: 14px; }
-  .row-thumb { width: 100%; height: 160px; border-radius: 10px; }
-  .row-actions { flex-direction: row; flex-wrap: wrap; align-items: center; min-width: unset; width: 100%; gap: 6px; }
-  .row-actions .btn-approve,
-  .row-actions .btn-reject,
-  .row-actions .btn-complete,
-  .row-actions .btn-edit-schedule { width: auto; flex: 1; min-width: 100px; }
-  .meta-row { flex-direction: column; gap: 4px; }
-  .modal-box { max-width: 95vw; }
-  .modal-wide { max-width: 95vw; }
-  .form-row { flex-direction: column; }
-  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+  .content-inner { padding: 16px; }
+  .vw-grid { grid-template-columns: 1fr; gap: 14px; }
+  .card-actions { flex-wrap: wrap; gap: 6px; }
+  .modal-box { width: 95%; }
+  .modal-footer { flex-direction: column-reverse; gap: 8px; }
+  .toast { left: 16px; right: 16px; bottom: 16px; }
 }
-
 @media (max-width: 480px) {
-  .page-title { font-size: 0.95rem; }
-  .topbar-content { padding: 10px 12px; }
-  .page-wrapper { padding: 10px; }
-  .viewing-row { padding: 12px; gap: 10px; }
-  .row-thumb { height: 120px; }
-  .prop-title { font-size: 0.88rem; }
-  .notes-box { font-size: 0.75rem; padding: 6px 10px; }
-  .negotiation-box { padding: 8px 10px; }
-  .state-box { padding: 40px 16px; }
-  .state-icon { font-size: 40px; }
-  .modal-body { padding: 14px 16px; }
-  .modal-header { padding: 14px 16px; }
-  .modal-footer { padding: 12px 16px; }
+  .content-inner { padding: 12px; }
+  .card-thumb { height: 140px; }
 }
 </style>

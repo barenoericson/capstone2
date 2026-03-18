@@ -52,6 +52,14 @@
           <span v-if="viewingRequestsCount > 0" class="nav-badge">{{ viewingRequestsCount }}</span>
         </router-link>
 
+        <div class="nav-group-label">Community</div>
+        <router-link to="/leaderboard" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          </span>
+          <span>Leaderboard</span>
+        </router-link>
+
         <div class="nav-group-label">Tools</div>
         <router-link to="/documents" class="nav-item" @click="sidebarOpen = false">
           <span class="nav-icon-wrap">
@@ -436,7 +444,59 @@
             </div>
           </div>
 
-          <!-- ⑧  SUGGESTED AGENTS ──────── -->
+          <!-- ⑧  ANNOUNCEMENTS ─────────── -->
+          <template v-if="announcements.length > 0">
+            <div class="sh"><h2>Announcements</h2></div>
+            <div class="announcements-list">
+              <div v-for="ann in announcements" :key="ann.id"
+                class="announcement-card" :class="'ann-' + ann.type">
+                <div class="ann-icon">
+                  <svg v-if="ann.type === 'top_agent'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg v-else-if="ann.type === 'achievement'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                  <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div class="ann-body">
+                  <h4 class="ann-title">{{ ann.title }}</h4>
+                  <p class="ann-msg">{{ ann.message }}</p>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ⑨  TOP 10 AGENTS ─────────── -->
+          <template v-if="topAgents.length > 0">
+            <div class="sh">
+              <h2>Top 10 Agents</h2>
+            </div>
+            <div class="top-agents-list">
+              <div v-for="(agent, index) in topAgents" :key="agent.id" class="ta-card">
+                <div class="ta-rank" :class="{ 'rank-1': index === 0, 'rank-2': index === 1, 'rank-3': index === 2 }">
+                  {{ index + 1 }}
+                </div>
+                <div class="ta-avatar">
+                  <img v-if="agent.profile_photo_url" :src="agent.profile_photo_url" :alt="agent.name"/>
+                  <span v-else>{{ agent.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div class="ta-info">
+                  <h4 class="ta-name">{{ agent.name }}</h4>
+                  <p class="ta-company" v-if="agent.company_name">{{ agent.company_name }}</p>
+                  <div class="ta-stats">
+                    <span class="ta-stat">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                      {{ agent.properties_count }} listings
+                    </span>
+                    <span class="ta-stat" v-if="agent.average_rating > 0">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      {{ agent.average_rating }} ({{ agent.total_reviews }})
+                    </span>
+                  </div>
+                </div>
+                <router-link :to="'/agent-profile/' + agent.user_id" class="ta-btn">View</router-link>
+              </div>
+            </div>
+          </template>
+
+          <!-- ⑩  SUGGESTED AGENTS ──────── -->
           <template v-if="suggestedAgents.length > 0">
             <div class="sh">
               <h2>Suggested Agents</h2>
@@ -485,6 +545,8 @@ export default {
       savedPropertiesCount: 0, savedPropertyIds: [],
       viewings: [], viewingRequestsCount: 0,
       suggestedAgents: [],
+      topAgents: [],
+      announcements: [],
       recentConversations: [], unreadMessagesCount: 0,
       notifications: [], unreadNotificationsCount: 0,
       echoChannel: null, myId: null,
@@ -769,6 +831,21 @@ export default {
         if (data.success || data.data) this.suggestedAgents = (data.data?.data || data.data || []).slice(0, 4);
       } catch { /* non-critical — section hidden if empty */ }
     },
+    async loadTopAgents() {
+      try {
+        const res = await fetch(`${this.apiUrl}/api/top-agents?limit=10`, { headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        if (data.success && data.data) this.topAgents = data.data;
+      } catch { /* non-critical */ }
+    },
+    async loadAnnouncements() {
+      try {
+        const res = await fetch(`${this.apiUrl}/api/announcements/active?active_only=true`, { headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        const list = data.data?.data || data.data || [];
+        this.announcements = Array.isArray(list) ? list : [];
+      } catch { /* non-critical */ }
+    },
     subscribeToEcho() {
       if (!window.Echo || !this.myId) return;
       try { window.Echo.connector.pusher.config.auth.headers.Authorization = 'Bearer ' + localStorage.getItem('auth_token'); } catch { /* ignore */ }
@@ -801,6 +878,7 @@ export default {
       this.loadProperties(), this.loadSavedIds(),
       this.loadConversations(), this.loadViewingCount(),
       this.loadNotifications(), this.loadSuggestedAgents(),
+      this.loadTopAgents(), this.loadAnnouncements(),
     ]).catch(() => {});
     this.triggerCountUps();
     this.subscribeToEcho();
@@ -1326,6 +1404,68 @@ export default {
   transition: all .22s; border: 1px solid rgba(216,155,15,0.20);
 }
 .ag-btn:hover { background: linear-gradient(135deg, var(--gold), var(--gold3)); color: #fff; border-color: var(--gold); }
+
+/* ── ANNOUNCEMENTS ── */
+.announcements-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.announcement-card {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px;
+  background: var(--white); border-radius: 12px; border-left: 4px solid var(--gold);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.ann-top_agent { border-left-color: #f59e0b; }
+.ann-top_buyer { border-left-color: #3b82f6; }
+.ann-achievement { border-left-color: #8b5cf6; }
+.ann-system { border-left-color: #ef4444; }
+.ann-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(216,155,15,0.10); color: var(--gold3);
+}
+.ann-top_agent .ann-icon { background: rgba(245,158,11,0.10); color: #d97706; }
+.ann-achievement .ann-icon { background: rgba(139,92,246,0.10); color: #7c3aed; }
+.ann-title { font-family: var(--fd); font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.ann-msg { font-size: 13px; color: var(--s500); line-height: 1.5; }
+
+/* ── TOP AGENTS ── */
+.top-agents-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+.ta-card {
+  display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+  background: var(--white); border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all .22s;
+}
+.ta-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.ta-rank {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-weight: 800; font-size: 14px;
+  background: var(--s100); color: var(--s500);
+}
+.ta-rank.rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; }
+.ta-rank.rank-2 { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #fff; }
+.ta-rank.rank-3 { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+.ta-avatar {
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 17px; color: #fff;
+}
+.ta-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ta-info { flex: 1; min-width: 0; }
+.ta-name { font-family: var(--fd); font-size: 14px; font-weight: 700; color: var(--navy); }
+.ta-company { font-size: 11.5px; color: var(--s400); margin-top: 1px; }
+.ta-stats { display: flex; gap: 14px; margin-top: 4px; }
+.ta-stat {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11.5px; color: var(--s500); font-weight: 600;
+}
+.ta-stat svg { color: var(--gold); }
+.ta-btn {
+  padding: 8px 18px; border-radius: 50px; flex-shrink: 0;
+  background: rgba(216,155,15,0.10); color: var(--gold3);
+  font-size: 12.5px; font-weight: 700; text-decoration: none;
+  transition: all .22s; border: 1px solid rgba(216,155,15,0.20);
+}
+.ta-btn:hover { background: linear-gradient(135deg, var(--gold), var(--gold3)); color: #fff; border-color: var(--gold); }
 
 /* ── FOOTER ── */
 .footer { padding: 14px 28px; border-top: 1px solid var(--s200); display: flex; align-items: center; justify-content: space-between; background: var(--white); font-size: 11.5px; color: var(--s400); }

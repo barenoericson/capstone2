@@ -28,7 +28,7 @@
             </transition>
         </router-view>
 
-        <!-- RealtyLinkPH Buddy Chat (global, authenticated pages only) -->
+        <!-- RealtyLinkPH Buddy Chat (global, authenticated pages only — hidden on conversation page) -->
         <ChatBubble v-if="showChatBubble" />
     </div>
 </template>
@@ -67,7 +67,8 @@ export default {
         showChatBubble() {
             const hasToken = !!localStorage.getItem('auth_token');
             const requiresAuth = this.$route && this.$route.meta && this.$route.meta.requiresAuth;
-            return hasToken && requiresAuth;
+            const isConversation = this.$route && this.$route.name === 'MessageConversation';
+            return hasToken && requiresAuth && !isConversation;
         },
     },
 

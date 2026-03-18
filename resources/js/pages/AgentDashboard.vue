@@ -48,6 +48,14 @@
           <span>Calendar</span>
         </router-link>
 
+        <div class="nav-group-label">Community</div>
+        <router-link to="/leaderboard" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          </span>
+          <span>Leaderboard</span>
+        </router-link>
+
         <div class="nav-group-label">Communicate</div>
         <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
           <span class="nav-icon-wrap">
@@ -309,6 +317,61 @@
             </div>
           </div>
 
+          <!-- Reviews & Feedback -->
+          <div class="section-card">
+            <div class="section-head">
+              <div>
+                <h3 class="section-title">Reviews & Feedback</h3>
+                <p class="section-sub">What buyers are saying about you</p>
+              </div>
+            </div>
+
+            <!-- Rating summary -->
+            <div v-if="reviewStats.totalReviews > 0" class="review-summary">
+              <div class="review-avg">
+                <span class="review-avg-num">{{ reviewStats.averageRating }}</span>
+                <div class="review-avg-detail">
+                  <div class="review-stars">
+                    <svg v-for="s in 5" :key="'star-'+s" width="16" height="16" viewBox="0 0 24 24"
+                      :fill="s <= Math.round(reviewStats.averageRating) ? 'var(--gold)' : 'none'"
+                      :stroke="s <= Math.round(reviewStats.averageRating) ? 'var(--gold)' : 'var(--s300)'"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </div>
+                  <span class="review-count">{{ reviewStats.totalReviews }} review{{ reviewStats.totalReviews !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews list -->
+            <div v-if="recentReviews.length > 0" class="reviews-list">
+              <div v-for="rev in recentReviews" :key="rev.id" class="review-item">
+                <div class="review-top">
+                  <div class="review-author">
+                    <div class="review-av">{{ (rev.buyer_name || 'B').charAt(0).toUpperCase() }}</div>
+                    <div>
+                      <span class="review-name">{{ rev.buyer_name || 'Buyer' }}</span>
+                      <span class="review-date">{{ formatReviewDate(rev.created_at) }}</span>
+                    </div>
+                  </div>
+                  <div class="review-rating-sm">
+                    <svg v-for="s in 5" :key="'rs-'+s" width="13" height="13" viewBox="0 0 24 24"
+                      :fill="s <= rev.rating ? 'var(--gold)' : 'none'"
+                      :stroke="s <= rev.rating ? 'var(--gold)' : 'var(--s300)'"
+                      stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </div>
+                </div>
+                <p v-if="rev.review_title" class="review-title-text">{{ rev.review_title }}</p>
+                <p v-if="rev.review_content" class="review-content-text">{{ rev.review_content }}</p>
+              </div>
+            </div>
+
+            <div v-else class="state-empty-sm">
+              No reviews yet. Buyers can rate your service from your public profile.
+            </div>
+          </div>
+
           <!-- Summary -->
           <div v-if="properties.length > 0" class="summary-row">
             <div class="summary-item">
@@ -384,6 +447,10 @@ export default {
       pendingViewingsCount: 0,
       viewingNotifs: [],
       notifEchoChannel: null,
+
+      // Reviews
+      recentReviews: [],
+      reviewStats: { averageRating: 0, totalReviews: 0 },
 
       // UI Messages
       successMessage: '',
@@ -661,6 +728,35 @@ export default {
     },
     // ───────────────────────────────────────────────────────────
 
+    async loadReviews() {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const res = await fetch(`${this.apiUrl}/api/users/${user.id}/agent-profile`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.recentReviews = (data.reviews || []).slice(0, 5);
+          this.reviewStats.averageRating = parseFloat(data.average_rating || 0).toFixed(1);
+          this.reviewStats.totalReviews = data.total_reviews || 0;
+        }
+      } catch (e) {
+        console.error('Load reviews error:', e);
+      }
+    },
+
+    formatReviewDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diffDays = Math.floor((now - d) / 86400000);
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
+
     showSuccess(message) {
       this.successMessage = message;
       setTimeout(() => {
@@ -724,6 +820,7 @@ export default {
       this.loadConversations(),
       this.loadPendingViewingsCount(),
       this.loadNotifications(),
+      this.loadReviews(),
     ]).catch(() => {});
     this.subscribeToEcho();
 
@@ -1054,6 +1151,43 @@ export default {
   background: rgba(216,155,15,0.12); color: var(--gold);
   border-radius: 99px; padding: 2px 8px; font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
+
+/* ── REVIEWS ── */
+.review-summary {
+  display: flex; align-items: center; gap: 18px;
+  padding: 18px 20px; background: var(--s50);
+  border-radius: 10px; margin-bottom: 16px;
+  border: 1px solid var(--s200);
+}
+.review-avg { display: flex; align-items: center; gap: 14px; }
+.review-avg-num {
+  font-size: 36px; font-weight: 800; color: var(--navy);
+  font-family: var(--fd); line-height: 1;
+}
+.review-avg-detail { display: flex; flex-direction: column; gap: 3px; }
+.review-stars { display: flex; gap: 2px; }
+.review-count { font-size: 12px; color: var(--s500); font-weight: 500; }
+
+.reviews-list { display: flex; flex-direction: column; gap: 12px; }
+.review-item {
+  padding: 16px 18px; background: var(--s50);
+  border-radius: 10px; border: 1px solid var(--s200);
+  transition: border-color .2s;
+}
+.review-item:hover { border-color: rgba(216,155,15,.25); }
+.review-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.review-author { display: flex; align-items: center; gap: 10px; }
+.review-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold3));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--navy); flex-shrink: 0;
+}
+.review-name { font-size: 13px; font-weight: 600; color: var(--s800); display: block; }
+.review-date { font-size: 11px; color: var(--s400); }
+.review-rating-sm { display: flex; gap: 1px; }
+.review-title-text { font-size: 14px; font-weight: 700; color: var(--s800); margin: 0 0 4px; }
+.review-content-text { font-size: 13px; color: var(--s600); margin: 0; line-height: 1.5; }
 
 /* ── SUMMARY ROW ── */
 .summary-row {

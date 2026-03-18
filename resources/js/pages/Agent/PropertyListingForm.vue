@@ -152,10 +152,21 @@
             </div>
 
             <div class="form-group">
+              <label for="listing_type">Listing Type *</label>
+              <select id="listing_type" v-model="formData.listing_type" class="form-input" required>
+                <option value="sale">For Sale</option>
+                <option value="rent">For Rent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
               <label for="status">Status</label>
               <select id="status" v-model="formData.status" class="form-input">
                 <option value="available">Available</option>
                 <option value="sold">Sold</option>
+                <option value="rented">Rented</option>
               </select>
             </div>
           </div>
@@ -525,6 +536,7 @@ export default {
         floor_area: null,
         lot_area: null,
         property_type: '',
+        listing_type: 'sale',
         status: 'available',
       },
 
@@ -597,6 +609,7 @@ export default {
             floor_area: property.floor_area || null,
             lot_area: property.lot_area || null,
             property_type: property.property_type || '',
+            listing_type: property.listing_type || 'sale',
             status: property.status || 'available',
           };
           console.log('✅ Property loaded:', this.property);
@@ -985,20 +998,11 @@ export default {
       }
     },
 
-    async loadProfilePhoto() {
+    loadProfilePhoto() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
-        else {
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.profile_photo_path) {
-            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
-          }
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.profile_photo_path) {
+          this.profilePhotoUrl = `${window.__API_URL__ || 'http://localhost:8000'}/storage/${user.profile_photo_path}`;
         }
       } catch (e) { /* non-critical */ }
     },

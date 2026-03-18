@@ -12,7 +12,7 @@
       <nav class="sidebar-nav">
         <router-link to="/agent/dashboard" class="nav-item">
           <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+          <span class="nav-label">Overview</span>
         </router-link>
 
         <router-link to="/agent/messages" class="nav-item active">

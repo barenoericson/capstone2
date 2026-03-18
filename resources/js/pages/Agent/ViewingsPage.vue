@@ -12,7 +12,7 @@
       <nav class="sidebar-nav">
         <router-link to="/dashboard" class="nav-item">
           <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+          <span class="nav-label">Overview</span>
         </router-link>
 
         <div v-if="userRole === 'agent'" class="nav-section">
@@ -94,7 +94,7 @@
             You'll be able to manage property viewings, set availability, and approve buyer requests.
           </p>
           <router-link to="/agent/dashboard" class="btn-back">
-            ← Back to Dashboard
+            ← Back to Overview
           </router-link>
         </div>
       </div>

@@ -33,6 +33,7 @@ class Property extends Model
         'floor_area',
         'year_built',
         'status',
+        'listing_type',
         'featured',
         'view_count',
     ];
@@ -63,6 +64,12 @@ class Property extends Model
     const TYPE_CONDO = 'condo';
     const TYPE_APARTMENT = 'apartment';
     const TYPE_COMMERCIAL = 'commercial';
+
+    /**
+     * Listing type enumeration
+     */
+    const LISTING_SALE = 'sale';
+    const LISTING_RENT = 'rent';
 
     /**
      * Status enumeration
@@ -163,6 +170,18 @@ class Property extends Model
             self::TYPE_APARTMENT => 'Apartment',
             self::TYPE_COMMERCIAL => 'Commercial',
             default => 'Unknown',
+        };
+    }
+
+    /**
+     * Get listing type display
+     */
+    public function getListingTypeNameAttribute()
+    {
+        return match ($this->listing_type) {
+            self::LISTING_SALE => 'For Sale',
+            self::LISTING_RENT => 'For Rent',
+            default => 'For Sale',
         };
     }
 

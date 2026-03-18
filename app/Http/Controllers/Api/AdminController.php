@@ -258,6 +258,63 @@ class AdminController extends Controller
     }
 
     /**
+     * Change a user's role (buyer/agent/admin).
+     */
+    public function changeUserRole(Request $request, $id)
+    {
+        try {
+            $request->validate(['role' => 'required|in:buyer,agent,admin']);
+
+            $user = User::findOrFail($id);
+            $oldRole = $user->role;
+            $newRole = $request->role;
+
+            if ($oldRole === $newRole) {
+                return response()->json(['success' => false, 'message' => 'User already has this role.'], 422);
+            }
+
+            if ($user->id === auth()->id() && $newRole !== 'admin') {
+                return response()->json(['success' => false, 'message' => 'You cannot demote yourself.'], 403);
+            }
+
+            $user->update(['role' => $newRole]);
+
+            if ($newRole === 'agent' && !\App\Models\Agent::where('user_id', $user->id)->exists()) {
+                \App\Models\Agent::create([
+                    'user_id' => $user->id,
+                    'verification_status' => 'verified',
+                    'verified_at' => now(),
+                    'company_name' => 'Promoted by admin',
+                ]);
+            }
+
+            if ($oldRole === 'agent' && $newRole === 'buyer') {
+                \App\Models\Agent::where('user_id', $user->id)->delete();
+            }
+
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'role_changed',
+                'action_type' => 'update',
+                'model_type' => 'User',
+                'model_id' => $user->id,
+                'description' => "Changed {$user->name}'s role from {$oldRole} to {$newRole}",
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$user->name} is now a {$newRole}.",
+                'data' => $user->fresh(),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to change role: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * ============================================================================
      * AGENT VERIFICATION
      * ============================================================================
@@ -283,6 +340,56 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch pending applications',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get verified (approved) agent applications
+     */
+    public function verifiedAgents(Request $request)
+    {
+        try {
+            $applications = AgentApplication::verified()
+                ->with('user')
+                ->orderBy('verified_at', 'desc')
+                ->paginate($request->get('per_page', 15));
+
+            return response()->json([
+                'success' => true,
+                'data' => $applications,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch verified applications',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get rejected agent applications
+     */
+    public function rejectedAgents(Request $request)
+    {
+        try {
+            $applications = AgentApplication::rejected()
+                ->with('user')
+                ->orderBy('rejected_at', 'desc')
+                ->paginate($request->get('per_page', 15));
+
+            return response()->json([
+                'success' => true,
+                'data' => $applications,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch rejected applications',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -1167,6 +1274,211 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch analytics',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================================
+     * TOP AGENTS
+     * ============================================================================
+     */
+
+    /**
+     * Get top 10 agents ranked by property count + average rating
+     */
+    public function topAgents(Request $request)
+    {
+        try {
+            $limit = $request->get('limit', 10);
+
+            $agents = Agent::with('user')
+                ->where('verification_status', 'verified')
+                ->withCount(['properties' => function ($q) {
+                    $q->where('status', 'available');
+                }])
+                ->get()
+                ->map(function ($agent) {
+                    $reviews = \App\Models\AgentReview::where('agent_id', $agent->id)->get();
+                    $avgRating = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
+                    $totalReviews = $reviews->count();
+
+                    // Score = (properties_count * 2) + (avg_rating * 3) + (total_reviews)
+                    $score = ($agent->properties_count * 2) + ($avgRating * 3) + $totalReviews;
+
+                    $photoPath = $agent->user->profile_photo_path ?? null;
+                    $photoUrl = $photoPath ? url('storage/' . $photoPath) : null;
+
+                    return [
+                        'id' => $agent->id,
+                        'user_id' => $agent->user_id,
+                        'name' => $agent->user->name ?? 'Unknown',
+                        'email' => $agent->user->email ?? '',
+                        'profile_photo_url' => $photoUrl,
+                        'company_name' => $agent->company_name,
+                        'bio' => $agent->bio,
+                        'properties_count' => $agent->properties_count,
+                        'average_rating' => $avgRating,
+                        'total_reviews' => $totalReviews,
+                        'verified_at' => $agent->verified_at,
+                        'score' => $score,
+                    ];
+                })
+                ->sortByDesc('score')
+                ->take($limit)
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $agents,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch top agents',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * ============================================================================
+     * ANNOUNCEMENTS
+     * ============================================================================
+     */
+
+    /**
+     * Get all announcements
+     */
+    public function getAnnouncements(Request $request)
+    {
+        try {
+            $query = \App\Models\Announcement::with('admin')
+                ->orderBy('created_at', 'desc');
+
+            if ($request->has('active_only') && $request->active_only) {
+                $query->where('is_active', true)
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                          ->orWhere('expires_at', '>', now());
+                    });
+            }
+
+            $announcements = $query->paginate($request->get('per_page', 15));
+
+            return response()->json([
+                'success' => true,
+                'data' => $announcements,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch announcements',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create announcement
+     */
+    public function createAnnouncement(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'message' => 'required|string|max:2000',
+                'type' => 'required|in:general,top_agent,top_buyer,achievement,system',
+                'target_user_id' => 'nullable|integer|exists:users,id',
+                'expires_at' => 'nullable|date|after:now',
+            ]);
+
+            $announcement = \App\Models\Announcement::create([
+                'admin_id' => auth()->id(),
+                'title' => $validated['title'],
+                'message' => $validated['message'],
+                'type' => $validated['type'],
+                'target_user_id' => $validated['target_user_id'] ?? null,
+                'is_active' => true,
+                'expires_at' => $validated['expires_at'] ?? null,
+            ]);
+
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'announcement_created',
+                'action_type' => 'create',
+                'model_type' => 'Announcement',
+                'model_id' => $announcement->id,
+                'description' => "Announcement created: {$announcement->title}",
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Announcement created successfully',
+                'data' => $announcement,
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create announcement',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete announcement
+     */
+    public function deleteAnnouncement($id)
+    {
+        try {
+            $announcement = \App\Models\Announcement::findOrFail($id);
+            $announcement->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Announcement deleted',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete announcement',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle announcement active status
+     */
+    public function toggleAnnouncement($id)
+    {
+        try {
+            $announcement = \App\Models\Announcement::findOrFail($id);
+            $announcement->update(['is_active' => !$announcement->is_active]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $announcement->is_active ? 'Announcement activated' : 'Announcement deactivated',
+                'data' => $announcement,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to toggle announcement',
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -1149,20 +1149,11 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 3500);
     },
 
-    async loadProfilePhoto() {
+    loadProfilePhoto() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
-        else {
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.profile_photo_path) {
-            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
-          }
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.profile_photo_path) {
+          this.profilePhotoUrl = `${window.__API_URL__ || 'http://localhost:8000'}/storage/${user.profile_photo_path}`;
         }
       } catch (e) { /* non-critical */ }
     },

@@ -8,85 +8,64 @@
     <!-- ═══════════════════════════════════════ -->
     <aside class="sidebar" :class="{ open: sidebarOpen }">
       <div class="sidebar-header">
-        <h2 class="sidebar-logo">
-          <span class="logo-realty">Realty</span><span class="logo-link">Link</span><span class="logo-ph">PH</span>
-        </h2>
+        <router-link to="/dashboard" class="sidebar-logo">
+          RealtyLink<span class="logo-ph">PH</span>
+        </router-link>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="nav-item">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-          </span>
-          <span class="nav-label">Dashboard</span>
+        <router-link to="/dashboard" exact class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>
+          <span>Dashboard</span>
         </router-link>
 
-        <div class="nav-section">
-          <h3 class="nav-section-title">Browse</h3>
-          <router-link to="/properties" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </span>
-            <span class="nav-label">Discover</span>
-          </router-link>
-          <router-link to="/saved-properties" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </span>
-            <span class="nav-label">Saved</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Browse</div>
+        <router-link to="/properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+          <span>Properties</span>
+        </router-link>
+        <router-link to="/saved-properties" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+          <span>Saved</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="nav-section-title">Activity</h3>
-          <router-link to="/conversations" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </span>
-            <span class="nav-label">Messages</span>
-          </router-link>
-          <router-link to="/viewings" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </span>
-            <span class="nav-label">Viewings</span>
-          </router-link>
-          <router-link to="/documents" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </span>
-            <span class="nav-label">Documents</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Communicate</div>
+        <router-link to="/conversations" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span>Messages</span>
+        </router-link>
+        <router-link to="/viewings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          <span>Viewings</span>
+        </router-link>
 
-        <div class="nav-section">
-          <h3 class="nav-section-title">Account</h3>
-          <router-link to="/profile" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </span>
-            <span class="nav-label">Profile</span>
-          </router-link>
-          <router-link to="/settings" class="nav-item">
-            <span class="nav-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </span>
-            <span class="nav-label">Settings</span>
-          </router-link>
-        </div>
+        <div class="nav-group-label">Tools</div>
+        <router-link to="/documents" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+          <span>Documents</span>
+        </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="user-avatar">
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <router-link to="/profile" class="nav-item nav-user" @click="sidebarOpen = false">
+          <div class="nav-av">
             <img v-if="profilePhotoUrl" :src="profilePhotoUrl" :alt="userName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
             <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
           </div>
-          <div class="user-info">
-            <p class="user-name">{{ userName }}</p>
-            <p class="user-role">Buyer</p>
+          <div class="nav-user-info">
+            <span class="nav-user-name">{{ userName }}</span>
+            <span class="nav-user-role">{{ capitalizeRole(userRole) }}</span>
           </div>
-        </div>
+        </router-link>
+        <router-link to="/settings" class="nav-item" @click="sidebarOpen = false">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span>
+          <span>Settings</span>
+        </router-link>
+        <button class="nav-item nav-logout" @click="logout">
+          <span class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
@@ -127,6 +106,12 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
+
+        <select v-model="filterListingType" @change="applyFilters" class="filter-select">
+          <option value="">All Listings</option>
+          <option value="sale">For Sale</option>
+          <option value="rent">For Rent</option>
+        </select>
 
         <select v-model="filterType" @change="applyFilters" class="filter-select">
           <option value="">All Types</option>
@@ -237,6 +222,7 @@
             <!-- Body -->
             <div class="card-body">
               <div class="type-row">
+                <span class="listing-type-badge" :class="property.listing_type || 'sale'">{{ (property.listing_type || 'sale') === 'rent' ? 'For Rent' : 'For Sale' }}</span>
                 <span class="type-badge">{{ formatType(property.property_type) }}</span>
                 <span class="status-badge" :class="property.status">{{ property.status }}</span>
               </div>
@@ -264,7 +250,8 @@
               <div class="card-footer">
                 <div class="agent-row" v-if="property.agent">
                   <div class="agent-avatar">
-                    {{ (property.agent.user?.name || 'A').charAt(0).toUpperCase() }}
+                    <img v-if="property.agent.user?.profile_photo_path" :src="`${apiUrl}/storage/${property.agent.user.profile_photo_path}`" :alt="property.agent.user.name" />
+                    <span v-else>{{ (property.agent.user?.name || 'A').charAt(0).toUpperCase() }}</span>
                   </div>
                   <span class="agent-name">{{ property.agent.user?.name || 'Agent' }}</span>
                   <span class="verified-tag" v-if="property.agent.is_verified">
@@ -324,6 +311,7 @@ export default {
       apiUrl: localStorage.getItem('api_url') || window.__API_URL__,
       token: localStorage.getItem('auth_token') || '',
       userName: '',
+      userRole: 'buyer',
       profilePhotoUrl: null,
 
       // Properties
@@ -336,6 +324,7 @@ export default {
 
       // Filters
       searchQuery: '',
+      filterListingType: '',
       filterType: '',
       filterBedrooms: '',
       filterPrice: '',
@@ -362,6 +351,10 @@ export default {
         );
       }
 
+      if (this.filterListingType) {
+        props = props.filter(p => (p.listing_type || 'sale') === this.filterListingType);
+      }
+
       if (this.filterType) {
         props = props.filter(p => p.property_type === this.filterType);
       }
@@ -379,7 +372,7 @@ export default {
     },
 
     hasActiveFilters() {
-      return this.searchQuery || this.filterType || this.filterBedrooms || this.filterPrice;
+      return this.searchQuery || this.filterListingType || this.filterType || this.filterBedrooms || this.filterPrice;
     },
 
     visiblePages() {
@@ -392,6 +385,12 @@ export default {
   },
 
   methods: {
+    capitalizeRole(role) { return role ? role.charAt(0).toUpperCase() + role.slice(1) : ''; },
+    async logout() {
+      try { await fetch(this.apiUrl + '/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${this.token}` } }); } catch {}
+      localStorage.removeItem('auth_token'); localStorage.removeItem('user');
+      this.$router.push('/');
+    },
     getCoverPhoto(property) {
       if (!property.photos || property.photos.length === 0) return null;
       const cover = property.photos.find(p => p.is_cover);
@@ -483,6 +482,7 @@ export default {
 
     resetFilters() {
       this.searchQuery = '';
+      this.filterListingType = '';
       this.filterType = '';
       this.filterBedrooms = '';
       this.filterPrice = '';
@@ -568,7 +568,7 @@ export default {
 .sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 99;
   backdrop-filter: blur(2px);
 }
@@ -580,14 +580,19 @@ export default {
 
 .sidebar-logo {
   font-family: var(--font-brand);
-  font-size: 20px;
-  margin: 0;
-  letter-spacing: -0.3px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.4px;
 }
 
-.logo-realty { font-weight: 400; color: rgba(255,255,255,0.85); }
-.logo-link   { font-weight: 800; color: var(--white); }
-.logo-ph     { font-weight: 800; color: var(--gold); }
+.logo-ph {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 .sidebar-nav {
   flex: 1;
@@ -595,45 +600,62 @@ export default {
   overflow-y: auto;
 }
 
-.nav-section { margin-bottom: 4px; }
-
-.nav-section-title {
+.nav-group-label {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.28);
-  padding: 14px 8px 6px;
-  margin: 0;
+  color: rgba(255, 255, 255, 0.22);
+  padding: 14px 12px 5px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 9px 12px 9px 10px;
   margin-bottom: 2px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
-  border-radius: var(--radius);
-  font-size: 14px;
+  border-radius: 9px;
+  font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
+  position: relative;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-ui);
 }
 
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.nav-item.router-link-active,
-.nav-item.active {
-  background: rgba(216, 155, 15, 0.14);
+.nav-item.router-link-exact-active {
+  background: linear-gradient(90deg, rgba(216,155,15,0.14) 0%, rgba(216,155,15,0.03) 100%);
   color: var(--gold);
-  font-weight: 600;
 }
 
-.nav-icon {
+.nav-item.router-link-exact-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  background: var(--gold);
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-item.router-link-exact-active .nav-icon-wrap {
+  color: var(--gold);
+}
+
+.nav-icon-wrap {
   width: 20px;
   height: 20px;
   display: flex;
@@ -642,54 +664,67 @@ export default {
   flex-shrink: 0;
 }
 
-.nav-label { flex: 1; }
+.nav-icon-wrap svg { width: 18px; height: 18px; }
 
-.sidebar-footer {
-  padding: 16px 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 10px 8px;
 }
 
-.user-card {
-  display: flex;
-  align-items: center;
+.sidebar-bottom {
+  flex-shrink: 0;
+  padding: 0 10px 14px;
+}
+
+.nav-user {
   gap: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius);
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 10px;
 }
 
-.user-avatar {
-  width: 36px;
-  height: 36px;
+.nav-user:hover,
+.nav-user.router-link-exact-active {
+  background: rgba(216, 155, 15, 0.10);
+  color: var(--gold);
+}
+
+.nav-av {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
   background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  color: var(--navy);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 11px;
+  color: #fff;
 }
 
-.user-info { flex: 1; min-width: 0; }
+.nav-user-info { flex: 1; min-width: 0; }
 
-.user-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  margin: 0;
+.nav-user-name {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.user-role {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
-  margin: 0;
+.nav-user-role {
+  display: block;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.38);
+  margin-top: 1px;
+  text-transform: capitalize;
 }
+
+.nav-logout { color: rgba(255,255,255,0.30); }
+.nav-logout:hover { background: rgba(239,68,68,0.10); color: #f87171; }
 
 /* ═══════════════════════════════════════
    MAIN CONTENT
@@ -1149,9 +1184,21 @@ export default {
   border-radius: var(--radius-pill);
 }
 
-.status-badge.active  { color: #15803d; background: #dcfce7; }
+.status-badge.active, .status-badge.available  { color: #15803d; background: #dcfce7; }
 .status-badge.sold    { color: #b91c1c; background: #fee2e2; }
+.status-badge.rented  { color: #1e40af; background: #dbeafe; }
 .status-badge.pending { color: #b45309; background: #fef3c7; }
+
+.listing-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+.listing-type-badge.sale { color: #15803d; background: #dcfce7; }
+.listing-type-badge.rent { color: #7c3aed; background: #ede9fe; }
 
 .card-title {
   font-family: var(--font-brand);
@@ -1227,6 +1274,12 @@ export default {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.agent-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .agent-name {
@@ -1337,13 +1390,13 @@ export default {
 
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed;
-    left: -280px;
-    width: 280px;
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    width: 256px;
     z-index: 1001;
   }
 
-  .sidebar.open { left: 0; }
+  .sidebar.open { transform: translateX(0); }
 
   .main-content { margin-left: 0; }
 

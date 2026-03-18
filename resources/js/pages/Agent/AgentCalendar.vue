@@ -138,6 +138,7 @@
               @click="openDayPanel(day)"
             >
               <span v-if="day.date" class="day-number">{{ day.dayNum }}</span>
+              <span v-if="day.date && getHolidayName(day.date)" class="holiday-label" :title="getHolidayName(day.date)">{{ getHolidayName(day.date) }}</span>
               <div v-if="day.date && day.indicators.length > 0" class="dot-row">
                 <span
                   v-for="(dot, i) in day.indicators"
@@ -157,6 +158,7 @@
             <span class="legend-item"><span class="legend-dot dot-requested"></span> Pending</span>
             <span class="legend-item"><span class="legend-dot dot-negotiating"></span> Negotiating</span>
             <span class="legend-item"><span class="legend-dot dot-blocked"></span> Blocked</span>
+            <span class="legend-item"><span class="legend-dot dot-holiday"></span> Holiday</span>
           </div>
         </div>
       </div>
@@ -447,6 +449,30 @@ export default {
       return new Set(this.blockedDates.map(bd => bd.blocked_date));
     },
 
+    philippineHolidays() {
+      const y = this.currentYear;
+      // Fixed Philippine holidays (regular + special non-working)
+      const holidays = {
+        [`${y}-01-01`]: { name: "New Year's Day", type: 'regular' },
+        [`${y}-01-02`]: { name: 'Special Non-Working', type: 'special' },
+        [`${y}-02-25`]: { name: 'EDSA Revolution Anniversary', type: 'special' },
+        [`${y}-04-09`]: { name: 'Araw ng Kagitingan', type: 'regular' },
+        [`${y}-05-01`]: { name: 'Labor Day', type: 'regular' },
+        [`${y}-06-12`]: { name: 'Independence Day', type: 'regular' },
+        [`${y}-08-21`]: { name: 'Ninoy Aquino Day', type: 'special' },
+        [`${y}-08-26`]: { name: 'National Heroes Day', type: 'regular' },
+        [`${y}-11-01`]: { name: "All Saints' Day", type: 'special' },
+        [`${y}-11-02`]: { name: "All Souls' Day", type: 'special' },
+        [`${y}-11-30`]: { name: 'Bonifacio Day', type: 'regular' },
+        [`${y}-12-08`]: { name: 'Immaculate Conception', type: 'special' },
+        [`${y}-12-24`]: { name: 'Christmas Eve', type: 'special' },
+        [`${y}-12-25`]: { name: 'Christmas Day', type: 'regular' },
+        [`${y}-12-30`]: { name: 'Rizal Day', type: 'regular' },
+        [`${y}-12-31`]: { name: "New Year's Eve", type: 'special' },
+      };
+      return holidays;
+    },
+
     calendarDays() {
       const year = this.currentYear;
       const month = this.currentMonth;
@@ -521,7 +547,13 @@ export default {
       if (day.date === this.selectedDay) classes.push('cal-selected');
       if (day.date < this.todayStr) classes.push('cal-past');
       if (day.indicators.length > 0) classes.push('cal-has-events');
+      if (this.philippineHolidays[day.date]) classes.push('cal-holiday');
       return classes.join(' ');
+    },
+
+    getHolidayName(dateStr) {
+      const h = this.philippineHolidays[dateStr];
+      return h ? h.name : null;
     },
 
     dotLabel(dot) {
@@ -810,20 +842,11 @@ export default {
       setTimeout(() => { this.toast.show = false; }, 4000);
     },
 
-    async loadProfilePhoto() {
+    loadProfilePhoto() {
       try {
-        const token = localStorage.getItem('auth_token');
-        const apiUrl = window.__API_URL__ || 'http://localhost:8000';
-        const res = await fetch(`${apiUrl}/api/user/profile-photo`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.profile_photo_url) this.profilePhotoUrl = data.profile_photo_url;
-        else {
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          if (user.profile_photo_path) {
-            this.profilePhotoUrl = `${apiUrl}/storage/${user.profile_photo_path}`;
-          }
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.profile_photo_path) {
+          this.profilePhotoUrl = `${window.__API_URL__ || 'http://localhost:8000'}/storage/${user.profile_photo_path}`;
         }
       } catch (e) { /* non-critical */ }
     },
@@ -988,6 +1011,16 @@ export default {
 .dot-requested   { background: #D89B0F; }
 .dot-negotiating { background: #2563eb; }
 .dot-blocked     { background: #dc2626; }
+.dot-holiday     { background: #f97316; }
+
+.cal-holiday { background: rgba(249,115,22,.06); }
+.cal-holiday .day-number { color: #ea580c; }
+
+.holiday-label {
+  font-size: 0.55rem; font-weight: 600; color: #ea580c;
+  line-height: 1.2; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; max-width: 100%;
+}
 
 .cal-legend { display: flex; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; justify-content: center; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #6b7280; font-weight: 500; }

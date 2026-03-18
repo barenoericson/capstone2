@@ -66,6 +66,12 @@ Route::prefix('agents')->group(function () {
 Route::get('/users/{userId}/profile', [AgentReviewController::class, 'buyerProfile']);
 Route::get('/users/{userId}/agent-profile', [AgentReviewController::class, 'agentProfile']);
 
+// Top agents (public — buyers can see rankings)
+Route::get('/top-agents', [AdminController::class, 'topAgents']);
+
+// Active announcements (public)
+Route::get('/announcements/active', [AdminController::class, 'getAnnouncements']);
+
 // Landing page stats (real counts)
 Route::get('/landing-stats', function () {
     return response()->json([
@@ -287,6 +293,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users', [AdminController::class, 'users']);
         Route::get('/users/{id}', [AdminController::class, 'userDetail']);
         Route::put('/users/{id}', [AdminController::class, 'updateUser']);
+        Route::post('/users/{id}/change-role', [AdminController::class, 'changeUserRole']);
         Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
         Route::post('/users/{id}/suspend', [AdminController::class, 'suspendUser']);
         Route::post('/users/{id}/activate', [AdminController::class, 'activateUser']);
@@ -294,8 +301,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Agent Management
         Route::get('/agents', [AdminController::class, 'agents']);
         Route::get('/agents/pending', [AdminController::class, 'pendingAgents']);
-        Route::get('/agents/verified', [AgentController::class, 'getVerifiedAgents']);
-        Route::get('/agents/rejected', [AgentController::class, 'getRejectedApplications']);
+        Route::get('/agents/verified', [AdminController::class, 'verifiedAgents']);
+        Route::get('/agents/rejected', [AdminController::class, 'rejectedAgents']);
         Route::get('/agents/{id}', [AdminController::class, 'agentDetail']);
         Route::post('/agents/{id}/verify', [AdminController::class, 'verifyAgent']);
         Route::post('/agents/{id}/reject', [AdminController::class, 'rejectAgent']);
@@ -318,6 +325,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Analytics
         Route::get('/dashboard/analytics', [AdminController::class, 'analyticsData']);
+
+        // Top Agents
+        Route::get('/top-agents', [AdminController::class, 'topAgents']);
+
+        // Announcements
+        Route::get('/announcements', [AdminController::class, 'getAnnouncements']);
+        Route::post('/announcements', [AdminController::class, 'createAnnouncement']);
+        Route::delete('/announcements/{id}', [AdminController::class, 'deleteAnnouncement']);
+        Route::post('/announcements/{id}/toggle', [AdminController::class, 'toggleAnnouncement']);
 
         // Audit Logs
         Route::get('/audit-logs', [AdminController::class, 'auditLogs']);

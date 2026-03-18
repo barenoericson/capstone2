@@ -102,6 +102,17 @@ const routes = [
         },
     },
 
+    // ✅ Leaderboard (accessible to both buyers and agents)
+    {
+        path: '/leaderboard',
+        component: () => import('../pages/Leaderboard.vue'),
+        name: 'Leaderboard',
+        meta: {
+            requiresAuth: true,
+            transition: 'fade',
+        },
+    },
+
     // ✅ Settings page (accessible to both buyers and agents)
     {
         path: '/settings',
