@@ -60,13 +60,8 @@
           <span>Leaderboard</span>
         </router-link>
 
-        <div class="nav-group-label">Tools</div>
-        <router-link to="/documents" class="nav-item" @click="sidebarOpen = false">
-          <span class="nav-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </span>
-          <span>Documents</span>
-        </router-link>
+        <div class="nav-group-label"></div>
+        
       </nav>
 
       <div class="sidebar-bottom">
