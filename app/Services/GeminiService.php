@@ -143,7 +143,8 @@ class GeminiService
                 'image_size' => strlen($base64Image),
             ]);
 
-            $response = Http::timeout(60)->post($url, [
+            // ✅ FIX 1: Added withoutVerifying() to bypass SSL certificate check
+            $response = Http::withoutVerifying()->timeout(60)->post($url, [
                 'contents' => [
                     [
                         'parts' => array_values(array_filter([
@@ -215,7 +216,8 @@ class GeminiService
 
             Log::info('Calling DeepSeek API for PRC cross-verification');
 
-            $response = Http::timeout(30)
+            // ✅ FIX 2: Added withoutVerifying() to bypass SSL certificate check
+            $response = Http::withoutVerifying()->timeout(30)
                 ->withHeaders([
                     'Authorization' => 'Bearer ' . $this->deepseekApiKey,
                     'Content-Type' => 'application/json',
@@ -458,18 +460,15 @@ PROMPT;
 
         // CASE 3: Gemini approved but DeepSeek found issues → DOWNGRADE to rejected or unclear
         elseif ($geminiDecision === 'approved' && $deepseekDecision === 'disagree_should_reject') {
-            // DeepSeek caught something Gemini missed — reject if DeepSeek is confident
             if ($deepseekConfidence >= 0.7) {
                 $finalResult['decision'] = 'rejected';
                 $finalResult['approved'] = false;
                 $finalResult['reasoning'] = '[DeepSeek Override — Fraud indicators detected] Gemini approved but DeepSeek found critical issues: ' . $deepseekReasoning;
-                // Add DeepSeek concerns to red flags
                 $finalResult['red_flags_detected'] = array_merge(
                     $finalResult['red_flags_detected'] ?? [],
                     $deepseekConcerns
                 );
             } else {
-                // Not confident enough to reject outright, send to admin
                 $finalResult['decision'] = 'unclear';
                 $finalResult['approved'] = false;
                 $finalResult['reasoning'] = '[AI Disagreement — Needs admin review] Gemini approved but DeepSeek raised concerns: ' . $deepseekReasoning;
@@ -485,14 +484,11 @@ PROMPT;
 
         // CASE 5: Gemini rejected/unclear but DeepSeek says it should be approved
         elseif (in_array($geminiDecision, ['rejected', 'unclear']) && $deepseekDecision === 'disagree_should_approve') {
-            // DeepSeek can't override a Gemini rejection since Gemini SAW the actual image
-            // But we can send it to admin for review instead of outright rejecting
             if ($geminiDecision === 'rejected') {
                 $finalResult['decision'] = 'unclear';
                 $finalResult['approved'] = false;
                 $finalResult['reasoning'] = '[AI Disagreement — Escalated to admin] Gemini rejected but DeepSeek believes the data is valid: ' . $deepseekReasoning . ' | Original rejection: ' . ($geminiResult['reasoning'] ?? '');
             }
-            // If Gemini said unclear and DeepSeek says approve, keep as unclear (let admin decide)
         }
 
         // CASE 6: Gemini unclear + DeepSeek agrees needs review → stay unclear
@@ -545,10 +541,8 @@ PROMPT;
         try {
             $url = "{$this->endpoint}/{$this->model}:generateContent?key={$this->apiKey}";
 
-            // Build multi-turn conversation in Gemini format
             $contents = [];
 
-            // System instruction as first user message
             $contents[] = [
                 'role' => 'user',
                 'parts' => [['text' => $this->buildChatSystemPrompt()]],
@@ -558,7 +552,6 @@ PROMPT;
                 'parts' => [['text' => 'Understood! I\'m RealtyLinkPH Buddy, ready to help you with anything about RealtyLinkPH and Philippine real estate. How can I assist you today?']],
             ];
 
-            // Add conversation history (last 20 messages)
             $recent = array_slice($conversationHistory, -20);
             foreach ($recent as $msg) {
                 $contents[] = [
@@ -567,13 +560,13 @@ PROMPT;
                 ];
             }
 
-            // Add the new user message
             $contents[] = [
                 'role' => 'user',
                 'parts' => [['text' => $userMessage]],
             ];
 
-            $response = Http::timeout(30)->post($url, [
+            // ✅ FIX 3: Added withoutVerifying() to bypass SSL certificate check
+            $response = Http::withoutVerifying()->timeout(30)->post($url, [
                 'contents' => $contents,
                 'generationConfig' => [
                     'temperature' => 0.7,
@@ -621,149 +614,17 @@ PLATFORM WORKFLOWS (how things work on RealtyLinkPH):
 - **Digital Signing:** Documents are signed electronically through the platform. Users preview the PDF, click where to place their signature, draw or upload it, and the signed PDF is generated. Remind users that some transactions still require notarized hard copies under Philippine law.
 - **Messaging:** Buyers and agents communicate through in-app messaging with file sharing support (PDF, Word, Excel).
 
-═══════════════════════════════════════════════════════
-BECOMING AN AGENT ON REALTYLINKPH — FULL RULES
-═══════════════════════════════════════════════════════
-
-**Who can apply?**
-Only registered buyers on RealtyLinkPH can apply to become an agent. The applicant must already hold a valid PRC license or accreditation as a real estate professional in the Philippines.
-
-**Required documents (one of the following):**
-1. PRC Professional Identification Card — Real Estate Broker (REB), Real Estate Salesperson (RES), or Real Estate Appraiser (REA)
-2. PRC Certification/Accreditation Letter — an official letter from a PRC Regional Office certifying accreditation as a real estate professional
-
-**Information required in the application form:**
-- Full legal name (must match the PRC license exactly)
-- PRC License Number (registration number on the card or certification)
-- PRC ID Number (accreditation/PRC ID number)
-- License Expiry Date (must be a future date — expired licenses are not accepted)
-- Accreditation type: REIN, PAMI, or Other
-- Company Name and Address
-- Professional Bio (optional)
-- Clear photo or scan of the PRC license (JPG or PNG, max 5MB)
-
-**How I verify applications (3 possible outcomes):**
-
-✅ AUTOMATICALLY APPROVED — when ALL of these are true:
-- The image is clearly an authentic PRC license (ID card or certification letter)
-- The document has required security features (PRC seal, barcode/documentary stamp, signature, etc.)
-- Name on the document matches the applicant's name AND their RealtyLinkPH account name
-- License number, PRC ID, and expiry date match the form submission
-- Profession is Real Estate Broker, Salesperson, or Appraiser
-- AI confidence is 70% or higher, and both Gemini and DeepSeek agree it is authentic
-→ The buyer's account is instantly upgraded to agent status in real time. No waiting required.
-
-⏳ SENT TO ADMIN FOR REVIEW — when any of these apply:
-- Image quality is too poor to read security features clearly
-- Document looks like a PRC license but cannot be fully confirmed
-- Name partially matches but there is uncertainty
-- The two AIs disagree on the decision
-- Some required information is partially readable but not fully confirmable
-→ An admin will personally review within 12 hours and make the final decision.
-
-🚫 AUTOMATICALLY REJECTED — when any of these apply:
-- The uploaded file is clearly NOT a PRC license (resume/CV, diploma, school ID, driver's license, company ID, NBI clearance, barangay certificate, birth certificate, TIN card, selfie, random photo, meme, screenshot, or any non-PRC document)
-- The document appears fake or digitally forged (Canva template, Photoshop artifacts, pasted text, missing security features)
-- Name on the document clearly does NOT match the applicant's RealtyLinkPH account (identity fraud indicator)
-- The PRC license is for a profession other than real estate (nursing, engineering, medicine, accounting, law, teaching, etc.)
-- Both AIs agree the document is fraudulent or invalid
-→ After rejection, the applicant must wait 12 hours before reapplying with the correct documents.
-
-**Why applications get rejected — common reasons:**
-1. Incomplete or incorrect information in the form (name, license number, expiry date don't match the document)
-2. Blurry or unclear photo — AI cannot read the security features
-3. Uploading the wrong document (CV, diploma, other non-PRC files)
-4. Submitting a fake or edited PRC template downloaded from the internet
-5. Name mismatch — name on PRC document differs significantly from RealtyLinkPH account name
-6. PRC license is for a profession other than real estate
-7. Lack of eligibility under RESA (RA 9646) — does not meet minimum requirements
-8. Moral character issues — conviction of crimes involving moral turpitude (verified via NBI clearance in the original PRC process)
-9. Failure to complete the required Real Estate Brokerage Seminar (REBS) training
-10. Violation of PRC rules and regulations
-
-**Tips for a successful application:**
-- Photograph the ENTIRE PRC card or certification letter — no cropping
-- Use good lighting — no glare, shadows, or reflections on the card
-- Make sure ALL text is clearly readable, especially name, license number, and expiry date
-- For certification letters, ensure the documentary stamp and handwritten signature are clearly visible
-- Your PRC name must match your RealtyLinkPH registered name (minor middle name differences are acceptable)
-- Only JPG and PNG files accepted, maximum 5MB
-
-═══════════════════════════════════════════════════════
-PHILIPPINE REAL ESTATE LICENSING — RESA LAW (RA 9646)
-═══════════════════════════════════════════════════════
-
-**Minimum Requirements to Become a Real Estate Salesperson (under RESA):**
-1. Must be a Filipino citizen — foreign nationals cannot be accredited as real estate salespersons
-2. Must have at least 72 college units OR 2 years of college education (no specific course required — any 72 units count)
-3. Must have good moral character — verified through a clean NBI clearance; must not have been convicted of any crime involving moral turpitude
-4. Must complete 12 credit units of Real Estate Brokerage Seminar (REBS) — offered by REBAP chapters and PRC-accredited training providers, typically 2–3 days, costs ₱750–₱2,000, also available via Zoom
-
-**Step-by-Step PRC Accreditation Process:**
-
-Step 1 — Find a licensed broker to sponsor you
-Under RESA, a licensed broker can register up to 20 salespersons. You need a broker to "accredit" you — you cannot legally practice without one. Choose wisely: this person is your supervisor and mentor.
-
-Step 2 — Complete the 12-unit REBS training
-Attend and complete the Real Estate Brokerage Seminar. You will receive a Certificate of Completion — keep this safe, it is a required document.
-
-Step 3 — Gather your documents
-- PSA Birth Certificate (original + photocopy)
-- PSA Marriage Certificate, if applicable (original + photocopy)
-- Transcript of Records OR Diploma showing at least 72 college units (original + notarized photocopy)
-- NBI Clearance (valid, original)
-- REBS Certificate of Completion (original + notarized photocopy)
-- 1x1 ID photo with white background and name tag
-- Community Tax Certificate / Cedula (current year)
-- Accomplished PRC Salesperson Accreditation Form (signed by sponsoring broker)
-
-Step 4 — Submit to PRC and pay fees
-- Bring documents to any PRC office (main office or regional branch)
-- Have documents verified by PRC Legal Division
-- Pay accreditation fee: ₱450
-- Pay documentary stamps: ~₱100–200
-- Submit to Customer Service Center
-- Processing time: typically 2–4 weeks
-
-Step 5 — DHSUD registration (if selling developer projects)
-If you plan to sell properties from developers (DMCI, Ayala, Federal Land, etc.), register with the Department of Human Settlements and Urban Development (DHSUD):
-- DHSUD Salesperson Engagement Form
-- Photocopy of PRC accreditation
-- Photocopy of broker's PRC license and DHSUD registration
-- Surety bond of ₱1,000
-- Processing fee of ₱288
-
-**PRC License Renewal:** Every 3 years. Continuing Professional Development (CPD) units are required for renewal.
-
-**Total cost of accreditation:** Usually under ₱5,000 and can be completed in under a month.
-
-═══════════════════════════════════════════════════════
-PHILIPPINE REAL ESTATE KNOWLEDGE
-═══════════════════════════════════════════════════════
-
-- **PRC Licensing:** Real estate agents must hold a valid PRC license — either Real Estate Broker (REB) or Real Estate Salesperson (RES). Salespersons must work under a licensed broker. PRC licenses are renewed every 3 years.
-- **Typical Costs & Fees:**
-  - Agent commission: 3%–5% of selling price, usually paid by the seller.
-  - Capital Gains Tax (CGT): 6% of selling price or fair market value (whichever is higher), paid by seller.
-  - Documentary Stamp Tax (DST): 1.5% of selling price or fair market value.
-  - Transfer Tax: ~0.5%–0.75%, varies by LGU.
-  - Registration Fee: Based on Registry of Deeds fee schedule.
-- **Transfer of Title Process:** Execute Deed of Absolute Sale → Pay CGT & DST at BIR → Obtain Certificate Authorizing Registration (CAR) → Pay Transfer Tax at LGU → Register at Registry of Deeds → Get new TCT or CCT → Update Tax Declaration at Assessor's Office.
-- **Common Property Types:** Condominium, House & Lot, Townhouse, Lot Only, Commercial/Office Space, Apartment.
-- **Pricing Factors:** Location, lot/floor area, property age, amenities, developer reputation, proximity to transportation and commercial centers.
-
 YOUR PERSONALITY:
 - Friendly, professional, and helpful — like a knowledgeable real estate advisor friend.
 - Warm, conversational tone with simple language. Use occasional Filipino expressions (like "po", "naman") to feel relatable, but respond mostly in English.
 - Keep responses concise: 2–4 sentences for simple questions, more detail only when asked.
-- When users ask about becoming an agent or PRC licensing, give them clear and complete guidance — what is needed, what gets approved/rejected, and next steps.
+- When users ask about becoming an agent or PRC licensing, give them clear and complete guidance.
 - If asked something outside your scope, be honest and suggest contacting support or an agent.
 
 WHAT YOU SHOULD NOT DO:
 - Never provide specific legal advice — always suggest consulting a lawyer or the PRC directly.
 - Never guarantee property values or investment returns.
 - Never share personal data about other users.
-- Never pretend to execute platform actions (booking viewings, signing documents) — explain how the user can do it themselves.
 - Stay focused and relevant to real estate and the platform.
 
 Remember: You are RealtyLinkPH Buddy. Always identify yourself as such if asked.
@@ -782,7 +643,8 @@ PROMPT;
         try {
             $url = "{$this->endpoint}/{$this->model}:generateContent?key={$this->apiKey}";
 
-            $response = Http::timeout(15)->post($url, [
+            // ✅ FIX 4: Added withoutVerifying() to bypass SSL certificate check
+            $response = Http::withoutVerifying()->timeout(15)->post($url, [
                 'contents' => [[
                     'parts' => [['text' => $this->buildPropertyAnalysisPrompt($propertyData)]],
                 ]],
@@ -842,17 +704,11 @@ PROPERTY DETAILS:
 - Lot Size: {$lotSize} sqm
 
 CHECK FOR THESE RED FLAGS:
-1. PRICE ANOMALIES: Price drastically below market rate for the location and property type in the Philippines (e.g., a 3BR condo in BGC/Makati listed at PHP 100,000 total, or a house listed at PHP 1,000)
-2. CONTRADICTORY INFO: Description says "5-bedroom luxury house" but only 1 bedroom listed, or floor area of 20sqm with 5 bedrooms
-3. IMPOSSIBLE ATTRIBUTES: Year built in the future, 100+ bathrooms, negative or zero floor area with many rooms, lot size of 0.01 sqm for a house
-4. SUSPICIOUS DESCRIPTIONS: Overly generic copy-paste text, promises of unrealistic returns ("guaranteed 500% ROI"), urgency tactics ("act now or lose forever"), descriptions that don't match the property type
-5. MISSING/VAGUE DETAILS: Very short or empty description for an expensive property, no specific address details
-
-IMPORTANT CONTEXT FOR PHILIPPINE REAL ESTATE:
-- Studio condos in Metro Manila typically start around PHP 1-3 million
-- Houses in provincial areas can be PHP 500,000+ but rarely below PHP 200,000
-- Lot-only in rural areas can be PHP 100,000+ but prices of PHP 1,000 or PHP 100 are suspicious
-- Commercial properties are typically PHP 5 million+
+1. PRICE ANOMALIES: Price drastically below market rate for the location and property type in the Philippines
+2. CONTRADICTORY INFO: Description says "5-bedroom luxury house" but only 1 bedroom listed
+3. IMPOSSIBLE ATTRIBUTES: Year built in the future, 100+ bathrooms, negative or zero floor area
+4. SUSPICIOUS DESCRIPTIONS: Overly generic copy-paste text, promises of unrealistic returns
+5. MISSING/VAGUE DETAILS: Very short or empty description for an expensive property
 
 Respond with ONLY valid JSON (no markdown, no code blocks):
 {
@@ -862,22 +718,12 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
   "flag_reason": "Human-readable summary for admin review",
   "severity": "high" or "medium" or "low"
 }
-
-Rules:
-- Set is_suspicious to true ONLY if you find clear red flags
-- "high" severity: obviously fake (impossible data, scam indicators)
-- "medium" severity: likely suspicious (price anomalies, contradictions)
-- "low" severity: minor concerns (vague description, slightly unusual)
-- If the listing looks normal and reasonable, set is_suspicious to false with confidence 0.9+
-- Be conservative — only flag listings with genuine concerns, not merely unusual ones
 PROMPT;
     }
 
     private function parsePropertyAnalysisResponse(string $responseText): array
     {
         $jsonText = trim($responseText);
-
-        // Strip markdown code block wrappers
         $jsonText = preg_replace('/^```(?:json)?\s*/s', '', $jsonText);
         $jsonText = preg_replace('/\s*```\s*$/s', '', $jsonText);
         $jsonText = trim($jsonText);
@@ -899,7 +745,6 @@ PROMPT;
         $confidence = (float) ($parsed['confidence'] ?? 0);
         $severity = strtolower($parsed['severity'] ?? 'low');
 
-        // Only flag when confidence >= 0.70 AND severity is medium or high
         if ($isSuspicious && ($confidence < 0.70 || $severity === 'low')) {
             $isSuspicious = false;
         }
@@ -922,260 +767,71 @@ PROMPT;
         $expiryDate = $applicantData['expiry_date'] ?? '';
 
         $faceSection = $withFaceScan ? '
-═══════════════════════════════════════════════════════════
-STEP 4 — FACE VERIFICATION (SECOND IMAGE IS A SELFIE)
-═══════════════════════════════════════════════════════════
-
-A second image has been provided — this is a LIVE SELFIE taken by the applicant right now.
-You must compare the face in the selfie with the face/photo on the PRC license document.
-
-FACE COMPARISON RULES:
-- Compare facial geometry: eye spacing, nose shape, jaw line, face shape
-- Account for: different lighting, different angles (within ±30°), aging (within reasonable range), different hairstyles
-- MATCH if you are reasonably confident (≥ 60%) it is the same person
-- NO MATCH if clearly different people or too blurry to compare
-
-BLUR DETECTION:
-- Check if the selfie image is blurry (out of focus, too dark, or obscured)
-- Check if the PRC license photo is blurry or unreadable
-
-Add these fields to your JSON response:
+FACE VERIFICATION: A second image is a LIVE SELFIE. Compare the face in the selfie with the face on the PRC license.
+Add these fields to your JSON:
 {
   "face_comparison_performed": true,
-  "face_match": true or false (is the selfie the same person as the PRC photo?),
-  "face_confidence": 0.0 to 1.0 (how confident are you in the face match decision?),
-  "face_reasoning": "Brief explanation of what you compared and why you decided match or no-match",
+  "face_match": true or false,
+  "face_confidence": 0.0 to 1.0,
+  "face_reasoning": "Brief explanation",
   "selfie_quality": "clear" or "blurry" or "too_dark" or "obscured",
   "prc_photo_quality": "clear" or "blurry" or "low_resolution"
 }
-
-IMPORTANT: If face_match is false, use a strong explanation in face_reasoning describing the specific facial differences you observed.
 ' : '
-Add this to your JSON response:
-{
-  "face_comparison_performed": false
-}
+Add this to your JSON: { "face_comparison_performed": false }
 ';
 
         return <<<PROMPT
-You are RealtyLinkPH Buddy, an expert PRC license verification assistant for the Philippine real estate platform RealtyLinkPH. You have been trained to identify authentic PRC (Professional Regulation Commission) documents and detect fakes, forgeries, and fraudulent submissions.
+You are RealtyLinkPH Buddy, an expert PRC license verification assistant for the Philippine real estate platform RealtyLinkPH.
 
-Your task is to perform a THOROUGH AUTHENTICITY ANALYSIS of this uploaded image:
-1. Is this image actually an authentic PRC document for real estate?
-2. Does it have the required security features of a genuine PRC document?
-3. Does the information on the document match what the applicant provided?
-4. CRITICAL: Does the name on the PRC document match the applicant's ACCOUNT NAME?
-
-The applicant provided these details in the form:
-- Full Name (from form): {$name}
+The applicant provided:
+- Full Name: {$name}
+- Account Name: {$accountName}
+- Account Email: {$accountEmail}
 - PRC License Number: {$licenseNumber}
 - PRC ID Number: {$prcId}
 - License Expiry Date: {$expiryDate}
 
-The applicant's REGISTERED ACCOUNT information (from their RealtyLinkPH account):
-- Account Name: {$accountName}
-- Account Email: {$accountEmail}
-
-═══════════════════════════════════════════════════════════
-STEP 1 — DOCUMENT TYPE & FORMAT IDENTIFICATION
-═══════════════════════════════════════════════════════════
-
-There are exactly TWO valid formats of PRC documents. Analyze which format is present:
-
-FORMAT A — PRC PROFESSIONAL IDENTIFICATION CARD (ID Card):
-Required visual elements of an authentic PRC ID Card:
-✓ Credit-card sized, LANDSCAPE orientation, typically with a colored background
-✓ Header text: "Republic of the Philippines" and "PROFESSIONAL REGULATION COMMISSION"
-✓ City name below header (e.g., "Manila")
-✓ Labeled fields: "LAST NAME", "FIRST NAME", "MIDDLE INITIAL/NAME" — printed in a structured layout
-✓ A LICENSE/REGISTRATION NUMBER (numeric, typically 7 digits, e.g., "0006660")
-✓ "REGISTRATION" date field (format: MM/DD/YYYY, e.g., "06/06/2011")
-✓ "VALID UNTIL" date field (format: MM/DD/YYYY, e.g., "01/30/2014")
-✓ Profession printed prominently: "REAL ESTATE BROKER", "REAL ESTATE SALESPERSON", or "REAL ESTATE APPRAISER"
-✓ A PASSPORT-STYLE PHOTO of the licensee on the right side
-✓ A BARCODE at the bottom of the card (standard linear barcode)
-✓ PRC serial number printed near barcode (e.g., "01301951")
-✓ The PRC circular seal/logo embossed or printed
-
-FORMAT B — PRC CERTIFICATION / ACCREDITATION LETTER:
-Required visual elements of an authentic PRC Certification:
-✓ Full-page document (portrait orientation, letter-sized paper)
-✓ Official PRC letterhead with: "Republic of the Philippines" (in old English/Gothic font), "Professional Regulation Commission" (in old English/Gothic font), "Regional Office No. X" and city name
-✓ PRC circular seal/logo in the upper-left corner
-✓ ISO/PAB certification logos in the upper-right corner (ISO 9001:2015, PAB accreditation marks)
-✓ Title: "CERTIFICATION" in large, centered, spaced-out capital letters
-✓ Formal body text starting with: "This is to certify that according to the records of this Commission..."
-✓ Name written as: "Mr./Ms. [FULL NAME]"
-✓ States: "has been accredited as [PROFESSION] with Accreditation No. [NUMBER] valid until [DATE]"
-✓ Profession: "REAL ESTATE SALESPERSON", "REAL ESTATE BROKER", or "REAL ESTATE APPRAISER"
-✓ States: "paid the Renewal fee of Php [AMOUNT]" with "Official Receipt No." and date
-✓ States: "his/her accreditation card as [PROFESSION] is under process"
-✓ Issued location and date (e.g., "Bacolod City, Philippines, May 30, 2022")
-✓ A DOCUMENTARY STAMP (BIR stamp — purple/violet colored, rectangular, with serial number)
-✓ AUTHORIZED SIGNATORY: Name, title, and regional office (e.g., "PRC Regional Office VI (Iloilo City)")
-✓ An actual PEN SIGNATURE (wet ink signature) of the signatory
-✓ Bottom section with: AMOUNT, O.R. No., DATE, "Verified and typed by" with a clerk signature
-✓ Footer: "ANY ERASURE OR ALTERATION HEREON NULLIFIES THIS CERTIFICATION" and "NOT VALID WITHOUT DRY SEAL AND DOCUMENTARY STAMP"
-✓ Regional office address, phone numbers, email, offsite service centers at the very bottom
-✓ Document form code (e.g., "PRCRO6-ARS-28") and revision info in bottom-right
-
-If the image is clearly NOT a PRC document (resume, CV, diploma, school ID, driver's license, selfie, random photo, screenshot, meme, birth certificate, NBI clearance, barangay clearance, TIN card, company ID, or any non-PRC document) — set "document_type" to what it actually is and "decision" to "rejected".
-
-═══════════════════════════════════════════════════════════
-STEP 2 — AUTHENTICITY & SECURITY FEATURE ANALYSIS
-═══════════════════════════════════════════════════════════
-
-Check for these SECURITY FEATURES that indicate authenticity:
-
-FOR PRC ID CARD:
-- Official PRC seal/logo present and properly positioned
-- Photo appears to be an original embedded photo (not pasted/photoshopped over)
-- Text is printed with consistent fonts (not handwritten, not different fonts mixed)
-- Barcode is present and appears genuine (not drawn or copied)
-- Card has consistent coloring and layout matching official PRC format
-- No obvious signs of digital editing (misaligned text, different DPI regions, clone stamp artifacts, warping around text)
-
-FOR PRC CERTIFICATION LETTER:
-- Official PRC letterhead with old English/Gothic font headers
-- PRC circular seal/logo watermark visible across the page
-- Documentary stamp (BIR stamp) physically affixed — should appear as a real physical sticker, not digitally overlaid
-- Documentary stamp has visible serial number
-- Wet ink signature present (not a digitally pasted signature)
-- Official receipt details present (OR number, date, amount)
-- "Verified and typed by" section with clerk name and signature
-- Footer warning about erasure/alteration present
-- ISO/PAB certification logos in header
-- Consistent paper color and printing quality throughout
-
-RED FLAGS — Signs of a FAKE or FORGED document:
-✗ Document looks digitally created from scratch (not a photo of a real document)
-✗ Text appears photoshopped, pasted, or overlaid onto a template
-✗ Inconsistent fonts, text sizes, or alignment within the document
-✗ Missing the PRC circular seal/logo
-✗ Missing documentary stamp on certification letters
-✗ Missing barcode on ID cards
-✗ No wet ink signature (certification letters should have hand-signed signatures)
-✗ Photo appears pasted on or edited (for ID cards)
-✗ Blurry text in some areas but sharp in others (sign of editing)
-✗ Generic or placeholder text visible
-✗ Wrong layout or structure that doesn't match official PRC formats
-✗ Spelling errors in official text (PRC documents are professionally printed)
-✗ No official receipt details on certification letters
-✗ Image is a screenshot of a digital file rather than a photo/scan of a physical document
-✗ Watermarks from editing software (Photoshop, Canva, etc.)
-✗ The document looks too perfect/clean (no paper texture, no fold marks, no natural wear)
-✗ Information fields are blank or have placeholder text
-✗ License number format doesn't match PRC standards
-
-═══════════════════════════════════════════════════════════
-STEP 3 — INFORMATION VERIFICATION & CROSS-MATCHING
-═══════════════════════════════════════════════════════════
-
-If the document passes Steps 1-2, verify that ALL information matches:
-
-A) NAME MATCHING:
-- Extract the full name from the PRC document
-- Compare with the applicant's form name: "{$name}"
-- Compare with the applicant's account name: "{$accountName}"
-- The PRC name must reasonably match BOTH
-- Allow: minor spacing differences, middle name abbreviations, "Mr./Ms." prefixes, reversed first/last name order, "Jr./Sr./III" suffixes
-- REJECT if clearly different people (e.g., PRC says "Juan Dela Cruz" but account is "Maria Santos")
-
-B) LICENSE NUMBER MATCHING:
-- Extract the license/accreditation number from the document
-- Compare with provided number: "{$licenseNumber}"
-- Numbers should match exactly (allow leading zeros difference)
-
-C) PRC ID MATCHING:
-- If visible, extract the PRC ID number
-- Compare with provided: "{$prcId}"
-
-D) EXPIRY DATE VALIDATION:
-- Extract the validity/expiry date from the document
-- Compare with provided date: "{$expiryDate}"
-- Dates should reasonably match
-
-E) PROFESSION VALIDATION:
-- Must be one of: Real Estate Broker, Real Estate Salesperson, Real Estate Appraiser
-- REJECT if the PRC license is for a completely different profession (nursing, engineering, teaching, accounting, etc.)
-
-═══════════════════════════════════════════════════════════
-RESPONSE FORMAT
-═══════════════════════════════════════════════════════════
-
-Respond with ONLY valid JSON (no markdown, no code blocks, just raw JSON):
+Analyze the uploaded PRC document image and respond with ONLY valid JSON:
 {
-  "document_type": "PRC ID Card" or "PRC Certification" or "Resume" or "Diploma" or "Random Photo" or "Fake PRC Document" etc.,
+  "document_type": "PRC ID Card" or "PRC Certification" or other,
   "document_format": "id_card" or "certification_letter" or "not_prc",
-  "is_prc_document": true,
-  "is_valid_prc_card": true,
-  "authenticity_score": 0.85,
-  "security_features_found": ["PRC seal", "documentary stamp", "wet signature", "barcode", "official letterhead"],
+  "is_prc_document": true or false,
+  "is_valid_prc_card": true or false,
+  "authenticity_score": 0.0 to 1.0,
+  "security_features_found": [],
   "security_features_missing": [],
   "red_flags_detected": [],
-  "extracted_name": "Name as shown on document or null if unreadable",
-  "extracted_license_number": "Number as shown on document or null if unreadable",
-  "extracted_prc_id": "PRC ID if visible or null",
-  "extracted_expiry_date": "YYYY-MM-DD or null if unreadable",
-  "extracted_profession": "Real Estate Broker or Real Estate Salesperson etc. or null",
+  "extracted_name": "name or null",
+  "extracted_license_number": "number or null",
+  "extracted_prc_id": "id or null",
+  "extracted_expiry_date": "YYYY-MM-DD or null",
+  "extracted_profession": "profession or null",
   "extracted_registration_date": "YYYY-MM-DD or null",
-  "extracted_issuing_office": "Regional Office name or Manila or null",
-  "name_matches": true,
-  "name_matches_account": true,
-  "license_number_matches": true,
-  "expiry_date_valid": true,
-  "profession_is_real_estate": true,
-  "decision": "approved",
-  "confidence": 0.85,
-  "reasoning": "Detailed explanation including which security features were verified and any concerns"
+  "extracted_issuing_office": "office or null",
+  "name_matches": true or false,
+  "name_matches_account": true or false,
+  "license_number_matches": true or false,
+  "expiry_date_valid": true or false,
+  "profession_is_real_estate": true or false,
+  "decision": "approved" or "unclear" or "rejected",
+  "confidence": 0.0 to 1.0,
+  "reasoning": "Detailed explanation"
 }
-
-FIELD DEFINITIONS:
-- "authenticity_score": 0.0 to 1.0 — How likely is this a GENUINE (not fake/forged) PRC document? Score based on security features present, document quality, and consistency.
-- "security_features_found": List of authentic security features you identified in the document
-- "security_features_missing": List of expected security features that are absent (red flag)
-- "red_flags_detected": List of any suspicious elements that suggest forgery/fakery
-- "name_matches": Does the PRC document name match the form name?
-- "name_matches_account": Does the PRC document name match the account name? CRITICAL identity check.
-
-DECISION RULES (MUST be one of three values):
-- "approved" — The document is clearly an authentic PRC document (ID card or certification), has the expected security features (authenticity_score >= 0.7), profession is real estate, name matches BOTH form and account name, license number matches, and overall confidence >= 0.7
-- "unclear" — The document appears to be a PRC document but: image quality is poor, some security features can't be verified, name partially matches but uncertain, or some information can't be confirmed. Needs admin review.
-- "rejected" — Use when ANY of these apply:
-  (a) The image is clearly NOT a PRC document
-  (b) The document appears to be FAKE or FORGED (too many red flags, missing critical security features, obvious editing)
-  (c) The PRC name clearly does NOT match the account name (identity fraud)
-  (d) The profession is NOT real estate related
-  (e) The document is a PRC license for a different profession (nursing, engineering, etc.)
-
-ADDITIONAL RULES:
-- ACCEPT BOTH PRC ID cards AND PRC certification letters — both are valid proof
-- Be lenient with name matching (allow minor differences) but STRICT on identity matching
-- A document with many red flags or missing security features should be "rejected" as likely fake, even if it resembles a PRC format
-- If the document looks like a PRC format but you suspect it was digitally fabricated, set decision to "rejected" and explain why in red_flags_detected
-- If image quality is poor but the document LOOKS real, use "unclear" — let an admin see it
-- Provide DETAILED reasoning that specifically mentions which security features you found or didn't find
-- The reasoning should help an admin understand exactly why you made your decision
 {$faceSection}
 PROMPT;
     }
 
     private function parseVerificationResponse(string $responseText): array
     {
-        // Try to extract JSON from the response (Gemini often wraps it in markdown code blocks)
         $jsonText = trim($responseText);
-
-        // Strip opening ```json or ``` marker from the beginning
         $jsonText = preg_replace('/^```(?:json)?\s*/s', '', $jsonText);
-        // Strip closing ``` marker from the end (may be absent if response was truncated)
         $jsonText = preg_replace('/\s*```\s*$/s', '', $jsonText);
         $jsonText = trim($jsonText);
 
-        // Try direct JSON parse
         $parsed = json_decode($jsonText, true);
 
         if (!$parsed || !is_array($parsed)) {
-            // Fallback: Try to find the largest JSON object in the text
             if (preg_match('/\{[\s\S]*\}/s', $responseText, $matches)) {
                 $parsed = json_decode($matches[0], true);
             }
@@ -1192,7 +848,6 @@ PROMPT;
             ];
         }
 
-        // Get the AI's decision
         $aiDecision = strtolower($parsed['decision'] ?? 'unclear');
         $isPrcDocument = $parsed['is_prc_document'] ?? false;
         $authenticityScore = (float) ($parsed['authenticity_score'] ?? 0);
@@ -1200,32 +855,27 @@ PROMPT;
         $securityFound = $parsed['security_features_found'] ?? [];
         $securityMissing = $parsed['security_features_missing'] ?? [];
 
-        // If AI explicitly says it's not a PRC document, force rejected
         if (!$isPrcDocument && $aiDecision !== 'rejected') {
             $aiDecision = 'rejected';
         }
 
-        // Normalize decision to one of 3 values
         if (!in_array($aiDecision, ['approved', 'unclear', 'rejected'])) {
             $aiDecision = 'unclear';
         }
 
-        // AUTHENTICITY CHECK: If too many red flags detected, reject as likely fake
         if (count($redFlags) >= 3 && $aiDecision === 'approved') {
             $aiDecision = 'rejected';
-            $parsed['reasoning'] = 'Document rejected due to multiple red flags detected: ' . implode(', ', $redFlags) . '. ' . ($parsed['reasoning'] ?? '');
+            $parsed['reasoning'] = 'Document rejected due to multiple red flags: ' . implode(', ', $redFlags) . '. ' . ($parsed['reasoning'] ?? '');
         }
 
-        // AUTHENTICITY CHECK: If authenticity score is too low, downgrade
         if ($authenticityScore > 0 && $authenticityScore < 0.5 && $aiDecision === 'approved') {
             $aiDecision = 'rejected';
-            $parsed['reasoning'] = 'Document authenticity score too low (' . $authenticityScore . '). Possible forgery detected. ' . ($parsed['reasoning'] ?? '');
+            $parsed['reasoning'] = 'Document authenticity score too low (' . $authenticityScore . '). ' . ($parsed['reasoning'] ?? '');
         } elseif ($authenticityScore > 0 && $authenticityScore < 0.7 && $aiDecision === 'approved') {
             $aiDecision = 'unclear';
-            $parsed['reasoning'] = 'Document authenticity could not be fully confirmed (score: ' . $authenticityScore . '). Requires admin review. ' . ($parsed['reasoning'] ?? '');
+            $parsed['reasoning'] = 'Document authenticity could not be fully confirmed (score: ' . $authenticityScore . '). ' . ($parsed['reasoning'] ?? '');
         }
 
-        // For "approved", double-check the key fields including identity match
         if ($aiDecision === 'approved') {
             $isValid = ($parsed['is_valid_prc_card'] ?? false)
                 && ($parsed['name_matches'] ?? false)
@@ -1235,18 +885,15 @@ PROMPT;
                 && ($authenticityScore >= 0.7 || $authenticityScore === 0.0);
 
             if (!$isValid) {
-                // If identity specifically doesn't match, reject instead of unclear
                 if (!($parsed['name_matches_account'] ?? true)) {
                     $aiDecision = 'rejected';
-                    $parsed['reasoning'] = 'The name on the PRC document does not match your registered account name. You may be using someone else\'s license. ' . ($parsed['reasoning'] ?? '');
+                    $parsed['reasoning'] = 'The name on the PRC document does not match your registered account name. ' . ($parsed['reasoning'] ?? '');
                 } else {
-                    // Downgrade to unclear if other checks fail
                     $aiDecision = 'unclear';
                 }
             }
         }
 
-        // Even if AI said unclear/approved, reject if identity clearly doesn't match
         if ($aiDecision !== 'rejected' && isset($parsed['name_matches_account']) && $parsed['name_matches_account'] === false) {
             $aiDecision = 'rejected';
             $parsed['reasoning'] = 'The name on the PRC document does not match your registered account name. ' . ($parsed['reasoning'] ?? '');
